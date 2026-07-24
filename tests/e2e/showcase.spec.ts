@@ -9,6 +9,14 @@ const experiments = [
   ["hybrid", "Adaptive Hybrid Engine"],
 ] as const;
 
+const engineAnnotations = {
+  css: ".css-layer-legend",
+  organic: ".organic-caustic",
+  sdf: ".sdf-fiducials",
+  webgl: ".source-ownership",
+  hybrid: ".policy-rail",
+} as const;
+
 test("comparison home exposes all five experiments", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Glass is not");
@@ -28,11 +36,14 @@ for (const [id, title] of experiments) {
   test(`${id} route renders the shared comparison burden`, async ({ page }) => {
     await page.goto(`/experiments/${id}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
-    await expect(page.getByRole("region", { name: "Interactive component specimen" })).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Interactive component specimen" }),
+    ).toBeVisible();
     await expect(page.getByRole("group", { name: "Preview environment" })).toBeVisible();
     await expect(page.getByRole("switch", { name: "Spectral edge" })).toBeChecked();
     await expect(page.locator(".matrix-tile")).toHaveCount(6);
     await expect(page.getByRole("tablist", { name: "Recipe categories" })).toBeVisible();
+    await expect(page.locator(engineAnnotations[id])).toBeAttached();
 
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -85,4 +96,211 @@ test("WebGL surface reaches a stable renderer state", async ({ page, browserName
   } else {
     expect(["ready", "unavailable"]).toContain(status);
   }
+});
+
+test("reduced motion freezes optical animation and media", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/experiments/organic");
+
+  await expect(page.locator(".engine-surface").first()).toHaveAttribute("data-prism-motion", "off");
+  await expect(page.locator("[data-prism-organic-definition] animate")).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page
+        .locator(".instrument video")
+        .evaluateAll((videos) => videos.every((video) => (video as HTMLVideoElement).paused)),
+    )
+    .toBe(true);
+});
+
+test("reduced transparency selects the accessibility renderer", async ({ page }) => {
+  await page.addInitScript(() => {
+    const nativeMatchMedia = window.matchMedia.bind(window);
+    window.matchMedia = (query: string) => {
+      const result = nativeMatchMedia(query);
+      if (query === "(prefers-reduced-transparency: reduce)") {
+        Object.defineProperty(result, "matches", { configurable: true, value: true });
+      }
+      return result;
+    };
+  });
+  await page.goto("/experiments/hybrid");
+
+  const glass = page.locator(".engine-surface").first();
+  await expect(glass).toHaveAttribute("data-prism-renderer", "css");
+  await expect(glass).toHaveAttribute("data-prism-renderer-reason", "accessibility-fallback");
+  await expect(glass).toHaveAttribute("data-prism-quality", "low");
+  await expect(page.getByText("A11Y / OPAQUE", { exact: true })).toHaveClass(/is-active/);
+});
+
+test("forced colors selects the opaque policy branch", async ({ page, browserName }) => {
+  test.skip(
+    browserName !== "chromium",
+    "forced-colors emulation is a Chromium-only Playwright API",
+  );
+  await page.emulateMedia({ forcedColors: "active" });
+  await page.goto("/experiments/hybrid");
+
+  const glass = page.locator(".engine-surface").first();
+  await expect(glass).toHaveAttribute("data-prism-renderer", "css");
+  await expect(glass).toHaveAttribute("data-prism-renderer-reason", "accessibility-fallback");
+  await expect(page.getByText("A11Y / OPAQUE", { exact: true })).toHaveClass(/is-active/);
+});
+
+test("auto quality drops on low-concurrency hardware", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window.navigator, "hardwareConcurrency", {
+      configurable: true,
+      get: () => 2,
+    });
+  });
+  await page.goto("/experiments/css");
+  await expect(page.locator(".engine-surface").first()).toHaveAttribute(
+    "data-prism-quality",
+    "low",
+  );
+});
+
+test("WebGL unavailability exposes a stable CSS fallback", async ({ page }) => {
+  await page.addInitScript(() => {
+    const nativeGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function getContext(
+      contextId: string,
+      options?: unknown,
+    ) {
+      if (contextId === "webgl2") {
+        return null;
+      }
+      return nativeGetContext.call(this, contextId, options);
+    } as typeof HTMLCanvasElement.prototype.getContext;
+  });
+  await page.goto("/experiments/webgl");
+
+  await expect(page.locator("[data-prism-webgl-surface]")).toHaveAttribute(
+    "data-prism-webgl-status",
+    "unavailable",
+  );
+  await expect(page.locator(".webgl-backdrop")).toBeVisible();
+  await expect(page.locator(".engine-surface").first()).toBeVisible();
+});
+
+test("motion sources can swap without leaked media state", async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await page.goto("/experiments/organic");
+
+  const instrument = page.locator(".instrument");
+  const environment = page.getByRole("group", { name: "Preview environment" });
+  const video = instrument.locator("video.environment__video");
+  await expect(video).toHaveCount(1);
+  await expect
+    .poll(() =>
+      video.evaluate((element) => {
+        const source = element as HTMLVideoElement;
+        return {
+          height: source.videoHeight,
+          paused: source.paused,
+          source: source.currentSrc,
+          width: source.videoWidth,
+        };
+      }),
+    )
+    .toMatchObject({
+      height: 540,
+      paused: false,
+      source: /motion-source\.mp4/,
+      width: 960,
+    });
+
+  await environment.getByRole("button", { name: "Photo" }).click();
+  await expect(video).toHaveCount(0);
+  await environment.getByRole("button", { name: "Motion" }).click();
+  await expect(video).toHaveCount(1);
+  await expect
+    .poll(() => video.evaluate((element) => !(element as HTMLVideoElement).paused))
+    .toBe(true);
+  expect(pageErrors).toEqual([]);
+});
+
+test("route remounts and visibility transitions release WebGL resources", async ({
+  page,
+  browserName,
+}) => {
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await page.goto("/experiments/webgl");
+  const surface = page.locator("[data-prism-webgl-surface]");
+  await expect(surface).toBeAttached();
+
+  await page.evaluate(() => {
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      get: () => "hidden",
+    });
+    document.dispatchEvent(new Event("visibilitychange"));
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      get: () => "visible",
+    });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+
+  await page.getByRole("link", { name: "Experiment 01: CSS Material" }).click();
+  await expect(page).toHaveURL(/\/experiments\/css$/);
+  await expect(page.locator("[data-prism-webgl-surface]")).toHaveCount(0);
+  await page.getByRole("link", { name: "Experiment 04: WebGL2 Optics" }).click();
+  await expect(page).toHaveURL(/\/experiments\/webgl$/);
+  await expect(page.locator("[data-prism-webgl-surface]")).toBeAttached();
+  if (browserName === "chromium") {
+    await expect(page.locator("[data-prism-webgl-surface]")).toHaveAttribute(
+      "data-prism-webgl-status",
+      "ready",
+    );
+  }
+  expect(pageErrors).toEqual([]);
+});
+
+test("WebGL context loss and recovery remain observable", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "deterministic WEBGL_lose_context coverage uses Chromium");
+  await page.goto("/experiments/webgl");
+  const surface = page.locator("[data-prism-webgl-surface]");
+  await expect(surface).toHaveAttribute("data-prism-webgl-status", "ready");
+
+  const extensionAvailable = await surface.evaluate((canvas) => {
+    const context = (canvas as HTMLCanvasElement).getContext("webgl2");
+    const extension = context?.getExtension("WEBGL_lose_context");
+    const testWindow = window as typeof window & {
+      __restorePrismContext?: () => void;
+    };
+    testWindow.__restorePrismContext = () => extension?.restoreContext();
+    extension?.loseContext();
+    return Boolean(extension);
+  });
+  test.skip(!extensionAvailable, "WEBGL_lose_context is unavailable in this browser build");
+  await expect(surface).toHaveAttribute("data-prism-webgl-status", "lost");
+
+  await page.evaluate(() => {
+    const testWindow = window as typeof window & {
+      __restorePrismContext?: () => void;
+    };
+    testWindow.__restorePrismContext?.();
+  });
+  await expect(surface).toHaveAttribute("data-prism-webgl-status", "restored");
+  await expect(surface).not.toHaveAttribute("data-prism-webgl-error", /.+/);
+});
+
+test("portrait and landscape resizing preserve the page boundary", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/experiments/hybrid");
+  await expect(page.locator(".instrument")).toBeVisible();
+
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+    )
+    .toBe(true);
+  await expect(page.locator(".engine-surface").first()).toBeVisible();
 });
