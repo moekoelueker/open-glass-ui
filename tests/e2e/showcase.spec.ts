@@ -248,6 +248,7 @@ test("route remounts and visibility transitions release WebGL resources", async 
   await page.getByRole("link", { name: "Experiment 01: CSS Material" }).click();
   await expect(page).toHaveURL(/\/experiments\/css$/);
   await expect(page.locator("[data-prism-webgl-surface]")).toHaveCount(0);
+  await expect(page.locator(".instrument video")).toHaveCount(0);
   await page.getByRole("link", { name: "Experiment 04: WebGL2 Optics" }).click();
   await expect(page).toHaveURL(/\/experiments\/webgl$/);
   await expect(page.locator("[data-prism-webgl-surface]")).toBeAttached();

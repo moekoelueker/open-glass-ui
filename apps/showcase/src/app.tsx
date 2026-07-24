@@ -62,7 +62,7 @@ export function App() {
   const experimentId = path.startsWith("/experiments/") ? path.split("/")[2] : undefined;
 
   if (experimentId) {
-    return <ExperimentPage id={experimentId} />;
+    return <ExperimentPage key={experimentId} id={experimentId} />;
   }
   if (path === "/docs") {
     return <DocumentationView />;
