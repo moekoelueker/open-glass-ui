@@ -88,11 +88,14 @@ export function GlassProvider({
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const mediaQueries = [
-      window.matchMedia("(prefers-reduced-motion: reduce)"),
-      window.matchMedia("(prefers-reduced-transparency: reduce)"),
-      window.matchMedia("(forced-colors: active)"),
-    ];
+    const mediaQueries =
+      typeof window.matchMedia === "function"
+        ? [
+            window.matchMedia("(prefers-reduced-motion: reduce)"),
+            window.matchMedia("(prefers-reduced-transparency: reduce)"),
+            window.matchMedia("(forced-colors: active)"),
+          ]
+        : [];
     const update = () => {
       setCapabilities(detectRendererCapabilities());
       setHydrated(true);

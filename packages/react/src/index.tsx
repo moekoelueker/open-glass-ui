@@ -1,5 +1,7 @@
 export type { GlassProps } from "./glass";
 export { Glass } from "./glass";
+export type { GlassPointerField } from "./interaction";
+export { useGlassPointerField } from "./interaction";
 export type {
   GlassMotionPreference,
   GlassProviderProps,
@@ -11,3 +13,9 @@ export {
   useGlassCapabilities,
   useGlassRuntime,
 } from "./provider";
+export type {
+  GlassGroupProps,
+  GlassGroupRuntime,
+  GlassSourceProps,
+} from "./source";
+export { GlassGroup, GlassSource, useGlassGroup } from "./source";

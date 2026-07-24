@@ -19,6 +19,7 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from "react";
+import { useGlassPointerField } from "./interaction";
 import { useGlassRuntime } from "./provider";
 
 type GlassElement = "aside" | "div" | "nav" | "section" | "span";
@@ -49,12 +50,18 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     optics,
     geometry,
     filterId,
+    onPointerMove,
+    onPointerLeave,
+    onPointerDown,
+    onPointerUp,
+    onPointerCancel,
     style,
     ...rest
   },
   ref,
 ) {
   const runtime = useGlassRuntime();
+  const pointerField = useGlassPointerField(interactive && runtime.motion === "on");
   const resolvedMaterial = { ...getMaterialPreset(material), ...optics };
   const decision = selectRenderer({
     source,
@@ -72,6 +79,10 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
   const mergedStyle = {
     ...tokens,
     ...materialStyle,
+    "--prism-pointer-x": "0",
+    "--prism-pointer-y": "0",
+    "--prism-pointer-distance": "0",
+    "--prism-press": "0",
     ...(filterId ? { filter: `url(#${filterId})` } : {}),
     ...style,
   } as CSSProperties;
@@ -83,6 +94,26 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
       ref,
       className,
       style: mergedStyle,
+      onPointerMove: (event: React.PointerEvent<HTMLElement>) => {
+        pointerField.onPointerMove(event);
+        onPointerMove?.(event);
+      },
+      onPointerLeave: (event: React.PointerEvent<HTMLElement>) => {
+        pointerField.onPointerLeave(event);
+        onPointerLeave?.(event);
+      },
+      onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
+        pointerField.onPointerDown(event);
+        onPointerDown?.(event);
+      },
+      onPointerUp: (event: React.PointerEvent<HTMLElement>) => {
+        pointerField.onPointerUp(event);
+        onPointerUp?.(event);
+      },
+      onPointerCancel: (event: React.PointerEvent<HTMLElement>) => {
+        pointerField.onPointerCancel(event);
+        onPointerCancel?.(event);
+      },
       "data-prism-glass": "",
       "data-prism-material": material,
       "data-prism-renderer": decision.renderer,

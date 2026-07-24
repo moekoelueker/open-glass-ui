@@ -56,13 +56,16 @@ function createBrowserProbe(): CapabilityProbe | undefined {
       return typeof CSS !== "undefined" && CSS.supports(property, value);
     },
     matches(query) {
-      return window.matchMedia(query).matches;
+      return typeof window.matchMedia === "function" && window.matchMedia(query).matches;
     },
     hasSvgDisplacementElement() {
       const element = document.createElementNS("http://www.w3.org/2000/svg", "feDisplacementMap");
       return element.localName === "feDisplacementMap";
     },
     hasWebGL2() {
+      if (typeof WebGL2RenderingContext === "undefined") {
+        return false;
+      }
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("webgl2", {
         antialias: false,
