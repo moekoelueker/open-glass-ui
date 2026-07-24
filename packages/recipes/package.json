@@ -17,7 +17,7 @@
     "./styles.css": "./dist/styles.css"
   },
   "scripts": {
-    "build": "tsup src/index.tsx --format esm --dts --clean --external react --external react-dom",
+    "build": "tsup src/index.tsx --format esm --dts --clean --external react --external react-dom && cp src/styles.css dist/styles.css",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },
