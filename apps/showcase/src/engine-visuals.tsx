@@ -20,123 +20,51 @@ import {
 } from "react";
 import type { EngineId, EnvironmentId } from "./data";
 
-interface ProceduralCanvasProps {
+interface MotionVideoProps {
   className?: string;
   animate?: boolean;
 }
 
-export const ProceduralMotionCanvas = forwardRef<HTMLCanvasElement, ProceduralCanvasProps>(
-  function ProceduralMotionCanvas({ className, animate = true }, forwardedRef) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    useImperativeHandle(forwardedRef, () => canvasRef.current as HTMLCanvasElement, []);
+const MotionVideo = forwardRef<HTMLVideoElement, MotionVideoProps>(function MotionVideo(
+  { className, animate = true },
+  forwardedRef,
+) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useImperativeHandle(forwardedRef, () => videoRef.current as HTMLVideoElement, []);
 
-    useEffect(() => {
-      const canvas = canvasRef.current;
-      const context = canvas?.getContext("2d", { alpha: false });
-      if (!canvas || !context) {
-        return;
-      }
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
 
-      let frame = 0;
-      let stopped = false;
-      let width = 1;
-      let height = 1;
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      const resize = () => {
-        const rectangle = canvas.getBoundingClientRect();
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        width = Math.max(Math.round(rectangle.width), 1);
-        height = Math.max(Math.round(rectangle.height), 1);
-        canvas.width = Math.round(width * dpr);
-        canvas.height = Math.round(height * dpr);
-        context.setTransform(dpr, 0, 0, dpr, 0, 0);
-      };
-
-      const draw = (time: number) => {
-        const phase = animate && !reduceMotion ? time * 0.00012 : 0.4;
-        const background = context.createLinearGradient(0, 0, width, height);
-        background.addColorStop(0, "#16191b");
-        background.addColorStop(0.48, "#343027");
-        background.addColorStop(1, "#090b0c");
-        context.fillStyle = background;
-        context.fillRect(0, 0, width, height);
-
-        const orbs = [
-          {
-            x: width * (0.28 + Math.sin(phase) * 0.12),
-            y: height * (0.28 + Math.cos(phase * 1.3) * 0.11),
-            radius: Math.max(width, height) * 0.36,
-            color: "rgba(239, 87, 52, 0.7)",
-          },
-          {
-            x: width * (0.72 + Math.cos(phase * 0.8) * 0.13),
-            y: height * (0.57 + Math.sin(phase * 1.1) * 0.14),
-            radius: Math.max(width, height) * 0.42,
-            color: "rgba(218, 177, 78, 0.46)",
-          },
-          {
-            x: width * (0.5 + Math.sin(phase * 0.6) * 0.22),
-            y: height * (0.9 + Math.cos(phase) * 0.08),
-            radius: Math.max(width, height) * 0.44,
-            color: "rgba(47, 85, 84, 0.58)",
-          },
-        ];
-
-        for (const orb of orbs) {
-          const gradient = context.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
-          gradient.addColorStop(0, orb.color);
-          gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-          context.fillStyle = gradient;
-          context.fillRect(0, 0, width, height);
-        }
-
-        context.strokeStyle = "rgba(255, 255, 255, 0.075)";
-        context.lineWidth = 1;
-        const grid = 48;
-        for (let x = -(time * 0.008) % grid; x < width + grid; x += grid) {
-          context.beginPath();
-          context.moveTo(x, 0);
-          context.lineTo(x, height);
-          context.stroke();
-        }
-        for (let y = 0; y < height; y += grid) {
-          context.beginPath();
-          context.moveTo(0, y);
-          context.lineTo(width, y);
-          context.stroke();
-        }
-
-        if (!stopped && animate && !reduceMotion) {
-          frame = requestAnimationFrame(draw);
-        }
-      };
-
-      resize();
-      draw(0);
-      const observer = new ResizeObserver(() => {
-        resize();
-        draw(0);
+    if (animate) {
+      void video.play().catch(() => {
+        // Muted autoplay is broadly supported. A blocked play promise simply
+        // leaves a valid first frame for the static/reduced-motion experience.
       });
-      observer.observe(canvas);
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
 
-      return () => {
-        stopped = true;
-        cancelAnimationFrame(frame);
-        observer.disconnect();
-      };
-    }, [animate]);
+    return () => video.pause();
+  }, [animate]);
 
-    return (
-      <canvas
-        ref={canvasRef}
-        className={className}
-        role="img"
-        aria-label="Animated abstract color field"
-      />
-    );
-  },
-);
+  return (
+    <video
+      ref={videoRef}
+      className={className}
+      src="/assets/motion-source.mp4"
+      poster="/assets/architectural-contrast.jpg"
+      muted
+      autoPlay={animate}
+      loop
+      playsInline
+      preload="auto"
+    />
+  );
+});
 
 export function EnvironmentBackdrop({
   environment,
@@ -147,9 +75,13 @@ export function EnvironmentBackdrop({
   children?: ReactNode;
   className?: string;
 }) {
+  const runtime = useGlassRuntime();
+
   return (
     <div className={`environment environment--${environment} ${className ?? ""}`}>
-      {environment === "motion" ? <ProceduralMotionCanvas className="environment__canvas" /> : null}
+      {environment === "motion" ? (
+        <MotionVideo className="environment__video" animate={runtime.motion === "on"} />
+      ) : null}
       <span className="environment__geometry" aria-hidden="true" />
       {children}
     </div>
@@ -316,8 +248,8 @@ export function WebGLBackdrop({
 
   return (
     <div ref={wrapperRef} className="webgl-backdrop" aria-hidden="true">
-      <ProceduralMotionCanvas
-        ref={sourceRef as RefObject<HTMLCanvasElement>}
+      <MotionVideo
+        ref={sourceRef as RefObject<HTMLVideoElement>}
         className="webgl-backdrop__source"
         animate={effectiveMotion}
       />

@@ -229,6 +229,74 @@ function RuntimeReadout({ engine, ready }: { engine: EngineId; ready: boolean })
   );
 }
 
+function EngineAnnotation({ engine }: { engine: EngineId }) {
+  const runtime = useGlassRuntime();
+
+  if (engine === "css") {
+    return (
+      <div className="css-layer-legend" aria-hidden="true">
+        <span>01 / source</span>
+        <span>02 / blur + tint</span>
+        <span>03 / edge light</span>
+      </div>
+    );
+  }
+
+  if (engine === "organic") {
+    return (
+      <div className="organic-caustic" aria-hidden="true">
+        <i />
+        <i />
+      </div>
+    );
+  }
+
+  if (engine === "sdf") {
+    return (
+      <div className="sdf-fiducials" aria-hidden="true">
+        <span className="sdf-fiducials__x">X / 440</span>
+        <span className="sdf-fiducials__y">Y / 232</span>
+        <span className="sdf-fiducials__normal">N̂ / RGB</span>
+      </div>
+    );
+  }
+
+  if (engine === "webgl") {
+    return (
+      <aside className="source-ownership" aria-label="WebGL source ownership">
+        <span>Source / owned canvas</span>
+        <span>Lens batch / 02</span>
+        <span>Texture / live</span>
+      </aside>
+    );
+  }
+
+  const accessibilityOverride =
+    runtime.capabilities.forcedColors || runtime.capabilities.reducedTransparency;
+  const domRenderer =
+    runtime.capabilities.svgFilterElements && runtime.capabilities.backdropUrlSyntax
+      ? "SDF"
+      : "CSS";
+  const mediaRenderer = runtime.capabilities.webgl2 ? "GL2" : "CSS";
+
+  return (
+    <aside className="policy-rail" aria-label="Adaptive renderer policy">
+      <span className={!accessibilityOverride ? "is-active" : ""}>
+        <i aria-hidden="true" />
+        DOM / {domRenderer}
+      </span>
+      <span>
+        <i aria-hidden="true" />
+        MEDIA / {mediaRenderer}
+      </span>
+      <span className={accessibilityOverride ? "is-active" : ""}>
+        <i aria-hidden="true" />
+        A11Y / OPAQUE
+      </span>
+    </aside>
+  );
+}
+
 function InstrumentControls({
   experiment,
   lab,
@@ -259,6 +327,7 @@ function InstrumentControls({
       ) : (
         <EnvironmentBackdrop environment={lab.environment} className="instrument__environment" />
       )}
+      <EngineAnnotation engine={experiment.id} />
 
       <div className="instrument__chrome">
         <div className="instrument__topline">
