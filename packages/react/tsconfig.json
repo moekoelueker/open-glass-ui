@@ -1,9 +1,4 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "composite": true,
-    "tsBuildInfoFile": "node_modules/.cache/react.tsbuildinfo"
-  },
-  "include": ["src"],
-  "references": [{ "path": "../core" }, { "path": "../renderers" }]
+  "include": ["src"]
 }

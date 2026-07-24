@@ -1,10 +1,3 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./packages/core" },
-    { "path": "./packages/renderers" },
-    { "path": "./packages/react" },
-    { "path": "./packages/recipes" },
-    { "path": "./apps/showcase" }
-  ]
+  "files": []
 }

@@ -1,8 +1,4 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "composite": true,
-    "tsBuildInfoFile": "node_modules/.cache/core.tsbuildinfo"
-  },
   "include": ["src"]
 }
