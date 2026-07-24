@@ -1,7 +1,9 @@
 # Prism Lab
 
 Prism Lab is an internal, clean-room React/web research repository comparing
-five materially different approaches to refractive interface materials.
+five materially different approaches to refractive interface materials. The
+second design and validation pass is complete; the adaptive hybrid is the
+recommended architecture for API review.
 
 > **Status:** active research prototype. The name and package namespace are not
 > approved for publication. No remote repository or package has been published.
@@ -39,7 +41,24 @@ pnpm run typecheck
 pnpm run test:unit
 pnpm run build
 pnpm run test:e2e
+pnpm exec playwright test tests/e2e/visual-capture.spec.ts
+pnpm run bench:optics
+pnpm run bench:browser
+pnpm run verify:packages
 ```
+
+Open [http://127.0.0.1:4173](http://127.0.0.1:4173) after `pnpm dev`. The five
+comparison routes live at:
+
+```text
+/experiments/css
+/experiments/organic
+/experiments/sdf
+/experiments/webgl
+/experiments/hybrid
+```
+
+The documentation and live evidence ledger are at `/docs` and `/validation`.
 
 ## Principles
 
@@ -51,8 +70,15 @@ pnpm run test:e2e
 - Pointer animation does not flow through React state on every frame.
 - Experimental browser APIs are research adapters, not v1 foundations.
 
-See [CREDITS.md](./CREDITS.md), [browser support](./docs/BROWSER-SUPPORT.md),
-and [known limitations](./docs/LIMITATIONS.md).
+Start with:
+
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Experiment report](./docs/EXPERIMENT-REPORT.md)
+- [Validation evidence](./docs/VALIDATION.md)
+- [Browser support](./docs/BROWSER-SUPPORT.md)
+- [Performance](./docs/PERFORMANCE.md)
+- [Credits and prior art](./CREDITS.md)
+- [Known limitations](./docs/LIMITATIONS.md)
 
 ## License
 
@@ -60,4 +86,3 @@ MIT. See [LICENSE](./LICENSE).
 
 This independent project is not affiliated with, endorsed by, or sponsored by
 Apple Inc.
-

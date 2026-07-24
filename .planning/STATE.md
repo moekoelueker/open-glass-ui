@@ -1,13 +1,14 @@
 # State
 
 - Internal name: Prism Lab
-- Phase: Accessible component recipes
-- Completed plans: 00-01, 01-01, 01-02, 02-01, 02-02, 03-01, 03-02
-- Next plan: 04-01
+- Phase: Second-pass validation and handoff complete
+- Completed plans: 00-01, 01-01, 01-02, 02-01, 02-02, 03-01, 03-02, 04-01,
+  04-02, 05-01, 05-02, 05-03, 05-04, 06-01
+- Next plan: user review and public API/name decision
 - Public name: unresolved by design
 - Remote/publishing: not authorized
 - Old example: read-only and outside this repository
-- Next implementation: shared semantic component suite and route-independent demo content
+- Next implementation: only after user review; no publishing is authorized
 
 ## Plan 00-01 evidence
 
@@ -93,3 +94,37 @@
   hidden-document drawing, redraws on resize, and fully releases observers,
   frames, listeners, and renderer resources.
 - Twelve unit/SSR test files and fifty-six tests pass.
+
+## Plans 04-01 and 04-02 evidence
+
+- A single responsive showcase now has comparison home, five engine routes,
+  architecture, and validation views.
+- Every route carries the same instrument, parameter lab, six-background
+  stress matrix, and accessible recipe inventory.
+- Button, IconButton, segmented control, switch, slider, toolbar, dock, tabs,
+  menu, popover, tooltip, and media controls are implemented as copy-owned
+  recipes.
+- Each route has an engine-specific art direction and implementation evidence.
+
+## Plans 05-01 through 05-04 evidence
+
+- Every route received a meaningful second-pass improvement.
+- A real original H.264 source now drives motion and WebGL2 video refraction.
+- Engine-specific layer legend, caustics, SDF fiducials, source ownership, and
+  adaptive policy telemetry clarify the five different approaches.
+- Route identity remounts state, preventing media/material leakage.
+- Pass-02 contains 81 visually inspected screenshots across Chromium, Firefox,
+  WebKit, desktop, and mobile.
+- The adaptive hybrid scored 96 and is the final architecture recommendation.
+
+## Plan 06-01 evidence
+
+- Sixty unit/property/SSR/recipe tests pass.
+- The second-pass functional suite passes 62 checks with four intentional
+  capability skips across three browsers.
+- Package tarballs install together in a clean consumer and pass export, peer,
+  license, dependency, and tree-shaking checks.
+- The isolated browser performance probe passes input, frame pacing, long-task,
+  and teardown budgets.
+- Architecture, report, validation, browser, performance, credit, and limitation
+  documentation is complete.

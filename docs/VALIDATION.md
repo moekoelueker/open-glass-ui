@@ -45,7 +45,105 @@ Mobile evidence includes home, route hero, and instrument.
   compositor stitching artifacts; approved evidence therefore uses bounded hero,
   instrument, and matrix captures.
 
-## Pass 2 — pending
+## Pass 2 — complete
 
-The complete suite will be rerun after every route receives the improvements
-listed in `EXPERIMENT-REPORT.md`. Pass 2 will use a separate screenshot tree.
+Date: 2026-07-24
+
+### Automated results
+
+- 60 unit, property, SSR, strict-lifecycle, and recipe behavior tests passed.
+- 62 second-pass functional/accessibility checks passed across Chromium,
+  Firefox, and WebKit; four checks were intentionally skipped where Playwright
+  does not expose forced-colors or deterministic context-loss control.
+- Six visual-capture jobs passed and produced 81 pass-02 screenshots.
+- The full browser run therefore passed 68 checks with seven intentional skips.
+- The separately isolated Chromium performance probe passed; Firefox and WebKit
+  were intentionally excluded from reference-host performance claims.
+- All packages built, packed, installed together into a temporary consumer,
+  imported through declared exports, preserved React peer dependencies, and
+  passed a tree-shaking probe.
+- The Vite showcase and Next.js SSR fixture built successfully.
+
+### Stress and lifecycle coverage
+
+- Default, hover, pressed, focused, disabled, selected, and open states.
+- Menu selection, outside lifecycle, Escape, and focus restoration.
+- Popover open/Escape/focus restoration and tooltip hover/focus.
+- Every route’s material, slider, and spectral controls.
+- Reduced motion and frozen video.
+- Emulated reduced transparency and forced colors.
+- Low-concurrency automatic quality.
+- Unsupported WebGL2 fallback.
+- Portrait-to-landscape resizing with no horizontal overflow.
+- Internal route transitions and strict-mode remounting.
+- Video source removal and reattachment.
+- Synthetic hidden/visible document transitions.
+- WebGL context loss and restoration.
+- WebGL, video, animation, observer, and listener cleanup through repeated
+  unmounting.
+
+### Screenshot inventory
+
+```text
+artifacts/screenshots/pass-02/
+  chromium/{desktop,mobile}/
+  firefox/{desktop,mobile}/
+  webkit/{desktop,mobile}/
+```
+
+Each browser has 27 approved JPEG captures:
+
+- one desktop and one mobile home;
+- desktop and mobile hero views for all five routes;
+- desktop and mobile instrument views for all five routes;
+- desktop six-background matrices for all five routes.
+
+All 81 images were visually inspected. The review checked composition, source
+visibility, filter bounds, clipping, seams, text sharpness, background contrast,
+native-control differences, route identity, and consistency across engines.
+
+### Visual findings
+
+- CSS is the most stable and readable renderer across all backgrounds.
+- Organic SVG has the strongest expression; the protected core prevents the
+  contour field from consuming controls.
+- SDF output stays deterministic, and the new fiducials make its geometry
+  understandable.
+- WebGL2 produces coherent large and small refraction lenses in all three
+  browser engines with the generated video source.
+- Hybrid has the strongest complete product posture and communicates active
+  policy clearly.
+- WebKit and Firefox expose expected native range-thumb differences without
+  layout or contrast failures.
+- Mobile keeps the instrument usable and text sharp; route-specific annotations
+  intentionally recede to protect the compact layout.
+
+### Performance evidence
+
+Reference host results are checked into `artifacts/performance/`.
+
+- CSS material-state update p95: 18.5 ms.
+- WebGL2 active-window frame interval: 18.5 ms median, 33.4 ms p95 on the
+  headless software-backed reference run.
+- No active-window long task was observed.
+- Cold development startup recorded a 448 ms longest task; it is retained as an
+  honest non-production baseline rather than treated as a release claim.
+- Post-transition resource probe: zero WebGL surfaces and zero instrument videos.
+
+Map-generation p95 stayed within the low-quality budget for every shape and
+within the medium budget except one noisy rounded-rectangle run (19.792 ms).
+That outlier reinforces the existing policy: regenerate low quality during
+resize, cache stable maps, and settle to medium/high after interaction.
+
+### Manual in-app browser pass
+
+The comparison home, five experiment routes, architecture view, and validation
+view were inspected in the in-app browser. Menu, popover, lab controls, motion,
+and WebGL readiness were exercised. No console error remained.
+
+### Approved conclusion
+
+No critical accessibility, runtime, lifecycle, packaging, or responsive defect
+remains in the review build. The adaptive hybrid is approved as the architectural
+foundation for user review, subject to the public-release work listed in
+`LIMITATIONS.md`.

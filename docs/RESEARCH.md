@@ -26,6 +26,35 @@ Research date: 2026-07-24
 
 The clean-room implementation does not copy these source trees.
 
+## Requested source audit
+
+| Source | Useful finding | Decision |
+| --- | --- | --- |
+| [Apple HIG — Materials](https://developer.apple.com/design/human-interface-guidelines/materials) | material is functional hierarchy, not decoration; adapt for contrast and accessibility | adopted as design principle, no assets/code |
+| [Aave — Building Glass for the Web](https://aave.com/design/building-glass-for-the-web) | displacement maps, supplied sources, resize discipline, and Safari constraints | informed renderer boundaries |
+| [UI Layouts — Liquid Glass](https://www.ui-layouts.com/components/liquid-glass) | compact copy/paste demo and immediate visual controls | treated as an adoption benchmark, not a foundation |
+| [Plain English — React Magic UI](https://javascript.plainenglish.io/react-magic-ui-e4289a3a0e8b) | broad component-library presentation and demo discoverability | informed showcase breadth only |
+| [Callstack — Liquid Glass in React Native](https://www.callstack.com/blog/how-to-use-liquid-glass-in-react-native) | native platform effects need capability/version boundaries and fallbacks | conceptual portability evidence; no React Native code used |
+| [Cygnis — Liquid Glass UI in React Native](https://cygnis.co/blog/implementing-liquid-glass-ui-react-native/) | layering, blur, gradients, and motion can approximate the visual language | web implementation remains first-principles and DOM-native |
+| [Dribbble liquid-glass search](https://dribbble.com/search/liquid-glass) | broad visual trend scan | used only to identify clichés to avoid |
+
+The React Native sources are informative about material semantics but do not
+solve browser source sampling, SSR, SVG, or WebGL lifecycle. The Dribbble scan
+was not treated as engineering evidence.
+
+## Primary implementation sources
+
+- [React `useEffect`](https://react.dev/reference/react/useEffect) informed
+  external-system lifecycle and cleanup boundaries.
+- [MDN `backdrop-filter`](https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter)
+  informed the CSS baseline and its support wording.
+- [MDN `feDisplacementMap`](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/feDisplacementMap)
+  informed portable SVG channel displacement.
+- [MDN WebGL best practices](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices)
+  informed bounded DPR, resource reuse, and explicit teardown.
+- [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/) is the accessibility standard
+  behind the contrast and semantic requirements.
+
 ## Package snapshot
 
 | Package | Version | React peer | Published unpacked size |
@@ -48,4 +77,3 @@ No single project supplies all required qualities. Prism Lab therefore separates
 3. Post-hydration React capability policy.
 4. Accessible DOM-native recipes.
 5. Browser-specific visual and performance evidence.
-

@@ -34,6 +34,38 @@ filter in the backdrop chain must not be inferred from blur support.
 
 ## Evidence
 
-The final matrix will link browser-specific Playwright captures and document
-intentional renderer differences.
+| Validation | Chromium | Firefox | WebKit |
+| --- | --- | --- | --- |
+| Shared routes and controls | Pass | Pass | Pass |
+| Automated axe scan on five routes | Pass | Pass | Pass |
+| CSS material | Pass | Pass | Pass |
+| Organic SVG | Pass | Pass | Pass |
+| Deterministic SDF/SVG | Pass | Pass | Pass |
+| WebGL2 controlled video | Ready | Ready in test host | Ready in test host |
+| Unsupported WebGL2 fallback | Pass | Pass | Pass |
+| Reduced motion | Pass | Pass | Pass |
+| Emulated reduced transparency | Pass | Pass | Pass |
+| Forced-colors emulation | Pass | Not exposed by Playwright | Not exposed by Playwright |
+| Context loss/restoration | Pass | Not deterministic in harness | Not deterministic in harness |
+| Desktop captures | 16 approved | 16 approved | 16 approved |
+| Mobile captures | 11 approved | 11 approved | 11 approved |
 
+Evidence lives under `artifacts/screenshots/pass-02/`. This matrix describes the
+tested browser builds bundled with Playwright 1.61 on macOS; it is not a promise
+that every older browser/GPU combination supports every enhanced path.
+
+## Intentional differences
+
+- Native slider thumbs and font rasterization vary by browser.
+- CSS and SVG filter compositing differ subtly in luminosity and edge softness.
+- WebGL2 is capability-detected after hydration and may remain on its source +
+  CSS fallback on restricted GPUs, privacy modes, or software policies.
+- `prefers-reduced-transparency` is not uniformly implemented, so the test
+  harness also validates the same policy through an explicit media-query probe.
+
+## Unsupported environments
+
+The semantic DOM and opaque/CSS material should remain usable when SVG filters,
+backdrop filtering, WebGL2, motion, or transparency are unavailable. The project
+does not currently claim support for legacy browsers without ESM, React 18, or
+modern CSS custom properties.
