@@ -93,6 +93,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
     const drawRef = useRef<() => void>(() => undefined);
     const callbacksRef = useRef({ onStatusChange, onRendererError });
     const [status, setStatus] = useState<WebGLSurfaceStatus>("idle");
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     lensesRef.current = lenses;
     callbacksRef.current = { onStatusChange, onRendererError };
@@ -123,6 +124,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
         renderer = new WebGLGlassRenderer(canvas, { onStatusChange: reportStatus });
       } catch (cause) {
         const error = cause instanceof Error ? cause : new Error(String(cause));
+        setErrorMessage(error.message);
         reportStatus("error");
         callbacksRef.current.onRendererError?.(error);
         return;
@@ -151,6 +153,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
           renderer.render(source, scaleWebGLLenses(lensesRef.current, dpr));
         } catch (cause) {
           const error = cause instanceof Error ? cause : new Error(String(cause));
+          setErrorMessage(error.message);
           reportStatus("error");
           callbacksRef.current.onRendererError?.(error);
         }
@@ -251,6 +254,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
         style={style}
         data-prism-webgl-surface=""
         data-prism-webgl-status={status}
+        data-prism-webgl-error={errorMessage ?? undefined}
       />
     );
   },

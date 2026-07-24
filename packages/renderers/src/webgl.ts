@@ -245,7 +245,7 @@ export class WebGLGlassRenderer {
       antialias: false,
       depth: false,
       desynchronized: true,
-      failIfMajorPerformanceCaveat: true,
+      failIfMajorPerformanceCaveat: false,
       powerPreference: "high-performance",
       premultipliedAlpha: true,
       preserveDrawingBuffer: false,
