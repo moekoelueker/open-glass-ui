@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
+    "bench:optics": "pnpm --filter @prism-lab/core build && node scripts/benchmark-optics.mjs",
     "dev": "pnpm --filter @prism-lab/showcase dev",
     "format": "biome format --write .",
     "format:check": "biome format .",
