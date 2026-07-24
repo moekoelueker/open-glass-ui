@@ -1,14 +1,15 @@
 # State
 
 - Internal name: Prism Lab
-- Phase: Second-pass validation and handoff complete
+- Phase: Forty-component finalist atlas complete
 - Completed plans: 00-01, 01-01, 01-02, 02-01, 02-02, 03-01, 03-02, 04-01,
-  04-02, 05-01, 05-02, 05-03, 05-04, 06-01
+  04-02, 05-01, 05-02, 05-03, 05-04, 06-01, 07-01, 07-02
 - Next plan: user review and public API/name decision
 - Public name: unresolved by design
 - Remote/publishing: not authorized
 - Old example: read-only and outside this repository
-- Next implementation: only after user review; no publishing is authorized
+- Next implementation: public API/package split after user review; no publishing
+  is authorized
 
 ## Plan 00-01 evidence
 
@@ -128,3 +129,18 @@
   and teardown budgets.
 - Architecture, report, validation, browser, performance, credit, and limitation
   documentation is complete.
+
+## Plans 07-01 and 07-02 evidence
+
+- The recipe package exposes forty native-DOM React components.
+- A weighted ranking gives visual quality 50% of the decision and selects
+  Adaptive Hybrid, Native CSS, and Spectral WebGL as finalists.
+- `/library` explains the full five-engine decision; three finalist routes apply
+  genuinely different material and layout strategies to the same forty controls.
+- Sixty-five unit/property/SSR/recipe tests pass.
+- Forty-two atlas-specific browser and screenshot checks pass across Chromium,
+  Firefox, and WebKit.
+- Two visual passes contain 84 ranking, hero, and representative component
+  screenshots across desktop and mobile.
+- Modal focus management, form labeling, semantic ranking markup, light-theme
+  status contrast, and mobile boundaries were refined during the second pass.

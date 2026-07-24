@@ -147,3 +147,34 @@ No critical accessibility, runtime, lifecycle, packaging, or responsive defect
 remains in the review build. The adaptive hybrid is approved as the architectural
 foundation for user review, subject to the public-release work listed in
 `LIMITATIONS.md`.
+
+## Pass 3 — component atlas complete
+
+Date: 2026-07-24
+
+- The recipe surface expanded from thirteen to forty components.
+- Unit/property/SSR/recipe coverage increased from 60 to 65 passing checks.
+- The atlas-specific suite passes 42 checks across Chromium, Firefox, and WebKit.
+- Hybrid, CSS, and WebGL each render the same forty unique live specimens.
+- Axe reports no automatically detectable violations on any finalist route.
+- Dialog focus entry, Tab containment, Escape closure, and trigger restoration
+  are verified.
+- Pagination, accordion, toast, search, bounded number input, stepper, and file
+  selection behavior are verified in the browser.
+- Desktop and 390×844 layouts remain within the document boundary.
+- WebGL remains one controlled-media hero surface and reaches a stable ready or
+  explicit unavailable state.
+
+Two atlas visual passes produced 84 screenshots:
+
+```text
+artifacts/screenshots/atlas-pass-01/
+artifacts/screenshots/atlas-pass-02/
+```
+
+Each pass includes the weighted ranking, all three finalist heroes, and a
+representative live Button specimen at desktop and mobile sizes in all three
+browser engines. The second pass tightened CSS light-theme semantic contrast,
+modal focus behavior, form labeling, and semantic ranking markup. The approved
+weighted result is Adaptive Hybrid 9.36, Native CSS 9.25, and Spectral WebGL
+8.66.

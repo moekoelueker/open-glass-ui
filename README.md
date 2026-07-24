@@ -3,7 +3,8 @@
 Prism Lab is an internal, clean-room React/web research repository comparing
 five materially different approaches to refractive interface materials. The
 second design and validation pass is complete; the adaptive hybrid is the
-recommended architecture for API review.
+recommended architecture for API review. A forty-component atlas now applies
+the three finalist material strategies to the same production UI surface.
 
 > **Status:** active research prototype. The name and package namespace are not
 > approved for publication. No remote repository or package has been published.
@@ -59,6 +60,14 @@ comparison routes live at:
 ```
 
 The documentation and live evidence ledger are at `/docs` and `/validation`.
+The weighted ranking and finalist component atlases are at:
+
+```text
+/library
+/library/hybrid
+/library/css
+/library/webgl
+```
 
 ## Principles
 
@@ -74,6 +83,7 @@ Start with:
 
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Experiment report](./docs/EXPERIMENT-REPORT.md)
+- [Component atlas and weighted ranking](./docs/COMPONENT-ATLAS.md)
 - [Validation evidence](./docs/VALIDATION.md)
 - [Browser support](./docs/BROWSER-SUPPORT.md)
 - [Performance](./docs/PERFORMANCE.md)

@@ -891,11 +891,11 @@ export function DocumentationView() {
 
 export function ValidationView() {
   const checks = [
-    ["Unit + property", "60 passing", "complete"],
-    ["Browser behavior", "62 passing · 4 capability skips", "complete"],
-    ["Chromium", "27 approved captures", "complete"],
-    ["Firefox", "27 approved captures", "complete"],
-    ["WebKit", "27 approved captures", "complete"],
+    ["Unit + property", "65 passing", "complete"],
+    ["Browser behavior", "110 passing · 7 capability skips", "complete"],
+    ["Component atlas", "40 recipes · 3 finalist routes", "complete"],
+    ["Atlas evidence", "84 approved captures · 2 visual passes", "complete"],
+    ["Engine evidence", "81 approved pass-02 captures", "complete"],
     ["Accessibility", "Axe + keyboard + fallback modes", "complete"],
     ["Packages", "Packed install + exports + tree-shaking", "complete"],
     ["Second-pass refinement", "Five engines improved and revalidated", "complete"],

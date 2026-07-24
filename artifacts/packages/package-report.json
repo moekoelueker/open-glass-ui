@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T22:44:01.236Z",
+  "generatedAt": "2026-07-24T23:55:29.186Z",
   "node": "v24.11.1",
   "packages": {
     "@prism-lab/core": {
@@ -22,7 +22,7 @@
     },
     "@prism-lab/recipes": {
       "archive": "artifacts/packages/prism-lab-recipes-0.0.0.tgz",
-      "bytes": 8505,
+      "bytes": 21782,
       "files": 6,
       "sideEffects": [
         "**/*.css"
