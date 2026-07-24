@@ -1,4 +1,5 @@
 import { type MouseEvent, useEffect, useState } from "react";
+import { type AtlasVariant, ComponentAtlasHome, ComponentAtlasPage } from "./component-atlas";
 import { ComparisonHome, DocumentationView, ExperimentPage, ValidationView } from "./pages";
 
 function normalizedPath() {
@@ -60,9 +61,16 @@ export function App() {
   }, []);
 
   const experimentId = path.startsWith("/experiments/") ? path.split("/")[2] : undefined;
+  const atlasId = path.startsWith("/library/") ? path.split("/")[2] : undefined;
 
   if (experimentId) {
     return <ExperimentPage key={experimentId} id={experimentId} />;
+  }
+  if (atlasId && ["hybrid", "css", "webgl"].includes(atlasId)) {
+    return <ComponentAtlasPage key={atlasId} variant={atlasId as AtlasVariant} />;
+  }
+  if (path === "/library") {
+    return <ComponentAtlasHome />;
   }
   if (path === "/docs") {
     return <DocumentationView />;

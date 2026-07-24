@@ -47,16 +47,29 @@ function Wordmark() {
   );
 }
 
-function SiteHeader({ active }: { active?: EngineId }) {
+export function SiteHeader({
+  active,
+  section,
+}: {
+  active?: EngineId;
+  section?: "library" | "docs" | "validation";
+}) {
   return (
     <header className="site-header">
       <Wordmark />
       <nav className="site-header__nav" aria-label="Primary navigation">
-        <AppLink href="/" className={!active ? "is-active" : undefined}>
+        <AppLink href="/" className={!active && !section ? "is-active" : undefined}>
           Index
         </AppLink>
-        <AppLink href="/docs">Architecture</AppLink>
-        <AppLink href="/validation">Validation</AppLink>
+        <AppLink href="/library" className={section === "library" ? "is-active" : undefined}>
+          Library
+        </AppLink>
+        <AppLink href="/docs" className={section === "docs" ? "is-active" : undefined}>
+          Architecture
+        </AppLink>
+        <AppLink href="/validation" className={section === "validation" ? "is-active" : undefined}>
+          Validation
+        </AppLink>
       </nav>
       <div className="site-header__status">
         <span className="status-light" aria-hidden="true" />
@@ -66,7 +79,7 @@ function SiteHeader({ active }: { active?: EngineId }) {
   );
 }
 
-function Footer() {
+export function Footer() {
   return (
     <footer className="site-footer">
       <Wordmark />
@@ -76,6 +89,7 @@ function Footer() {
         Built as clean-room, MIT-licensed research.
       </p>
       <div>
+        <AppLink href="/library">Open component atlas</AppLink>
         <AppLink href="/docs">Read the architecture</AppLink>
         <AppLink href="/validation">View validation</AppLink>
       </div>
@@ -785,15 +799,17 @@ export function ExperimentPage({ id }: { id: string }) {
 function DocumentationShell({
   title,
   kicker,
+  section,
   children,
 }: {
   title: string;
   kicker: string;
+  section: "docs" | "validation";
   children: ReactNode;
 }) {
   return (
     <div className="site-shell document-page">
-      <SiteHeader />
+      <SiteHeader section={section} />
       <main>
         <header className="document-hero">
           <p className="section-kicker">{kicker}</p>
@@ -808,7 +824,7 @@ function DocumentationShell({
 
 export function DocumentationView() {
   return (
-    <DocumentationShell title="Architecture before spectacle." kicker="System / 01">
+    <DocumentationShell title="Architecture before spectacle." kicker="System / 01" section="docs">
       <div className="document-layout">
         <aside>
           <span>On this page</span>
@@ -886,7 +902,11 @@ export function ValidationView() {
   ] as const;
 
   return (
-    <DocumentationShell title="Evidence, not vibes." kicker="Validation / live ledger">
+    <DocumentationShell
+      title="Evidence, not vibes."
+      kicker="Validation / live ledger"
+      section="validation"
+    >
       <div className="validation-intro">
         <p>
           This ledger records the completed second pass. Every green row is backed by checked-in

@@ -2352,3 +2352,1394 @@ a {
     forced-color-adjust: auto;
   }
 }
+
+/* Weighted ranking and 40-component atlas */
+
+.ranking-page {
+  --experiment-accent: #ff684b;
+  background:
+    radial-gradient(circle at 84% 5%, rgb(255 104 75 / 0.1), transparent 25rem),
+    linear-gradient(180deg, #0b0d0e, #101313 72%, #0b0d0e);
+}
+
+.ranking-hero {
+  display: grid;
+  max-width: var(--content-width);
+  min-height: 39rem;
+  grid-template-columns: minmax(0, 1.55fr) minmax(18rem, 0.45fr);
+  align-items: end;
+  gap: clamp(3rem, 9vw, 10rem);
+  margin: 0 auto;
+  padding: 6rem var(--page-gutter) 4.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.ranking-hero h1 {
+  max-width: 11ch;
+  margin: 1.2rem 0 0;
+  font-size: clamp(4.8rem, 10vw, 10rem);
+  font-weight: 480;
+  letter-spacing: -0.085em;
+  line-height: 0.78;
+}
+
+.ranking-hero__weight {
+  display: grid;
+  align-content: end;
+  gap: 0.45rem;
+  padding-bottom: 0.7rem;
+}
+
+.ranking-hero__weight strong {
+  color: #ff684b;
+  font-size: clamp(4rem, 7vw, 6.8rem);
+  font-weight: 460;
+  letter-spacing: -0.08em;
+  line-height: 0.9;
+}
+
+.ranking-hero__weight > span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ranking-hero__weight p {
+  max-width: 32rem;
+  margin: 1.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.73rem;
+  line-height: 1.65;
+}
+
+.ranking-method,
+.ranking-podium {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 7rem var(--page-gutter);
+}
+
+.ranking-method__intro {
+  display: grid;
+  grid-template-columns: 4rem minmax(18rem, 1fr) minmax(18rem, 0.55fr);
+  gap: 2rem;
+  align-items: start;
+  margin-bottom: 3.5rem;
+}
+
+.ranking-method__intro h2 {
+  max-width: 16ch;
+  margin: 0.5rem 0 0;
+  font-size: clamp(2.2rem, 5vw, 4.8rem);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+}
+
+.ranking-method__intro > p {
+  margin: 1.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.7;
+}
+
+.ranking-table {
+  display: block;
+  width: 100%;
+  border-top: 1px solid var(--line);
+  border-collapse: collapse;
+}
+
+.ranking-table caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.ranking-table :where(thead, tbody) {
+  display: block;
+}
+
+.ranking-table :where(th, td) {
+  padding: 0;
+  text-align: left;
+}
+
+.ranking-row {
+  position: relative;
+  display: grid;
+  grid-template-columns:
+    minmax(13rem, 1.35fr) minmax(8rem, 1fr) minmax(8rem, 1fr) minmax(8rem, 1fr)
+    minmax(8rem, 1fr) minmax(8rem, 0.7fr);
+  gap: 1.6rem;
+  align-items: center;
+  min-height: 8.2rem;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ranking-row::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(90deg, rgb(255 255 255 / 0.035), transparent 75%);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.96);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.ranking-row:not(.ranking-row--head):hover::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.ranking-row > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ranking-row--head {
+  min-height: 3.5rem;
+  color: #737876;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ranking-name {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.ranking-name > span {
+  color: #696d6b;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.58rem;
+}
+
+.ranking-name > span:last-child {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.ranking-name strong {
+  font-size: 0.86rem;
+}
+
+.ranking-name small {
+  color: var(--muted);
+  font-size: 0.59rem;
+  letter-spacing: 0.04em;
+}
+
+.rank-score {
+  display: grid;
+  grid-template-columns: minmax(3rem, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.rank-score > span {
+  position: relative;
+  height: 2px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 0.11);
+}
+
+.rank-score > span::after {
+  position: absolute;
+  inset: 0;
+  width: var(--score);
+  background: linear-gradient(90deg, #7c3022, #ff684b);
+  content: "";
+}
+
+.rank-score output {
+  width: 2ch;
+  color: #b8bbb8;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.55rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-final {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+}
+
+.ranking-final strong {
+  font-size: 1.6rem;
+  font-weight: 540;
+  letter-spacing: -0.05em;
+}
+
+.ranking-final a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-bottom: 1px solid currentColor;
+  color: #ff846b;
+  font-size: 0.58rem;
+  line-height: 1.8;
+}
+
+.ranking-final > span {
+  color: #737876;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.ranking-verdict {
+  grid-column: 1 / -1;
+  margin: -1rem 0 0 3rem;
+  color: #777b79;
+  font-size: 0.62rem;
+}
+
+.ranking-podium {
+  padding-top: 2rem;
+}
+
+.podium-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-block: 1px solid var(--line);
+}
+
+.podium-card {
+  position: relative;
+  display: grid;
+  min-height: 31rem;
+  grid-template-rows: auto 1fr auto;
+  gap: 2rem;
+  padding: 1.3rem;
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+}
+
+.podium-card:first-child {
+  border-left: 1px solid var(--line);
+}
+
+.podium-card > span {
+  position: relative;
+  z-index: 2;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.55rem;
+}
+
+.podium-card__lens {
+  position: relative;
+  align-self: center;
+  justify-self: center;
+  width: min(72%, 15rem);
+  aspect-ratio: 1;
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: 38% 62% 48% 52% / 56% 39% 61% 44%;
+  background:
+    radial-gradient(circle at 30% 22%, #fff9 0 1.5%, transparent 9%),
+    linear-gradient(145deg, rgb(255 255 255 / 0.18), transparent 42%), rgb(255 255 255 / 0.05);
+  box-shadow:
+    inset 10px 8px 22px rgb(255 255 255 / 0.09),
+    inset -12px -14px 24px rgb(0 0 0 / 0.23),
+    0 24px 55px rgb(0 0 0 / 0.24);
+  backdrop-filter: blur(14px) saturate(1.4);
+  transition:
+    border-radius 500ms ease,
+    transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.podium-card:hover .podium-card__lens {
+  border-radius: 58% 42% 64% 36% / 42% 62% 38% 58%;
+  transform: translateY(-0.6rem) rotate(3deg) scale(1.03);
+}
+
+.podium-card--css .podium-card__lens {
+  border-radius: 1.2rem;
+}
+
+.podium-card--webgl .podium-card__lens {
+  background:
+    radial-gradient(circle at 30% 30%, #fff, transparent 2%),
+    radial-gradient(circle at 34% 34%, #ff6548, transparent 22%),
+    radial-gradient(circle at 67% 60%, #8fd8b8, transparent 32%), #171d1d;
+  box-shadow:
+    inset 9px 7px 20px #fff2,
+    -7px 0 18px #ff4f3729,
+    8px 0 20px #8fffd629;
+}
+
+.podium-card > div:last-of-type {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  align-self: end;
+  gap: 0.5rem;
+}
+
+.podium-card small {
+  color: var(--muted);
+  font-size: 0.57rem;
+  text-transform: uppercase;
+}
+
+.podium-card h3 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 520;
+  letter-spacing: -0.05em;
+}
+
+.podium-card p {
+  max-width: 31rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.podium-card > strong {
+  position: absolute;
+  top: 1.15rem;
+  right: 1.2rem;
+  color: #ff846b;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.62rem;
+}
+
+.atlas-page {
+  --atlas-accent: #ff684b;
+  --atlas-ink: #f3f1e9;
+  --atlas-muted: #969b97;
+  --atlas-line: rgb(255 255 255 / 0.14);
+  --experiment-accent: var(--atlas-accent);
+  color: var(--atlas-ink);
+  background: #0b0d0e;
+}
+
+.atlas-page
+  :where(
+    .pl-button,
+    .pl-segments,
+    .pl-switch,
+    .pl-slider,
+    .pl-toolbar,
+    .pl-dock,
+    .pl-tabs,
+    .pl-disclosure,
+    .pl-tooltip,
+    .pl-media,
+    .pl-badge,
+    .pl-avatar,
+    .pl-avatar-group,
+    .pl-card,
+    .pl-stat,
+    .pl-progress,
+    .pl-meter,
+    .pl-spinner,
+    .pl-skeleton,
+    .pl-alert,
+    .pl-banner,
+    .pl-breadcrumbs,
+    .pl-pagination,
+    .pl-accordion,
+    .pl-overlay-trigger,
+    .pl-toast,
+    .pl-check,
+    .pl-radio-group,
+    .pl-field,
+    .pl-search,
+    .pl-stepper,
+    .pl-toggle-button,
+    .pl-dropzone
+  ) {
+  --pl-accent: var(--atlas-accent);
+  --pl-accent-ink: #160907;
+  --pl-focus: color-mix(in srgb, var(--atlas-accent), white 48%);
+  --pl-hairline: var(--atlas-line);
+  --pl-control: rgb(255 255 255 / 0.075);
+  --pl-control-hover: rgb(255 255 255 / 0.13);
+  --pl-control-active: rgb(255 255 255 / 0.18);
+  --pl-ink: var(--atlas-ink);
+  --pl-muted: var(--atlas-muted);
+}
+
+.atlas-nav {
+  position: relative;
+  z-index: 40;
+  display: grid;
+  max-width: var(--content-width);
+  grid-template-columns: 1fr repeat(3, minmax(8rem, 0.28fr));
+  margin: 0 auto;
+  padding: 0 var(--page-gutter);
+  border-bottom: 1px solid var(--atlas-line);
+}
+
+.atlas-nav a {
+  display: flex;
+  min-height: 4.4rem;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0 1rem;
+  border-inline-start: 1px solid var(--atlas-line);
+  color: var(--atlas-muted);
+  font-size: 0.63rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.atlas-nav a:last-child {
+  border-inline-end: 1px solid var(--atlas-line);
+}
+
+.atlas-nav a:first-child {
+  border-inline: 0;
+  padding-inline-start: 0;
+}
+
+.atlas-nav a span {
+  color: color-mix(in srgb, var(--atlas-muted), transparent 25%);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.48rem;
+}
+
+.atlas-nav a:hover,
+.atlas-nav a.is-active {
+  color: var(--atlas-ink);
+  background: rgb(255 255 255 / 0.04);
+}
+
+.atlas-hero {
+  display: grid;
+  max-width: var(--content-width);
+  min-height: 45rem;
+  grid-template-columns: minmax(21rem, 0.78fr) minmax(28rem, 1.22fr);
+  gap: clamp(3rem, 7vw, 8rem);
+  align-items: center;
+  margin: 0 auto;
+  padding: 4.5rem var(--page-gutter);
+}
+
+.atlas-hero__copy {
+  position: relative;
+  z-index: 3;
+}
+
+.atlas-hero__copy h1 {
+  max-width: 10ch;
+  margin: 1rem 0 1.6rem;
+  font-size: clamp(3.5rem, 6.3vw, 6.8rem);
+  font-weight: 500;
+  letter-spacing: -0.075em;
+  line-height: 0.88;
+}
+
+.atlas-hero__copy > p {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--atlas-muted);
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+.atlas-hero__copy > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 2rem;
+}
+
+.atlas-hero__copy > div > span:last-child {
+  color: var(--atlas-muted);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.5rem;
+}
+
+.atlas-hero__scene {
+  position: relative;
+  min-height: 31rem;
+  overflow: hidden;
+  border: 1px solid var(--atlas-line);
+  background: #161918;
+  isolation: isolate;
+}
+
+.atlas-hero__scene > :where(.environment, .webgl-backdrop) {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+}
+
+.atlas-hero__scene::after {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 49.8%, rgb(255 255 255 / 0.12) 50%, transparent 50.2%),
+    linear-gradient(transparent 49.8%, rgb(255 255 255 / 0.12) 50%, transparent 50.2%);
+  background-size: 4rem 4rem;
+  content: "";
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.atlas-hero__glass {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: min(72%, 28rem);
+  gap: 0.42rem;
+  padding: 1.4rem;
+  transform: translate(-50%, -50%);
+}
+
+.atlas-hero__glass-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgb(255 255 255 / 0.62);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.45rem;
+  letter-spacing: 0.08em;
+}
+
+.atlas-hero__glass-meta i {
+  flex: 1;
+  height: 1px;
+  background: rgb(255 255 255 / 0.18);
+}
+
+.atlas-hero__glass > strong {
+  margin-top: 2.2rem;
+  color: #fff;
+  font-size: clamp(3.3rem, 6vw, 5.4rem);
+  font-weight: 500;
+  letter-spacing: -0.08em;
+  line-height: 0.9;
+}
+
+.atlas-hero__glass > p {
+  margin: 0 0 1.5rem;
+  color: rgb(255 255 255 / 0.68);
+  font-size: 0.66rem;
+}
+
+.atlas-policy {
+  position: absolute;
+  z-index: 3;
+  right: 1rem;
+  bottom: 1rem;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.2rem 0.7rem;
+  padding: 0.65rem;
+  border: 1px solid rgb(255 255 255 / 0.17);
+  color: rgb(255 255 255 / 0.55);
+  background: rgb(6 9 9 / 0.55);
+  backdrop-filter: blur(12px);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.42rem;
+  letter-spacing: 0.07em;
+}
+
+.atlas-policy strong {
+  color: #e8efe8;
+  font-size: inherit;
+}
+
+.atlas-policy i {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: rgb(255 255 255 / 0.12);
+}
+
+.atlas-manifest {
+  display: grid;
+  max-width: var(--content-width);
+  min-height: 8.5rem;
+  grid-template-columns: auto auto minmax(16rem, 1fr) auto;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: center;
+  margin: 0 auto;
+  padding: 1.5rem var(--page-gutter);
+  border-block: 1px solid var(--atlas-line);
+}
+
+.atlas-manifest > div {
+  display: grid;
+}
+
+.atlas-manifest > div span {
+  font-size: 2.2rem;
+  font-weight: 520;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.atlas-manifest > div small {
+  color: var(--atlas-muted);
+  font-size: 0.52rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.atlas-manifest p {
+  max-width: 36rem;
+  margin: 0;
+  color: var(--atlas-muted);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.atlas-manifest code {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--atlas-line);
+  color: var(--atlas-muted);
+  font-size: 0.52rem;
+  white-space: nowrap;
+}
+
+.atlas-category {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 8rem var(--page-gutter) 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+.atlas-category__heading {
+  display: grid;
+  grid-template-columns: 4rem minmax(10rem, 0.35fr) 1fr;
+  gap: 2rem;
+  align-items: start;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--atlas-line);
+}
+
+.atlas-category__heading h2 {
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(2.1rem, 4.5vw, 4.4rem);
+  font-weight: 500;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
+}
+
+.atlas-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--atlas-line);
+  background: var(--atlas-line);
+}
+
+.atlas-specimen {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 22rem;
+  grid-template-rows: auto 1fr;
+  gap: 1.5rem;
+  padding: 1rem;
+  overflow: visible;
+  color: var(--atlas-ink);
+  background: linear-gradient(145deg, rgb(255 255 255 / 0.025), transparent 36%), #0e1111;
+  animation: atlas-specimen-in 420ms ease both;
+  animation-delay: min(calc(var(--specimen-index) * 18ms), 360ms);
+}
+
+@keyframes atlas-specimen-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+.atlas-specimen--wide {
+  grid-column: span 2;
+}
+
+.atlas-specimen > header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+}
+
+.atlas-specimen > header > span {
+  color: color-mix(in srgb, var(--atlas-muted), transparent 30%);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.47rem;
+}
+
+.atlas-specimen > header > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.atlas-specimen h3 {
+  margin: 0;
+  font-size: 0.77rem;
+  font-weight: 690;
+}
+
+.atlas-specimen header p {
+  margin: 0;
+  color: var(--atlas-muted);
+  font-size: 0.59rem;
+  line-height: 1.4;
+}
+
+.atlas-specimen header code {
+  grid-column: 2;
+  width: fit-content;
+  color: color-mix(in srgb, var(--atlas-accent), var(--atlas-muted) 45%);
+  font-size: 0.49rem;
+}
+
+.atlas-specimen__stage {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  align-content: center;
+}
+
+.atlas-specimen__stage > :where(.pl-slider, .pl-field, .pl-search, .pl-alert, .pl-banner) {
+  width: 100%;
+}
+
+.specimen-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.specimen-caption {
+  color: var(--atlas-muted);
+  font-size: 0.68rem;
+}
+
+.specimen-menu {
+  width: min(100%, 14rem);
+  padding: 0.3rem;
+  border: 1px solid var(--atlas-line);
+  border-radius: 0.8rem;
+  background: var(--pl-control);
+}
+
+.skeleton-stack {
+  display: grid;
+  width: 100%;
+  gap: 0.55rem;
+}
+
+.atlas-outro {
+  display: grid;
+  max-width: var(--content-width);
+  min-height: 36rem;
+  align-content: center;
+  margin: 0 auto;
+  padding: 8rem var(--page-gutter);
+  border-top: 1px solid var(--atlas-line);
+}
+
+.atlas-outro h2 {
+  max-width: 13ch;
+  margin: 1.5rem 0;
+  font-size: clamp(3rem, 7vw, 7rem);
+  font-weight: 490;
+  letter-spacing: -0.08em;
+  line-height: 0.9;
+}
+
+.atlas-outro > p {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--atlas-muted);
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.atlas-outro > div {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+/* Variant 01: adaptive systems glass */
+
+.atlas--hybrid {
+  --atlas-accent: #d8ff61;
+  --atlas-ink: #edf1e8;
+  --atlas-muted: #929b91;
+  --atlas-line: rgb(226 245 224 / 0.13);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 7.999rem, rgb(218 255 97 / 0.018) 8rem),
+    radial-gradient(circle at 78% 5%, rgb(216 255 97 / 0.06), transparent 30rem), #090c0b;
+}
+
+.atlas--hybrid .site-header,
+.atlas--hybrid .site-footer {
+  border-color: var(--atlas-line);
+}
+
+.atlas--hybrid .atlas-hero__scene {
+  border-radius: 1.1rem;
+  box-shadow: 0 30px 80px rgb(0 0 0 / 0.36);
+}
+
+.atlas--hybrid .atlas-hero__glass {
+  border-radius: 1.4rem;
+}
+
+.atlas--hybrid .atlas-grid {
+  border-radius: 1.1rem;
+  overflow: clip;
+}
+
+.atlas--hybrid .atlas-specimen {
+  background:
+    linear-gradient(135deg, rgb(216 255 97 / 0.025), transparent 32%), rgb(13 17 16 / 0.95);
+}
+
+.atlas--hybrid .atlas-specimen::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-top: 1px solid rgb(216 255 97 / 0.22);
+  border-right: 1px solid rgb(216 255 97 / 0.22);
+  content: "";
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.atlas--hybrid .atlas-specimen:hover::after {
+  opacity: 1;
+}
+
+.atlas--hybrid .atlas-manifest code {
+  color: #d8ff61;
+  background: rgb(216 255 97 / 0.05);
+}
+
+/* Variant 02: editorial native CSS */
+
+.atlas--css {
+  --atlas-accent: #e54e2f;
+  --atlas-ink: #161817;
+  --atlas-muted: #646963;
+  --atlas-line: rgb(20 24 21 / 0.18);
+  --ink: #161817;
+  --muted: #646963;
+  --line: rgb(20 24 21 / 0.18);
+  color: var(--atlas-ink);
+  background:
+    linear-gradient(90deg, transparent 49.95%, rgb(20 24 21 / 0.045) 50%, transparent 50.05%),
+    #eae6da;
+}
+
+.atlas--css .wordmark__mark {
+  border-color: rgb(15 18 16 / 0.28);
+}
+
+.atlas--css .site-header,
+.atlas--css .site-footer {
+  border-color: var(--atlas-line);
+}
+
+.atlas--css
+  :where(
+    .pl-button,
+    .pl-segments,
+    .pl-switch,
+    .pl-slider,
+    .pl-badge,
+    .pl-avatar,
+    .pl-card,
+    .pl-stat,
+    .pl-progress,
+    .pl-meter,
+    .pl-spinner,
+    .pl-skeleton,
+    .pl-alert,
+    .pl-banner,
+    .pl-breadcrumbs,
+    .pl-pagination,
+    .pl-accordion,
+    .pl-overlay-trigger,
+    .pl-toast,
+    .pl-check,
+    .pl-radio-group,
+    .pl-field,
+    .pl-search,
+    .pl-stepper,
+    .pl-toggle-button,
+    .pl-dropzone
+  ) {
+  --pl-accent-ink: #fffaf1;
+  --pl-control: rgb(255 255 255 / 0.48);
+  --pl-control-hover: rgb(255 255 255 / 0.72);
+  --pl-control-active: rgb(255 255 255 / 0.88);
+}
+
+.atlas--css .atlas-nav a:hover,
+.atlas--css .atlas-nav a.is-active {
+  background: rgb(255 255 255 / 0.28);
+}
+
+.atlas--css .atlas-hero {
+  min-height: 48rem;
+  grid-template-columns: minmax(24rem, 0.82fr) minmax(29rem, 1.18fr);
+}
+
+.atlas--css .atlas-hero__copy h1 {
+  font-family:
+    Iowan Old Style,
+    Baskerville,
+    "Times New Roman",
+    serif;
+  font-size: clamp(4.2rem, 7.4vw, 7.8rem);
+  font-weight: 400;
+  letter-spacing: -0.07em;
+  line-height: 0.84;
+}
+
+.atlas--css .atlas-hero__scene {
+  min-height: 36rem;
+  border: 0;
+  border-radius: 18rem 18rem 0.8rem 0.8rem;
+  box-shadow: 0 22px 60px rgb(29 24 16 / 0.2);
+}
+
+.atlas--css .atlas-hero__scene::after {
+  opacity: 0.08;
+}
+
+.atlas--css .atlas-hero__glass {
+  top: auto;
+  right: 1.2rem;
+  bottom: 1.2rem;
+  left: auto;
+  width: min(78%, 29rem);
+  transform: none;
+}
+
+.atlas--css .atlas-manifest {
+  background: rgb(255 255 255 / 0.18);
+}
+
+.atlas--css .atlas-manifest code {
+  color: #843422;
+  background: rgb(255 255 255 / 0.3);
+}
+
+.atlas--css .atlas-category__heading h2,
+.atlas--css .atlas-outro h2 {
+  font-family:
+    Iowan Old Style,
+    Baskerville,
+    "Times New Roman",
+    serif;
+  font-weight: 400;
+  letter-spacing: -0.055em;
+}
+
+.atlas--css .atlas-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4rem;
+  border: 0;
+  background: transparent;
+}
+
+.atlas--css .atlas-specimen {
+  min-height: 24rem;
+  border: 1px solid var(--atlas-line);
+  border-radius: 0.35rem;
+  color: var(--atlas-ink);
+  background: linear-gradient(145deg, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.14)), #dcd8cd;
+  box-shadow: 0 14px 35px rgb(48 40 24 / 0.04);
+}
+
+.atlas--css .atlas-specimen:nth-child(4n + 1) {
+  transform: translateY(1.5rem);
+}
+
+.atlas--css .atlas-specimen header code {
+  color: #a03e29;
+}
+
+.atlas--css .pl-avatar-group .pl-avatar {
+  outline-color: #e4e0d5;
+}
+
+.atlas--css .pl-stepper button > i {
+  background: #e5e0d4;
+}
+
+.atlas--css .specimen-menu {
+  background: rgb(255 255 255 / 0.5);
+}
+
+/* Variant 03: controlled-media WebGL */
+
+.atlas--webgl {
+  --atlas-accent: #f5cd57;
+  --atlas-ink: #f5f1e8;
+  --atlas-muted: #919c9b;
+  --atlas-line: rgb(200 224 219 / 0.15);
+  background:
+    radial-gradient(circle at 6% 16%, rgb(186 58 39 / 0.1), transparent 23rem),
+    radial-gradient(circle at 92% 28%, rgb(84 173 152 / 0.09), transparent 26rem), #080c0d;
+}
+
+.atlas--webgl .atlas-hero {
+  min-height: 52rem;
+  grid-template-columns: minmax(22rem, 0.7fr) minmax(32rem, 1.3fr);
+}
+
+.atlas--webgl .atlas-hero__scene {
+  min-height: 42rem;
+  border-radius: 48% 52% 3rem 3rem / 18% 22% 3rem 3rem;
+  box-shadow:
+    -22px 0 60px rgb(209 67 43 / 0.1),
+    22px 0 70px rgb(82 190 163 / 0.1),
+    0 40px 100px rgb(0 0 0 / 0.45);
+}
+
+.atlas--webgl .atlas-hero__glass {
+  top: auto;
+  bottom: 8%;
+  width: min(78%, 34rem);
+  transform: translateX(-50%);
+  border-radius: 2rem;
+}
+
+.atlas--webgl .atlas-hero__glass::before {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d4543f44, transparent 26% 70%, #77cdb844);
+  content: "";
+  filter: blur(10px);
+}
+
+.atlas--webgl .atlas-manifest {
+  background: linear-gradient(
+    90deg,
+    rgb(197 74 51 / 0.05),
+    transparent 34%,
+    rgb(74 174 150 / 0.05)
+  );
+}
+
+.atlas--webgl .atlas-manifest code {
+  border-radius: 99rem;
+  color: #f5cd57;
+}
+
+.atlas--webgl .atlas-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  border: 0;
+  background: transparent;
+}
+
+.atlas--webgl .atlas-specimen {
+  min-height: 24rem;
+  border: 1px solid var(--atlas-line);
+  border-radius: 1.6rem;
+  background:
+    radial-gradient(circle at 18% 10%, rgb(198 75 51 / 0.065), transparent 28%),
+    radial-gradient(circle at 95% 90%, rgb(70 174 148 / 0.06), transparent 30%),
+    rgb(13 18 19 / 0.86);
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 0.055),
+    0 20px 55px rgb(0 0 0 / 0.14);
+  transition:
+    border-color 220ms ease,
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.atlas--webgl .atlas-specimen:hover {
+  border-color: rgb(245 205 87 / 0.28);
+  transform: translateY(-0.3rem);
+}
+
+.atlas--webgl .atlas-specimen--wide {
+  grid-column: span 2;
+}
+
+.atlas--webgl .pl-card,
+.atlas--webgl .pl-banner,
+.atlas--webgl .pl-toast {
+  border-radius: 1.2rem;
+}
+
+@media (max-width: 1100px) {
+  .ranking-row {
+    grid-template-columns: minmax(13rem, 1.35fr) repeat(4, minmax(6rem, 1fr)) minmax(6rem, 0.7fr);
+    gap: 0.9rem;
+  }
+
+  .atlas-hero,
+  .atlas--css .atlas-hero,
+  .atlas--webgl .atlas-hero {
+    grid-template-columns: minmax(18rem, 0.8fr) minmax(24rem, 1.2fr);
+    gap: 2.5rem;
+  }
+
+  .atlas-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .atlas--webgl .atlas-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .atlas-manifest {
+    grid-template-columns: auto auto 1fr;
+  }
+
+  .atlas-manifest code {
+    grid-column: 3;
+  }
+}
+
+@media (max-width: 820px) {
+  .ranking-hero {
+    min-height: 34rem;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    padding-top: 4rem;
+  }
+
+  .ranking-hero h1 {
+    font-size: clamp(4.2rem, 18vw, 7rem);
+  }
+
+  .ranking-hero__weight {
+    grid-template-columns: auto 1fr;
+    align-items: end;
+  }
+
+  .ranking-hero__weight p {
+    grid-column: 1 / -1;
+  }
+
+  .ranking-method__intro {
+    grid-template-columns: 2rem 1fr;
+  }
+
+  .ranking-method__intro > p {
+    grid-column: 2;
+  }
+
+  .ranking-table {
+    overflow-x: auto;
+  }
+
+  .ranking-row {
+    min-width: 58rem;
+  }
+
+  .podium-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .podium-card,
+  .podium-card:first-child {
+    min-height: 24rem;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+
+  .atlas-nav {
+    grid-template-columns: repeat(4, 1fr);
+    padding-inline: 0;
+  }
+
+  .atlas-nav a {
+    justify-content: center;
+    min-height: 3.8rem;
+    padding: 0 0.5rem;
+  }
+
+  .atlas-nav a:first-child {
+    padding-inline-start: 0.5rem;
+  }
+
+  .atlas-hero,
+  .atlas--css .atlas-hero,
+  .atlas--webgl .atlas-hero {
+    grid-template-columns: 1fr;
+    padding-top: 4rem;
+  }
+
+  .atlas-hero__copy h1 {
+    max-width: 12ch;
+  }
+
+  .atlas-hero__scene,
+  .atlas--css .atlas-hero__scene,
+  .atlas--webgl .atlas-hero__scene {
+    min-height: 33rem;
+  }
+
+  .atlas-manifest {
+    grid-template-columns: auto auto;
+  }
+
+  .atlas-manifest p,
+  .atlas-manifest code {
+    grid-column: 1 / -1;
+  }
+
+  .atlas-category__heading {
+    grid-template-columns: 2rem 1fr;
+  }
+
+  .atlas-category__heading h2 {
+    grid-column: 2;
+  }
+
+  .atlas-grid,
+  .atlas--css .atlas-grid,
+  .atlas--webgl .atlas-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .atlas--css .atlas-specimen:nth-child(4n + 1) {
+    transform: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .site-header__nav {
+    gap: 1.15rem;
+  }
+
+  .ranking-method,
+  .ranking-podium {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  .ranking-method__intro {
+    grid-template-columns: 1fr;
+  }
+
+  .ranking-method__intro > p {
+    grid-column: 1;
+  }
+
+  .ranking-method__intro > .section-index {
+    display: none;
+  }
+
+  .atlas-category {
+    padding-top: 5rem;
+  }
+
+  .atlas-grid,
+  .atlas--css .atlas-grid,
+  .atlas--webgl .atlas-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .atlas-specimen,
+  .atlas--css .atlas-specimen,
+  .atlas--webgl .atlas-specimen {
+    min-height: 21rem;
+  }
+
+  .atlas-specimen--wide,
+  .atlas--webgl .atlas-specimen--wide {
+    grid-column: auto;
+  }
+
+  .atlas-hero__scene,
+  .atlas--css .atlas-hero__scene,
+  .atlas--webgl .atlas-hero__scene {
+    min-height: 27rem;
+    border-radius: 1rem;
+  }
+
+  .atlas-hero__glass,
+  .atlas--css .atlas-hero__glass,
+  .atlas--webgl .atlas-hero__glass {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    width: calc(100% - 2rem);
+    transform: translate(-50%, -50%);
+  }
+
+  .atlas-policy {
+    display: none;
+  }
+
+  .atlas-category__heading {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+
+  .atlas-category__heading h2 {
+    grid-column: 1;
+  }
+
+  .atlas-category__heading .section-index {
+    display: none;
+  }
+
+  .atlas-outro > div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .podium-card__lens,
+  .atlas-specimen,
+  .atlas--webgl .atlas-specimen {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .ranking-page,
+  .atlas-page,
+  .atlas-specimen,
+  .atlas-hero__scene {
+    color: CanvasText;
+    background: Canvas;
+  }
+
+  .podium-card__lens,
+  .atlas-specimen,
+  .atlas-hero__scene {
+    border: 1px solid CanvasText;
+    forced-color-adjust: auto;
+  }
+}
