@@ -1,9 +1,8 @@
+import { GlassProvider } from "@prism-lab/react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-
-function App() {
-  return <main>Prism Lab scaffold</main>;
-}
+import { App } from "./app";
+import "./styles.css";
 
 const root = document.getElementById("root");
 
@@ -13,6 +12,8 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <GlassProvider renderer="auto" quality="auto" motion="system">
+      <App />
+    </GlassProvider>
   </StrictMode>,
 );
