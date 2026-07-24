@@ -1,1 +1,10 @@
-export const RENDERERS_PACKAGE_NAME = "@prism-lab/renderers";
+export type {
+  Canvas2DLike,
+  CanvasFactory,
+  SvgDisplacementFilterSpec,
+} from "./svg";
+export {
+  createStableFilterId,
+  createSvgDisplacementFilterSpec,
+  encodeDisplacementMap,
+} from "./svg";
