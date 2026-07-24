@@ -1,3 +1,14 @@
+export type {
+  OrganicFilterDefinitionProps,
+  SdfFilterDefinitionProps,
+  SdfFilterOptions,
+  SdfFilterState,
+} from "./filters";
+export {
+  OrganicFilterDefinition,
+  SdfFilterDefinition,
+  useSdfFilter,
+} from "./filters";
 export type { GlassProps } from "./glass";
 export { Glass } from "./glass";
 export type { GlassPointerField } from "./interaction";
