@@ -27,7 +27,7 @@ test.describe("visual evidence capture", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await page.screenshot({
-      path: screenshotPath("pass-01", testInfo.project.name, "desktop", "home"),
+      path: screenshotPath("pass-02", testInfo.project.name, "desktop", "home"),
       type: "jpeg",
       quality: 86,
     });
@@ -36,17 +36,17 @@ test.describe("visual evidence capture", () => {
       await page.goto(`/experiments/${id}`);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
       await page.screenshot({
-        path: screenshotPath("pass-01", testInfo.project.name, "desktop", `${id}-hero`),
+        path: screenshotPath("pass-02", testInfo.project.name, "desktop", `${id}-hero`),
         type: "jpeg",
         quality: 86,
       });
       await page.locator(".instrument").screenshot({
-        path: screenshotPath("pass-01", testInfo.project.name, "desktop", `${id}-instrument`),
+        path: screenshotPath("pass-02", testInfo.project.name, "desktop", `${id}-instrument`),
         type: "jpeg",
         quality: 86,
       });
       await page.locator(".background-matrix").screenshot({
-        path: screenshotPath("pass-01", testInfo.project.name, "desktop", `${id}-matrix`),
+        path: screenshotPath("pass-02", testInfo.project.name, "desktop", `${id}-matrix`),
         type: "jpeg",
         quality: 86,
       });
@@ -58,7 +58,7 @@ test.describe("visual evidence capture", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await page.screenshot({
-      path: screenshotPath("pass-01", testInfo.project.name, "mobile", "home"),
+      path: screenshotPath("pass-02", testInfo.project.name, "mobile", "home"),
       type: "jpeg",
       quality: 86,
     });
@@ -67,12 +67,12 @@ test.describe("visual evidence capture", () => {
       await page.goto(`/experiments/${id}`);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
       await page.screenshot({
-        path: screenshotPath("pass-01", testInfo.project.name, "mobile", `${id}-hero`),
+        path: screenshotPath("pass-02", testInfo.project.name, "mobile", `${id}-hero`),
         type: "jpeg",
         quality: 86,
       });
       await page.locator(".instrument").screenshot({
-        path: screenshotPath("pass-01", testInfo.project.name, "mobile", `${id}-instrument`),
+        path: screenshotPath("pass-02", testInfo.project.name, "mobile", `${id}-instrument`),
         type: "jpeg",
         quality: 86,
       });
