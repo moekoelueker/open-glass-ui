@@ -3300,6 +3300,27 @@ a {
   --pl-control-active: rgb(255 255 255 / 0.88);
 }
 
+.atlas--css :where(.pl-badge, .pl-alert, .pl-stat)[data-tone="accent"] {
+  --pl-tone: #9f3823;
+}
+
+.atlas--css :where(.pl-badge, .pl-alert, .pl-stat)[data-tone="positive"] {
+  --pl-tone: #176b42;
+}
+
+.atlas--css :where(.pl-badge, .pl-alert, .pl-stat)[data-tone="warning"] {
+  --pl-tone: #7a5700;
+}
+
+.atlas--css :where(.pl-badge, .pl-alert, .pl-stat)[data-tone="danger"] {
+  --pl-tone: #a62d26;
+}
+
+.atlas--css .pl-badge:not([data-tone="neutral"]) {
+  color: var(--pl-tone);
+  background: color-mix(in srgb, var(--pl-tone), transparent 90%);
+}
+
 .atlas--css .atlas-nav a:hover,
 .atlas--css .atlas-nav a.is-active {
   background: rgb(255 255 255 / 0.28);

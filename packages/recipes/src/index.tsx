@@ -30,6 +30,7 @@ export type {
   FileDropzoneProps,
   MeterProps,
   NumberFieldProps,
+  OverlayProps,
   PaginationProps,
   ProgressProps,
   RadioItem,

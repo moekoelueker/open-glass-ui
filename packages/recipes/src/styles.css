@@ -1276,7 +1276,7 @@
   color: var(--pl-ink);
 }
 
-.pl-field > span:first-child {
+.pl-field > :where(span, label):first-child {
   color: var(--pl-muted);
   font-size: 0.68rem;
   font-weight: 650;
@@ -1539,6 +1539,8 @@
 .pl-dropzone {
   position: relative;
   min-width: 0;
+  margin: 0;
+  padding: 0;
   border: 1px dashed color-mix(in srgb, var(--pl-muted), transparent 45%);
   border-radius: 1rem;
   color: var(--pl-ink);

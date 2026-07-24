@@ -210,7 +210,7 @@ export function Alert({
         {children ? <p>{children}</p> : null}
       </div>
       {onDismiss ? (
-        <button type="button" onClick={onDismiss} aria-label={`Dismiss ${String(title)}`}>
+        <button type="button" onClick={onDismiss} aria-label="Dismiss alert">
           ×
         </button>
       ) : null}
@@ -389,7 +389,7 @@ export function Accordion({
   );
 }
 
-interface OverlayProps {
+export interface OverlayProps {
   title: string;
   triggerLabel: string;
   children: ReactNode;
@@ -407,6 +407,8 @@ function Overlay({
 }: OverlayProps & { kind: "dialog" | "drawer" }) {
   const [open, setOpen] = useState(defaultOpen);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const surfaceRef = useRef<HTMLSpanElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   useEffect(() => {
     if (!open) {
@@ -418,9 +420,29 @@ function Overlay({
         onOpenChange?.(false);
         triggerRef.current?.focus();
       }
+      if (event.key === "Tab") {
+        const focusable = [
+          ...(surfaceRef.current?.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+          ) ?? []),
+        ].filter((element) => !element.hasAttribute("disabled"));
+        const first = focusable[0];
+        const last = focusable.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
     };
+    const focusFrame = requestAnimationFrame(() => closeRef.current?.focus());
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [onOpenChange, open]);
 
   const setVisibility = (next: boolean) => {
@@ -439,9 +461,13 @@ function Overlay({
             type="button"
             className="pl-overlay__scrim"
             aria-label={`Close ${title}`}
-            onClick={() => setVisibility(false)}
+            onClick={() => {
+              setVisibility(false);
+              triggerRef.current?.focus();
+            }}
           />
           <span
+            ref={surfaceRef}
             className="pl-overlay__surface"
             role="dialog"
             aria-modal="true"
@@ -450,6 +476,7 @@ function Overlay({
             <span className="pl-overlay__header">
               <strong id={titleId}>{title}</strong>
               <button
+                ref={closeRef}
                 type="button"
                 aria-label={`Close ${title}`}
                 onClick={() => {
@@ -762,8 +789,8 @@ export function NumberField({
     onValueChange?.(bounded);
   };
   return (
-    <label className={cx("pl-field", "pl-number", className)} htmlFor={id}>
-      <span>{label}</span>
+    <div className={cx("pl-field", "pl-number", className)}>
+      <label htmlFor={id}>{label}</label>
       <span className="pl-number__control">
         <button
           type="button"
@@ -790,7 +817,7 @@ export function NumberField({
           +
         </button>
       </span>
-    </label>
+    </div>
   );
 }
 
@@ -912,9 +939,11 @@ export function FileDropzone({
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
     >
+      <legend className="pl-sr-only">{label}</legend>
       <input
         id={inputId}
         type="file"
+        aria-label={label}
         accept={accept}
         multiple={multiple}
         onChange={(event) => receive([...(event.currentTarget.files ?? [])])}
