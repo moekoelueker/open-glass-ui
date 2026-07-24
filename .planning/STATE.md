@@ -1,13 +1,13 @@
 # State
 
 - Internal name: Prism Lab
-- Phase: WebGL2 media rendering
-- Completed plans: 00-01, 01-01, 01-02, 02-01
-- Next plan: 02-02
+- Phase: Accessible component recipes
+- Completed plans: 00-01, 01-01, 01-02, 02-01, 02-02, 03-01, 03-02
+- Next plan: 04-01
 - Public name: unresolved by design
 - Remote/publishing: not authorized
 - Old example: read-only and outside this repository
-- Next implementation: WebGL2 source rendering, multi-lens shader, context recovery, and cleanup
+- Next implementation: shared semantic component suite and route-independent demo content
 
 ## Plan 00-01 evidence
 
@@ -67,3 +67,29 @@
 - Clear, regular, frosted, unsupported, reduced-transparency, and forced-colors
   CSS token sets are tested.
 - Forty-two unit/property tests pass.
+
+## Plan 02-02 evidence
+
+- A genuine WebGL2 controlled-media renderer samples image, canvas, or video
+  textures behind as many as six shared lenses.
+- The shader uses rounded-rectangle signed distance, thickness, index of
+  refraction, restrained RGB dispersion, frost, edge response, and Fresnel-like
+  highlights.
+- Uniform packing clamps hostile values and has pure unit coverage.
+- Context loss, restoration, GPU allocation cleanup, and idempotent disposal are
+  explicit.
+
+## Plans 03-01 and 03-02 evidence
+
+- The provider is server-safe, hydrates capabilities after mount, observes
+  accessibility preferences, and exposes renderer, quality, and motion policy.
+- The polymorphic glass primitive exposes semantic presets and advanced optical
+  escape hatches without browser access during render.
+- Pointer response writes transient CSS custom properties through refs and
+  animation frames instead of rendering React state per frame.
+- Source groups, deterministic SDF filter definitions, animated organic SVG
+  filters, and a media-backed WebGL surface are implemented.
+- The WebGL React surface is DPR-aware, supports video frame callbacks, pauses
+  hidden-document drawing, redraws on resize, and fully releases observers,
+  frames, listeners, and renderer resources.
+- Twelve unit/SSR test files and fifty-six tests pass.
