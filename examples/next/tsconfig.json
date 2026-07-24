@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2022"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
@@ -14,9 +10,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
-      "@prism-lab/react": [
-        "../../packages/react/src/index.tsx"
-      ]
+      "@prism-lab/react": ["../../packages/react/src/index.tsx"]
     },
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -35,7 +29,5 @@
     "**/*.tsx",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

@@ -1,0 +1,46 @@
+# Prism Lab Agent Instructions
+
+## Scope
+
+- Work only in this standalone repository.
+- The sibling `old-liquid-glass-example` is read-only and must never be edited.
+- Do not create a remote, push, deploy, or publish without explicit user approval.
+- “Prism Lab” and `@prism-lab/*` are internal working identifiers.
+
+## Architecture
+
+- `packages/core` has zero runtime dependencies and no browser globals.
+- `packages/renderers` owns browser/canvas/SVG capability.
+- `packages/react` owns React composition and post-hydration capability policy.
+- `packages/recipes` owns accessible component recipes and their CSS.
+- `apps/showcase` may import workspace source through Vite aliases.
+- React and React DOM remain peer dependencies of public-facing packages.
+- Use refs or external animation values for high-frequency transient motion.
+
+## Required checks
+
+Run before committing implementation work:
+
+```bash
+pnpm run check
+pnpm run typecheck
+pnpm run test:unit
+pnpm run build
+```
+
+Run browser tests and visually inspect their screenshots for user-facing changes.
+
+## Commits
+
+- One focused commit per task.
+- Format: `{type}({phase}-{plan}): {task description}`.
+- Preserve prior commits; do not rewrite history unless the user explicitly asks.
+
+## Visual quality
+
+- Use glass selectively for controls and navigation.
+- Maintain sharp typography and measurable contrast.
+- Each experiment must have a genuinely distinct engine and art direction.
+- Avoid generic purple/cyan gradient glassmorphism.
+- Treat reduced motion, reduced transparency, and forced colors as designed states.
+
