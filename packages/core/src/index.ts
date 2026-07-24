@@ -1,3 +1,11 @@
+export type {
+  AsyncMapOptions,
+  OpticsCacheStats,
+} from "./cache";
+export {
+  generateDisplacementMapAsync,
+  OpticsMapCache,
+} from "./cache";
 export { createOpticsCacheKey, generateDisplacementMap } from "./displacement";
 export { signedDistance, surfaceHeight, surfaceNormal } from "./geometry";
 export { getMaterialPreset, sanitizeMaterial } from "./materials";
