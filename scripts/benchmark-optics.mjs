@@ -1,8 +1,13 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   applyQualityToMapInput,
   generateDisplacementMap,
   getMaterialPreset,
 } from "../packages/core/dist/index.js";
+
+const root = dirname(dirname(fileURLToPath(import.meta.url)));
 
 const iterations = 30;
 const shapes = [
@@ -62,4 +67,8 @@ const environment = {
   measuredAt: new Date().toISOString(),
 };
 
-console.log(JSON.stringify({ environment, results }, null, 2));
+const report = { environment, results };
+const reportDirectory = join(root, "artifacts", "performance");
+mkdirSync(reportDirectory, { recursive: true });
+writeFileSync(join(reportDirectory, "optics.json"), `${JSON.stringify(report, null, 2)}\n`);
+console.log(JSON.stringify(report, null, 2));

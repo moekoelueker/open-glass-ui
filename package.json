@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
+    "bench:browser": "playwright test tests/e2e/performance.spec.ts",
     "bench:optics": "pnpm --filter @prism-lab/core build && node scripts/benchmark-optics.mjs",
     "dev": "pnpm --filter @prism-lab/showcase dev",
     "format": "biome format --write .",
@@ -21,6 +22,7 @@
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots",
+    "verify:packages": "pnpm run build && node scripts/verify-packages.mjs",
     "clean": "pnpm -r --if-present clean"
   },
   "devDependencies": {
@@ -34,6 +36,7 @@
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.4",
+    "esbuild": "0.27.7",
     "fast-check": "4.9.0",
     "jsdom": "29.1.1",
     "prettier": "3.9.6",

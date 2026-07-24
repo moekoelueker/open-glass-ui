@@ -26,4 +26,4 @@ jobs:
       - run: pnpm run typecheck
       - run: pnpm run test:unit
       - run: pnpm run build
-
+      - run: node scripts/verify-packages.mjs

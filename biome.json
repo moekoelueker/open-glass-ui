@@ -6,6 +6,7 @@
       "!**/node_modules",
       "!**/dist",
       "!**/.next",
+      "!artifacts",
       "!**/playwright-report",
       "!**/test-results"
     ]

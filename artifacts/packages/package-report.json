@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-07-24T22:44:01.236Z",
+  "node": "v24.11.1",
+  "packages": {
+    "@prism-lab/core": {
+      "archive": "artifacts/packages/prism-lab-core-0.0.0.tgz",
+      "bytes": 5006,
+      "files": 4,
+      "sideEffects": false
+    },
+    "@prism-lab/renderers": {
+      "archive": "artifacts/packages/prism-lab-renderers-0.0.0.tgz",
+      "bytes": 8081,
+      "files": 4,
+      "sideEffects": false
+    },
+    "@prism-lab/react": {
+      "archive": "artifacts/packages/prism-lab-react-0.0.0.tgz",
+      "bytes": 8093,
+      "files": 4,
+      "sideEffects": false
+    },
+    "@prism-lab/recipes": {
+      "archive": "artifacts/packages/prism-lab-recipes-0.0.0.tgz",
+      "bytes": 8505,
+      "files": 6,
+      "sideEffects": [
+        "**/*.css"
+      ]
+    }
+  },
+  "packedInstall": "passed",
+  "exportsSmoke": "passed",
+  "peerDependencies": "passed",
+  "coreRuntimeDependencies": 0,
+  "treeShaking": {
+    "entry": "signedDistance only",
+    "bytes": 1222,
+    "inputCount": 2,
+    "status": "passed"
+  }
+}
