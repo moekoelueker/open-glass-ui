@@ -45,6 +45,16 @@ for (const [id, title] of experiments) {
     await expect(page.getByRole("tablist", { name: "Recipe categories" })).toBeVisible();
     await expect(page.locator(engineAnnotations[id])).toBeAttached();
 
+    await page.getByRole("button", { name: "Frosted" }).click();
+    await expect(page.locator(".engine-surface").first()).toHaveAttribute(
+      "data-prism-material",
+      "frosted",
+    );
+    await page.getByRole("slider", { name: "Optical intensity" }).fill("84");
+    await expect(page.getByRole("slider", { name: "Optical intensity" })).toHaveValue("84");
+    await page.getByRole("switch", { name: "Spectral edge" }).uncheck();
+    await expect(page.getByRole("switch", { name: "Spectral edge" })).not.toBeChecked();
+
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
     );
@@ -71,6 +81,14 @@ test("shared controls expose and update authoritative state", async ({ page }) =
   await page.getByRole("button", { name: "Frosted" }).click();
   await expect(page.locator(".engine-surface")).toHaveAttribute("data-prism-material", "frosted");
 
+  const layout = page.getByRole("button", { name: "Change layout" });
+  await layout.hover();
+  await expect(page.getByRole("tooltip", { name: "Change layout" })).toBeVisible();
+  await layout.focus();
+  await expect(layout).toBeFocused();
+  await page.mouse.down();
+  await page.mouse.up();
+
   const spectral = page.getByRole("switch", { name: "Spectral edge" });
   await spectral.uncheck();
   await expect(spectral).not.toBeChecked();
@@ -82,6 +100,10 @@ test("shared controls expose and update authoritative state", async ({ page }) =
   await page.keyboard.press("Escape");
   await expect(popover).toHaveAttribute("aria-expanded", "false");
   await expect(popover).toBeFocused();
+
+  await page.getByRole("tab", { name: "Actions" }).click();
+  await expect(page.getByRole("button", { name: "Disabled" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Mix" })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("WebGL surface reaches a stable renderer state", async ({ page, browserName }) => {

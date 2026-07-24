@@ -19,6 +19,10 @@ test("browser performance and resource lifecycle stay within research budgets", 
   page,
   browserName,
 }) => {
+  test.skip(
+    process.env.PRISM_PERF !== "1",
+    "Run through pnpm bench:browser so the reference probe is isolated",
+  );
   test.skip(browserName !== "chromium", "Chromium is the isolated reference performance host");
   test.setTimeout(60_000);
   await page.addInitScript(() => {

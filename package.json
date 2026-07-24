@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
-    "bench:browser": "playwright test tests/e2e/performance.spec.ts",
+    "bench:browser": "PRISM_PERF=1 playwright test tests/e2e/performance.spec.ts",
     "bench:optics": "pnpm --filter @prism-lab/core build && node scripts/benchmark-optics.mjs",
     "dev": "pnpm --filter @prism-lab/showcase dev",
     "format": "biome format --write .",
