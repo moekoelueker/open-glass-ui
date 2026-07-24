@@ -1,0 +1,53 @@
+# Credits and Prior Art
+
+Research snapshot: 2026-07-24
+
+Prism Lab is a clean-room research implementation. At repository initialization,
+it contains no source code or visual assets copied from the projects below.
+
+## Standards and platform guidance
+
+- [Apple Human Interface Guidelines: Materials](https://developer.apple.com/design/human-interface-guidelines/materials)
+  informed the selective functional-layer usage, regular/clear distinction, and
+  accessibility adaptations. Apple source code and assets are not used.
+- [W3C Filter Effects Module Level 1](https://www.w3.org/TR/filter-effects-1/)
+  and the corresponding MDN references define the SVG/CSS filter behavior.
+- [WCAG 2.2 contrast guidance](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
+  defines the contrast targets.
+- [Chrome's HTML-in-Canvas origin trial](https://developer.chrome.com/blog/html-in-canvas-origin-trial)
+  is tracked as experimental research and is not a production renderer.
+
+## Technical and visual prior art
+
+- [Aave — Building Glass for the Web](https://aave.com/design/building-glass-for-the-web)
+  informed the renderer-independent displacement representation, supplied-source
+  strategy, map-regeneration discipline, and Safari constraints. No Aave code or
+  assets are used.
+- [PallavAg/liquid-glass-web-react](https://github.com/PallavAg/liquid-glass-web-react)
+  (MIT) is a compact architecture and Safari-behavior reference.
+- [samasante/liquid-glass](https://github.com/samasante/liquid-glass)
+  (MIT) is a DOM/WebGL behavior and shared-source reference.
+- [iyinchao/liquid-glass-studio](https://github.com/iyinchao/liquid-glass-studio)
+  (MIT) is a shader-quality and optical-control reference.
+- [rdev/liquid-glass-react](https://github.com/rdev/liquid-glass-react)
+  (MIT) is an adoption and Chromium visual benchmark.
+- [shuding/liquid-glass](https://github.com/shuding/liquid-glass)
+  (MIT) is historical SDF/displacement prior art.
+
+## Direct adaptations
+
+None at repository initialization.
+
+Any future direct adaptation must record:
+
+- Source repository and immutable commit.
+- Original file(s) and author/copyright.
+- License and preserved notice.
+- Local file(s) containing the adaptation.
+- What was changed.
+
+## Non-affiliation
+
+This independent project is not affiliated with, endorsed by, or sponsored by
+Apple Inc. “Apple” and related product names are trademarks of Apple Inc.
+
