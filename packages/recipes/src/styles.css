@@ -22,7 +22,7 @@
   box-sizing: border-box;
 }
 
-:where(.pl-button, .pl-segments button, .pl-tabs button, .pl-menu__item, .pl-disclosure > summary) {
+:where(.pl-button, .pl-segments button, .pl-tabs button, .pl-menu__item) {
   -webkit-tap-highlight-color: transparent;
   font: inherit;
 }
@@ -121,7 +121,6 @@
 .pl-switch input:focus-visible + .pl-switch__focus,
 .pl-slider input:focus-visible,
 .pl-tabs button:focus-visible,
-.pl-disclosure > summary:focus-visible,
 .pl-menu__item:focus-visible,
 .pl-media input:focus-visible {
   outline: 2px solid var(--pl-focus);
@@ -339,16 +338,6 @@
 .pl-disclosure {
   position: relative;
   display: inline-block;
-}
-
-.pl-disclosure > summary {
-  display: block;
-  list-style: none;
-  cursor: pointer;
-}
-
-.pl-disclosure > summary::-webkit-details-marker {
-  display: none;
 }
 
 .pl-disclosure__surface {

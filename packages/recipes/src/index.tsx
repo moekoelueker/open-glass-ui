@@ -2,13 +2,16 @@ import { Glass, type GlassProps } from "@prism-lab/react";
 import {
   type ButtonHTMLAttributes,
   cloneElement,
-  type DetailsHTMLAttributes,
+  createContext,
   type FieldsetHTMLAttributes,
   type HTMLAttributes,
   type InputHTMLAttributes,
   type LabelHTMLAttributes,
   type ReactElement,
   type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
   useId,
   useRef,
   useState,
@@ -26,16 +29,17 @@ function useControllableValue<T>(
 ) {
   const [internalValue, setInternalValue] = useState(defaultValue);
   const value = controlledValue ?? internalValue;
-
-  return [
-    value,
+  const setValue = useCallback(
     (nextValue: T) => {
       if (controlledValue === undefined) {
         setInternalValue(nextValue);
       }
       onChange?.(nextValue);
     },
-  ] as const;
+    [controlledValue, onChange],
+  );
+
+  return [value, setValue] as const;
 }
 
 export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger";
@@ -430,13 +434,18 @@ export function Tabs<T extends string>({
   );
 }
 
-export interface DisclosureSurfaceProps extends DetailsHTMLAttributes<HTMLDetailsElement> {
-  trigger: ReactNode;
+export interface DisclosureSurfaceProps extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+  trigger: ReactElement<ButtonHTMLAttributes<HTMLButtonElement>>;
   triggerLabel?: string;
   material?: GlassProps["material"];
   tone?: GlassProps["tone"];
   placement?: "start" | "center" | "end";
+  defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
+
+const DisclosureCloseContext = createContext<(() => void) | null>(null);
 
 function DisclosureSurface({
   trigger,
@@ -444,17 +453,82 @@ function DisclosureSurface({
   material = "frosted",
   tone = "dark",
   placement = "start",
+  defaultOpen = false,
+  open: controlledOpen,
+  onOpenChange,
   className,
   children,
   ...props
 }: DisclosureSurfaceProps) {
+  const id = useId();
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useControllableValue(controlledOpen, defaultOpen, onOpenChange);
+  const focusTrigger = useCallback(() => {
+    wrapperRef.current?.querySelector<HTMLButtonElement>("button[aria-controls]")?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Node && !wrapperRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        focusTrigger();
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [focusTrigger, open, setOpen]);
+
+  const close = useCallback(() => {
+    setOpen(false);
+    focusTrigger();
+  }, [focusTrigger, setOpen]);
+
   return (
-    <details {...props} className={classes("pl-disclosure", className)} data-placement={placement}>
-      <summary aria-label={triggerLabel}>{trigger}</summary>
-      <Glass className="pl-disclosure__surface" material={material} tone={tone}>
-        {children}
-      </Glass>
-    </details>
+    <div
+      {...props}
+      ref={wrapperRef}
+      className={classes("pl-disclosure", className)}
+      data-placement={placement}
+      data-open={open ? "true" : "false"}
+    >
+      {cloneElement(trigger, {
+        id: `${id}-trigger`,
+        "aria-label": triggerLabel ?? trigger.props["aria-label"],
+        "aria-expanded": open,
+        "aria-controls": `${id}-surface`,
+        onClick: (event) => {
+          trigger.props.onClick?.(event);
+          if (!event.defaultPrevented) {
+            setOpen(!open);
+          }
+        },
+      })}
+      {open ? (
+        <DisclosureCloseContext.Provider value={close}>
+          <Glass
+            id={`${id}-surface`}
+            className="pl-disclosure__surface"
+            material={material}
+            tone={tone}
+          >
+            {children}
+          </Glass>
+        </DisclosureCloseContext.Provider>
+      ) : null}
+    </div>
   );
 }
 
@@ -488,6 +562,8 @@ export function MenuItem({
   onClick,
   ...props
 }: MenuItemProps) {
+  const close = useContext(DisclosureCloseContext);
+
   return (
     <button
       {...props}
@@ -496,7 +572,9 @@ export function MenuItem({
       className={classes("pl-menu__item", destructive && "is-destructive", className)}
       onClick={(event) => {
         onClick?.(event);
-        event.currentTarget.closest("details")?.removeAttribute("open");
+        if (!event.defaultPrevented) {
+          close?.();
+        }
       }}
     >
       {children}

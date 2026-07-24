@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { SegmentedControl, Switch, Tabs } from "./index";
+import { Button, Menu, MenuItem, SegmentedControl, Switch, Tabs } from "./index";
 
 describe("SegmentedControl", () => {
   it("exposes a named group and changes its pressed value", async () => {
@@ -80,5 +80,24 @@ describe("Tabs", () => {
     expect(screen.getByRole("tab", { name: "Material" }).getAttribute("aria-selected")).toBe(
       "true",
     );
+  });
+});
+
+describe("Menu", () => {
+  it("opens, closes on selection, and restores trigger focus", async () => {
+    const user = userEvent.setup();
+    render(
+      <Menu label="Actions" trigger={<Button>More</Button>}>
+        <MenuItem>Duplicate</MenuItem>
+      </Menu>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Actions" });
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    await user.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    await user.click(screen.getByRole("menuitem", { name: "Duplicate" }));
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(trigger);
   });
 });
