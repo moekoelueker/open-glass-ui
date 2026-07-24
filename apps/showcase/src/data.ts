@@ -12,7 +12,7 @@ export interface ExperimentDefinition {
   fallback: string;
   strengths: readonly string[];
   limitation: string;
-  provisionalScore: number;
+  finalScore: number;
   accent: string;
 }
 
@@ -29,7 +29,7 @@ export const EXPERIMENTS: readonly ExperimentDefinition[] = [
     fallback: "Opaque semantic material",
     strengths: ["Broad support", "Native DOM", "Low overhead"],
     limitation: "Blur and tint cannot reproduce directional refraction.",
-    provisionalScore: 82,
+    finalScore: 93,
     accent: "#ef5b3d",
   },
   {
@@ -44,7 +44,7 @@ export const EXPERIMENTS: readonly ExperimentDefinition[] = [
     fallback: "Static CSS material",
     strengths: ["Expressive shape", "DOM-native", "Procedural flow"],
     limitation: "Filter behavior and cost vary more across browser engines.",
-    provisionalScore: 80,
+    finalScore: 85,
     accent: "#d6ff42",
   },
   {
@@ -59,7 +59,7 @@ export const EXPERIMENTS: readonly ExperimentDefinition[] = [
     fallback: "Layered CSS material",
     strengths: ["Deterministic", "Cacheable", "Shape-coherent"],
     limitation: "DOM refraction remains constrained by SVG backdrop behavior.",
-    provisionalScore: 88,
+    finalScore: 88,
     accent: "#ffb547",
   },
   {
@@ -75,7 +75,7 @@ export const EXPERIMENTS: readonly ExperimentDefinition[] = [
     fallback: "Source media + CSS controls",
     strengths: ["Best refraction", "Shared multi-lens source", "Video-ready"],
     limitation: "Cannot sample arbitrary DOM and needs explicit GPU lifecycle care.",
-    provisionalScore: 90,
+    finalScore: 88,
     accent: "#ff4f45",
   },
   {
@@ -92,7 +92,7 @@ export const EXPERIMENTS: readonly ExperimentDefinition[] = [
     fallback: "Forced-colors-safe opaque material",
     strengths: ["Resilient", "Accessible", "Production-oriented"],
     limitation: "A broader system requires disciplined testing and explicit source ownership.",
-    provisionalScore: 94,
+    finalScore: 96,
     accent: "#f2c14e",
   },
 ] as const;

@@ -652,8 +652,8 @@ export function ExperimentPage({ id }: { id: string }) {
             <p>{experiment.thesis}</p>
           </div>
           <div className="experiment-hero__score">
-            <span>Provisional</span>
-            <strong>{experiment.provisionalScore}</strong>
+            <span>Final score</span>
+            <strong>{experiment.finalScore}</strong>
             <small>/ 100</small>
           </div>
         </section>
@@ -875,23 +875,24 @@ export function DocumentationView() {
 
 export function ValidationView() {
   const checks = [
-    ["Unit + property", "59 passing", "complete"],
-    ["SSR + strict lifecycle", "Automated", "complete"],
-    ["Chromium", "Pending visual pass", "pending"],
-    ["Firefox", "Pending visual pass", "pending"],
-    ["WebKit", "Pending visual pass", "pending"],
-    ["Accessibility", "Automated + manual queued", "pending"],
-    ["Second-pass refinement", "Queued after baseline", "pending"],
+    ["Unit + property", "60 passing", "complete"],
+    ["Browser behavior", "62 passing · 4 capability skips", "complete"],
+    ["Chromium", "27 approved captures", "complete"],
+    ["Firefox", "27 approved captures", "complete"],
+    ["WebKit", "27 approved captures", "complete"],
+    ["Accessibility", "Axe + keyboard + fallback modes", "complete"],
+    ["Packages", "Packed install + exports + tree-shaking", "complete"],
+    ["Second-pass refinement", "Five engines improved and revalidated", "complete"],
   ] as const;
 
   return (
     <DocumentationShell title="Evidence, not vibes." kicker="Validation / live ledger">
       <div className="validation-intro">
         <p>
-          This view is intentionally a live ledger. Green means measured. Amber means the build
-          exists but browser-specific evidence has not yet been approved.
+          This ledger records the completed second pass. Every green row is backed by checked-in
+          browser, package, performance, or test evidence.
         </p>
-        <strong>Pass 01 / in progress</strong>
+        <strong>Pass 02 / approved</strong>
       </div>
       <table className="validation-table">
         <caption className="pl-sr-only">Validation status</caption>
