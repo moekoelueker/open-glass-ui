@@ -1,13 +1,13 @@
 # State
 
 - Internal name: Prism Lab
-- Phase: rendering backends
-- Completed plans: 00-01, 01-01, 01-02
-- Next plan: 02-01
+- Phase: WebGL2 media rendering
+- Completed plans: 00-01, 01-01, 01-02, 02-01
+- Next plan: 02-02
 - Public name: unresolved by design
 - Remote/publishing: not authorized
 - Old example: read-only and outside this repository
-- Next implementation: CSS/SVG renderer contracts, map image encoding, capability policy, and WebGL2
+- Next implementation: WebGL2 source rendering, multi-lens shader, context recovery, and cleanup
 
 ## Plan 00-01 evidence
 
@@ -53,3 +53,17 @@
   quality for every initial shape.
 - High-quality large maps are explicitly restricted to stable/deferred/worker
   generation.
+
+## Plan 02-01 evidence
+
+- SSR-safe capability detection avoids user-agent sniffing.
+- Backdrop blur, backdrop URL syntax, SVG elements, and WebGL2 are represented as
+  separate capabilities.
+- Adaptive selection uses controlled-media WebGL2, supplied-DOM SDF/SVG, and an
+  intentional CSS fallback.
+- Forced colors and reduced transparency always resolve to CSS/opaque material.
+- SVG map encoding, stable map-specific IDs, conservative filter bounds, and RGB
+  channel scale separation are implemented.
+- Clear, regular, frosted, unsupported, reduced-transparency, and forced-colors
+  CSS token sets are tested.
+- Forty-two unit/property tests pass.
