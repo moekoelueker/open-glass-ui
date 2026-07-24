@@ -1,13 +1,13 @@
 # State
 
 - Internal name: Prism Lab
-- Phase: optics quality and renderer foundations
-- Completed plans: 00-01, 01-01
-- Next plan: 01-02
+- Phase: rendering backends
+- Completed plans: 00-01, 01-01, 01-02
+- Next plan: 02-01
 - Public name: unresolved by design
 - Remote/publishing: not authorized
 - Old example: read-only and outside this repository
-- Next implementation: quality tiers, bounded caching, map image encoding, and renderer contracts
+- Next implementation: CSS/SVG renderer contracts, map image encoding, capability policy, and WebGL2
 
 ## Plan 00-01 evidence
 
@@ -41,3 +41,15 @@
   neutral exteriors, bounded bytes, deterministic output, and monotonic thickness.
 - Nineteen unit/property tests pass.
 - The optics core builds to an 8.92 KB unminified ESM module before gzip.
+
+## Plan 01-02 evidence
+
+- Low, medium, and high profiles have bounded dimensions and explicit dispersion
+  sample counts.
+- Async generation is browser/worker-global-safe and abortable.
+- An 8 MiB bounded least-recently-used cache avoids regenerating stable maps.
+- Twenty-nine unit/property tests pass.
+- Reference-host p95 generation stays below 4 ms at low and 12 ms at medium
+  quality for every initial shape.
+- High-quality large maps are explicitly restricted to stable/deferred/worker
+  generation.
