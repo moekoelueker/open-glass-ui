@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "node_modules/.cache/showcase.tsbuildinfo",
+    "types": ["vite/client"]
+  },
+  "include": ["src", "vite.config.ts"],
+  "references": [
+    { "path": "../../packages/core" },
+    { "path": "../../packages/renderers" },
+    { "path": "../../packages/react" },
+    { "path": "../../packages/recipes" }
+  ]
+}

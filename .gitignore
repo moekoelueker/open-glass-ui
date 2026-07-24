@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.next/
+.turbo/
+coverage/
+playwright-report/
+test-results/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+apps/showcase/public/validation/
+

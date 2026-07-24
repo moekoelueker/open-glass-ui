@@ -1,0 +1,27 @@
+{
+  "name": "@prism-lab/showcase",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "dev": "vite --host 127.0.0.1",
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prism-lab/core": "workspace:*",
+    "@prism-lab/react": "workspace:*",
+    "@prism-lab/recipes": "workspace:*",
+    "@prism-lab/renderers": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.4",
+    "typescript": "5.9.3",
+    "vite": "8.1.5"
+  }
+}
