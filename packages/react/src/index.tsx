@@ -30,3 +30,9 @@ export type {
   GlassSourceProps,
 } from "./source";
 export { GlassGroup, GlassSource, useGlassGroup } from "./source";
+export type {
+  WebGLGlassSurfaceProps,
+  WebGLSource,
+  WebGLSurfaceStatus,
+} from "./webgl-surface";
+export { scaleWebGLLenses, WebGLGlassSurface } from "./webgl-surface";
