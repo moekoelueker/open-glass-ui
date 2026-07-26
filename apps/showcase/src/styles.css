@@ -196,23 +196,27 @@ a {
   transform: scaleX(1);
 }
 
-.site-header__status {
-  display: flex;
+.site-header__github {
+  display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.55rem;
+  justify-self: end;
+  gap: 0.5rem;
   color: var(--muted);
   font-size: 0.62rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 160ms ease;
 }
 
-.status-light {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 50%;
-  background: #8fc65d;
-  box-shadow: 0 0 12px rgb(143 198 93 / 0.6);
+.site-header__github:hover,
+.site-header__github:focus-visible {
+  color: var(--ink);
+}
+
+.site-header__github svg {
+  font-size: 0.85rem;
 }
 
 .home-hero {
@@ -1379,7 +1383,7 @@ a {
 }
 
 .experiment-page--css .site-header__nav,
-.experiment-page--css .site-header__status,
+.experiment-page--css .site-header__github,
 .experiment-page--css .wordmark small,
 .experiment-page--css .site-footer p {
   color: #5d615e;
@@ -2125,8 +2129,13 @@ a {
     backdrop-filter: blur(20px);
   }
 
-  .site-header__status {
+  .site-header__github svg,
+  .repo-link__full {
     display: none;
+  }
+
+  .repo-link__short {
+    display: inline;
   }
 
   .home-hero {
@@ -4052,4 +4061,13 @@ a {
     border: 1px solid CanvasText;
     forced-color-adjust: auto;
   }
+}
+
+/* Repository link label. The full word is shown when there is room; narrow
+   headers fall back to the short form. Both headers share these classes so the
+   rule lives in one place instead of being duplicated per header stylesheet. */
+.repo-link__short {
+  display: none;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
 }

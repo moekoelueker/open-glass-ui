@@ -224,18 +224,8 @@
   white-space: nowrap;
 }
 
-.landing-header__github b {
-  display: none;
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
-}
-
 .landing-header__github svg {
   font-size: 0.85rem;
-}
-
-.landing-header__github.is-disabled {
-  opacity: 0.65;
 }
 
 .landing-hero {
@@ -1009,10 +999,14 @@ button.landing-button {
 }
 
 .landing-score > strong span {
+  display: block;
+  margin-top: 0.55rem;
   color: var(--ogui-material-muted);
-  font-size: 0.25em;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.115em;
   font-weight: 500;
-  letter-spacing: -0.04em;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
 }
 
 .landing-score > p {
@@ -2537,13 +2531,8 @@ button.landing-button {
     font-size: 0.52rem;
   }
 
-  .landing-header__github > span:first-child,
   .landing-header__github svg {
     display: none;
-  }
-
-  .landing-header__github b {
-    display: block;
   }
 
   .landing-hero {

@@ -1,4 +1,9 @@
-import type { GlassThemeInput, GlassThemePreset, MaterialPresetName } from "@open-glass-ui/core";
+import {
+  type GlassThemeInput,
+  type GlassThemePreset,
+  getMaterialPreset,
+  type MaterialPresetName,
+} from "@open-glass-ui/core";
 import { Glass, GlassThemeProvider, useGlassRuntime } from "@open-glass-ui/react";
 import {
   Accordion,
@@ -40,6 +45,7 @@ import {
   Tooltip,
 } from "@open-glass-ui/recipes";
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { BRAND_TAGLINE, PrimaryNavLinks, REPOSITORY_URL, RepositoryLink } from "./brand";
 import { Icon } from "./icons";
 import { AppLink } from "./navigation";
 import "./landing-page.css";
@@ -197,14 +203,13 @@ function Wordmark() {
       </span>
       <span>
         <strong>OPENGLASS</strong>
-        <small>UI / React materials</small>
+        <small>{BRAND_TAGLINE}</small>
       </span>
     </AppLink>
   );
 }
 
 function LandingHeader() {
-  const githubUrl = import.meta.env.VITE_GITHUB_URL?.trim();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -229,32 +234,10 @@ function LandingHeader() {
         <header className="landing-header">
           <Wordmark />
           <nav aria-label="Primary navigation">
-            <a href="#overview">Overview</a>
-            <AppLink href="/components">Components</AppLink>
-            <a href="#setup">Setup</a>
-            <a href="#ai">For AI</a>
+            <PrimaryNavLinks />
+            <a href="#setup">Install</a>
           </nav>
-          {githubUrl ? (
-            <a
-              className="landing-header__github"
-              href={githubUrl}
-              rel="noreferrer"
-              aria-label="Open OpenGlass UI on GitHub"
-            >
-              <span>GitHub</span>
-              <b aria-hidden="true">GH</b>
-              <Icon name="arrow" />
-            </a>
-          ) : (
-            <span
-              className="landing-header__github is-disabled"
-              title="GitHub repository coming soon"
-            >
-              <span aria-hidden="true">GitHub coming soon</span>
-              <b aria-hidden="true">GH</b>
-              <span className="ogui-sr-only">GitHub repository coming soon</span>
-            </span>
-          )}
+          <RepositoryLink className="landing-header__github" />
         </header>
       </div>
     </>
@@ -312,29 +295,85 @@ function LandingBackdrop({ scene, motion }: { scene: LandingScene; motion: boole
   );
 }
 
-function HeroScore({ material, intensity }: { material: MaterialPresetName; intensity: number }) {
+const RENDERER_REASON_LABEL: Record<string, string> = {
+  "css-first": "CSS-first default",
+  explicit: "Explicitly requested",
+  "capability-fallback": "Capability fallback",
+  "accessibility-fallback": "Accessibility fallback",
+};
+
+/**
+ * Reports what this surface actually resolved to, read back from the
+ * `data-ogui-*` attributes `Glass` writes onto its own element. That is the
+ * documented way to inspect a surface, so anyone can reproduce this readout in
+ * their own app rather than taking a published figure on trust.
+ */
+function HeroRuntimeReadout({
+  material,
+  intensity,
+}: {
+  material: MaterialPresetName;
+  intensity: number;
+}) {
+  const runtime = useGlassRuntime();
+  const surfaceRef = useRef<HTMLElement>(null);
+  const [resolved, setResolved] = useState<{
+    renderer: string;
+    reason: string;
+    material: MaterialPresetName;
+    hydrated: boolean;
+    motion: string;
+  } | null>(null);
+  const optics = getMaterialPreset(material);
+
+  // Snapshot the material, the runtime, and the attributes together so the
+  // panel never pairs a freshly selected material with a stale renderer read.
+  useEffect(() => {
+    const element = surfaceRef.current;
+    if (!element) {
+      return;
+    }
+    setResolved({
+      renderer: element.dataset.oguiRenderer ?? "css",
+      reason: element.dataset.oguiRendererReason ?? "css-first",
+      material,
+      hydrated: runtime.hydrated,
+      motion: runtime.motion,
+    });
+  }, [material, runtime]);
+
   return (
     <Glass
+      ref={surfaceRef}
       as="section"
       className="landing-score"
       material={material}
       tone="dark"
       interactive
-      aria-label="Internal weighted library evaluation"
+      aria-label="Live material runtime readout"
       data-landing-hero-glass=""
+      data-landing-readout=""
       style={{ "--landing-intensity": intensity / 100 } as CSSProperties}
     >
       <header>
-        <span>OPENGLASS / LIVE</span>
+        <span>OPENGLASS / RUNTIME</span>
         <i aria-hidden="true" />
-        <Badge tone="positive">RC</Badge>
+        <Badge tone={resolved?.hydrated ? "positive" : "neutral"}>
+          {resolved ? resolved.renderer : "ssr"}
+        </Badge>
       </header>
       <strong>
-        94 <span>/ 100</span>
+        {optics.ior.toFixed(2)} <span>refractive index</span>
       </strong>
-      <p>Internal weighted library evaluation</p>
-      <Progress label="Capability fit" value={98} />
-      <small>Beauty · usability · integration · performance · resilience</small>
+      <p>
+        {resolved ? RENDERER_REASON_LABEL[resolved.reason] : "Server render"} ·{" "}
+        {resolved?.material ?? material} material
+      </p>
+      <Progress label="Frost" value={Math.round(optics.frost * 100)} />
+      <small>
+        Read from this surface's own data attributes. Thickness {optics.thickness.toFixed(2)} ·
+        dispersion {optics.dispersion.toFixed(3)} · motion {resolved?.motion ?? "pending"}
+      </small>
     </Glass>
   );
 }
@@ -867,7 +906,7 @@ export function LandingPage() {
               >
                 <i aria-hidden="true" />
               </button>
-              <HeroScore material={material} intensity={intensity} />
+              <HeroRuntimeReadout material={material} intensity={intensity} />
               <span className="landing-lens-readout" role="status" aria-live="polite">
                 Hover to bend · click to hold / <strong>{lensResponse}</strong>
               </span>
@@ -1291,6 +1330,12 @@ export function LandingPage() {
           <AppLink href="/docs">Documentation</AppLink>
           <AppLink href="/validation">Validation</AppLink>
           <AppLink href="/research">Material research</AppLink>
+          <a href={REPOSITORY_URL} rel="noreferrer">
+            GitHub
+          </a>
+          <a href={`${REPOSITORY_URL}/blob/main/CONTRIBUTING.md`} rel="noreferrer">
+            Contribute
+          </a>
         </nav>
       </footer>
 

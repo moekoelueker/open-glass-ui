@@ -16,6 +16,7 @@ import {
   Tooltip,
 } from "@open-glass-ui/recipes";
 import { type ReactNode, useState } from "react";
+import { BRAND_TAGLINE, type NavSection, PrimaryNavLinks, RepositoryLink } from "./brand";
 import {
   ENVIRONMENT_LABELS,
   ENVIRONMENTS,
@@ -41,19 +42,13 @@ function Wordmark() {
       </span>
       <span>
         <strong>OPENGLASS</strong>
-        <small>Glass UI for React</small>
+        <small>{BRAND_TAGLINE}</small>
       </span>
     </AppLink>
   );
 }
 
-export function SiteHeader({
-  active,
-  section,
-}: {
-  active?: EngineId;
-  section?: "library" | "docs" | "research" | "validation";
-}) {
+export function SiteHeader({ active, section }: { active?: EngineId; section?: NavSection }) {
   return (
     <>
       <a className="skip-link" href="#main-content">
@@ -65,23 +60,9 @@ export function SiteHeader({
           <AppLink href="/" className={!active && !section ? "is-active" : undefined}>
             Overview
           </AppLink>
-          <AppLink href="/components" className={section === "library" ? "is-active" : undefined}>
-            Components
-          </AppLink>
-          <AppLink href="/docs" className={section === "docs" ? "is-active" : undefined}>
-            Docs
-          </AppLink>
-          <AppLink
-            href="/validation"
-            className={section === "validation" ? "is-active" : undefined}
-          >
-            Validation
-          </AppLink>
+          <PrimaryNavLinks section={section} />
         </nav>
-        <div className="site-header__status">
-          <span className="status-light" aria-hidden="true" />
-          Release candidate
-        </div>
+        <RepositoryLink className="site-header__github" />
       </header>
     </>
   );
