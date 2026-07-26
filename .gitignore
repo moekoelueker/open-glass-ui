@@ -13,3 +13,4 @@ test-results/
 !.env.example
 apps/showcase/public/validation/
 docs/naming/naming-signal-ledger.json
+.playwright-mcp/
