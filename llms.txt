@@ -29,6 +29,9 @@ Core rules:
 
 Documentation:
 
+- [Maintainer and workspace handover](./HANDOVER.md)
+- [Agent context-pack index](./context/README.md)
+- [Copy-paste handover prompt](./context/HANDOVER-PROMPT.md)
 - [Self-contained agent reference](./llms-full.txt)
 - [Components](./docs/COMPONENTS.md)
 - [Theming](./docs/THEMING.md)

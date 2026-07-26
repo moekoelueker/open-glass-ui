@@ -1,5 +1,16 @@
 # OpenGlass UI Agent Instructions
 
+## Required context
+
+- Start every new workspace/session with `HANDOVER.md`.
+- Use `context/README.md` to select the smallest relevant context set.
+- Read `context/CURRENT-STATE.md` before changing release or publication posture.
+- Treat source/tests and canonical topic docs as more authoritative than
+  historical planning evidence.
+- Update the handover/context pack in the same commit when a product,
+  architecture, public API, route, brand, validation, or release decision
+  changes.
+
 ## Scope
 
 - Work only in this standalone repository.

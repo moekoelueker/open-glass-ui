@@ -167,6 +167,9 @@
 - The public landing now has a one-line sticky glass navigation capsule,
   interactive hero lenses, explicit material-anatomy studies, authoritative
   contour/distortion controls, and premium radius-matched CTA optics.
+- `HANDOVER.md` and the `context/` pack now consolidate the original goal,
+  research rationale, decisions, architecture/file maps, current state,
+  next-step roadmap, and copy-paste agent handoff prompt.
 - The packed facade passes React 18 SSR and declarations, Next.js RSC/static
   build, export, peer, license, tree-shaking, and WebGL-isolation checks.
 - The public root bundles to 18,743 bytes with zero eager WebGL inputs.

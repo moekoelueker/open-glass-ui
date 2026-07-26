@@ -3,6 +3,11 @@
 This guide helps coding agents adopt OpenGlass UI without inventing APIs,
 loading unnecessary renderers, or weakening accessibility.
 
+This document is for agents consuming the library. Agents maintaining the
+OpenGlass UI repository itself should start with
+[`../HANDOVER.md`](../HANDOVER.md) and
+[`../context/README.md`](../context/README.md).
+
 ## Canonical package rules
 
 1. Import public React components, hooks, theme utilities, and types from

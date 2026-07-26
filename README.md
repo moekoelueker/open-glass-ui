@@ -14,6 +14,18 @@ applies the three strongest strategies to the same production interface.
 > `@open-glass-ui/*` implementation namespace. No remote repository, deployment,
 > or npm registry release has been created or published.
 
+## Maintainer and AI handover
+
+New maintainers and AI workspaces should begin with:
+
+- [Project handover](./HANDOVER.md)
+- [Context-pack index](./context/README.md)
+- [Copy-paste handover prompt](./context/HANDOVER-PROMPT.md)
+
+The context pack captures the original goal, research rationale, settled
+decisions, architecture/file maps, current validation state, and launch roadmap
+without requiring a full repository read.
+
 ## Experiments
 
 1. Layered CSS material.
