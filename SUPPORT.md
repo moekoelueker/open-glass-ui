@@ -1,11 +1,15 @@
 # Support
 
-OpenGlass UI is pre-release research software. There is no stability or support
-commitment yet.
+OpenGlass UI is pre-`1.0`. The API may change between minor versions; pin an
+exact version if you need stability. There is no commercial support contract.
+
+- **Questions and ideas:** [GitHub Discussions](https://github.com/moekoelueker/open-glass-ui/discussions)
+- **Bugs:** [open an issue](https://github.com/moekoelueker/open-glass-ui/issues/new/choose)
+- **Vulnerabilities:** [SECURITY.md](./SECURITY.md), never a public issue
 
 ## Compatibility target
 
-| Surface | Release-candidate target |
+| Surface | Supported |
 | --- | --- |
 | React | 18 and 19 |
 | Chromium | Current evergreen releases |

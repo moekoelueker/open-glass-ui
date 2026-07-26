@@ -1,0 +1,66 @@
+name: Release
+
+# Publishing is deliberately tag-triggered and manual-dispatchable rather than
+# automatic on push: a release should be an explicit act.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Run every gate and pack the tarball without publishing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: npm-publish
+    permissions:
+      contents: read
+      # Required for npm provenance: the workflow exchanges this OIDC token for
+      # an attestation binding the tarball to this commit and workflow.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      - name: Full release gate
+        run: pnpm run release:check
+
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-report
+          path: artifacts/packages/
+          retention-days: 30
+
+      - name: Pack only (dry run)
+        if: inputs.dry-run
+        run: pnpm --filter open-glass-ui pack --pack-destination ./artifacts/packages
+
+      - name: Publish to npm
+        if: ${{ !inputs.dry-run }}
+        run: pnpm changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

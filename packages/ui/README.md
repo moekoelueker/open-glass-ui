@@ -1,15 +1,48 @@
-# OpenGlass UI
+<!-- Absolute URLs: npm renders this README outside the repository. -->
+<p align="center">
+  <img
+    src="https://raw.githubusercontent.com/moekoelueker/open-glass-ui/main/apps/showcase/public/og-image.png"
+    alt="OpenGlass UI. Glass is not a blur. It is an interface system."
+    width="820"
+  />
+</p>
 
-The consumer-facing React package for OpenGlass UI: accessible component
-recipes, adaptive glass primitives, themes, and optical utilities behind one
-ESM import.
+<h1 align="center">OpenGlass UI</h1>
 
-> Release candidate: the API may still change before `1.0.0`.
+<p align="center">
+  <strong>The open-source Liquid Glass UI system for React and the web.</strong>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/open-glass-ui"><img alt="npm" src="https://img.shields.io/npm/v/open-glass-ui?color=%23111827&labelColor=%23111827&logo=npm&logoColor=white"></a>
+  <a href="https://github.com/moekoelueker/open-glass-ui/blob/main/LICENSE"><img alt="MIT" src="https://img.shields.io/npm/l/open-glass-ui?color=%23111827&labelColor=%23111827"></a>
+  <a href="https://www.npmjs.com/package/open-glass-ui?activeTab=dependencies"><img alt="zero dependencies" src="https://img.shields.io/badge/runtime%20deps-0-111827?labelColor=%23111827"></a>
+  <a href="https://github.com/moekoelueker/open-glass-ui"><img alt="GitHub" src="https://img.shields.io/github/stars/moekoelueker/open-glass-ui?color=%23111827&labelColor=%23111827&logo=github"></a>
+</p>
+
+Forty accessible React components on a CSS-first glass material, with adaptive
+light and dark themes, customizable accents, and opt-in refraction for media
+you own. Text, focus, and keyboard behavior stay native DOM.
+
+- **One package, zero runtime dependencies.** React and React DOM are peers.
+- **CSS-first.** `renderer="auto"` never silently escalates to WebGL.
+- **Accessible by construction.** Reduced motion, reduced transparency, and
+  forced colors are designed states, not afterthoughts.
+- **SSR and RSC safe.** Ships a server-safe `core` entry that never imports
+  React.
+- **Built for AI agents.** Predictable APIs plus `llms.txt` references.
+
+> **Pre-1.0.** The API may still change before `1.0.0`. Pin an exact version if
+> you need stability.
+
+OpenGlass UI is physics-inspired, not a physically accurate spectral renderer,
+and CSS implies rather than performs true arbitrary-DOM refraction. See
+[Limitations](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/LIMITATIONS.md).
 
 ## Install
 
 ```sh
-pnpm add open-glass-ui react react-dom
+npm install open-glass-ui react react-dom
 ```
 
 Import the recipe styles once near your application entry:
@@ -119,6 +152,23 @@ export function RefractedVideo() {
 
 `WebGLGlassSurface` accepts image, canvas, and video sources and intentionally
 falls back to an unavailable state when WebGL2 is not supported.
+
+## Documentation
+
+| | |
+| --- | --- |
+| [Components](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/COMPONENTS.md) | All forty components and their props |
+| [Theming](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/THEMING.md) | Tokens, presets, custom accents |
+| [Renderers](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/RENDERERS.md) | How CSS, SVG, and WebGL are chosen |
+| [Accessibility](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/ACCESSIBILITY.md) | Keyboard, ARIA, and preference handling |
+| [AI-agent usage](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/AI-USAGE.md) | Guidance for coding agents |
+| [Browser support](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/BROWSER-SUPPORT.md) | Baselines and fallbacks |
+| [Limitations](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/LIMITATIONS.md) | What this does not claim to do |
+
+## Contributing
+
+Issues and pull requests are welcome. Start with
+[CONTRIBUTING.md](https://github.com/moekoelueker/open-glass-ui/blob/main/CONTRIBUTING.md).
 
 ## License and independence
 

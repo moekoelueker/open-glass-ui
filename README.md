@@ -1,156 +1,152 @@
-# OpenGlass UI
+<p align="center">
+  <img
+    src="./apps/showcase/public/og-image.png"
+    alt="OpenGlass UI. Glass is not a blur. It is an interface system."
+    width="820"
+  />
+</p>
 
-**The open-source Liquid Glass UI system for React and the web.**
+<h1 align="center">OpenGlass UI</h1>
 
-OpenGlass UI is a clean-room component and rendering system for premium
-refractive interfaces. It combines semantic React components, neutral adaptive
-themes, a CSS-first material layer, optional SVG refraction, and explicitly
-opt-in WebGL for controlled media. Its research showcase compares five
-materially different rendering approaches, while the forty-component atlas
-applies the three strongest strategies to the same production interface.
+<p align="center">
+  <strong>The open-source Liquid Glass UI system for React and the web.</strong>
+</p>
 
-> **Status:** local `0.1.0-rc.0` release candidate under active hardening. The
-> owner has selected the OpenGlass UI identity, `open-glass-ui` package slug, and
-> `@open-glass-ui/*` implementation namespace. No remote repository, deployment,
-> or npm registry release has been created or published.
+<p align="center">
+  <a href="https://www.npmjs.com/package/open-glass-ui"><img alt="npm" src="https://img.shields.io/npm/v/open-glass-ui?color=%23111827&labelColor=%23111827&logo=npm&logoColor=white"></a>
+  <a href="./LICENSE"><img alt="MIT" src="https://img.shields.io/npm/l/open-glass-ui?color=%23111827&labelColor=%23111827"></a>
+  <a href="https://www.npmjs.com/package/open-glass-ui?activeTab=dependencies"><img alt="zero dependencies" src="https://img.shields.io/badge/runtime%20deps-0-111827?labelColor=%23111827"></a>
+  <a href="https://github.com/moekoelueker/open-glass-ui/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/moekoelueker/open-glass-ui/actions/workflows/ci.yml/badge.svg"></a>
+</p>
 
-## Maintainer and AI handover
+Forty accessible React components on a CSS-first glass material, with adaptive
+light and dark themes, customizable accents, and opt-in refraction for media you
+own. Text, focus, and keyboard behavior stay native DOM.
 
-New maintainers and AI workspaces should begin with:
-
-- [Project handover](./HANDOVER.md)
-- [Context-pack index](./context/README.md)
-- [Copy-paste handover prompt](./context/HANDOVER-PROMPT.md)
-
-The context pack captures the original goal, research rationale, settled
-decisions, architecture/file maps, current validation state, and launch roadmap
-without requiring a full repository read.
-
-## Experiments
-
-1. Layered CSS material.
-2. Organic SVG turbulence/displacement.
-3. Geometric SDF displacement applied through SVG.
-4. WebGL2 controlled-media refraction.
-5. Adaptive hybrid capability and fallback policy.
-
-All five experiments use the same interaction and difficult-background suite so
-their quality can be compared rather than merely admired in isolation.
-
-## Workspace
-
-```text
-apps/showcase       comparison site and five experiment routes
-packages/core       framework-independent optical geometry and maps
-packages/renderers  CSS, SVG, SDF/DOM, WebGL2, and adaptive renderers
-packages/react      SSR-safe React primitives and capability policy
-packages/recipes    accessible copy-owned component recipes
-packages/ui         single consumer-facing open-glass-ui package facade
-examples/next       SSR and hydration compatibility fixture
-tests               workspace and browser validation
-```
-
-## Public package contract
-
-After publication, consumers install one package and import its stylesheet once:
-
-```bash
-pnpm add open-glass-ui react react-dom
+```sh
+npm install open-glass-ui react react-dom
 ```
 
 ```tsx
 import "open-glass-ui/styles.css";
 import { Button, Glass, GlassSystemProvider } from "open-glass-ui";
 
-export function Example() {
+export function App() {
   return (
-    <GlassSystemProvider
-      renderer="auto"
-      theme={{ appearance: "system", theme: { preset: "neutral" } }}
-    >
-      <Glass material="regular">
-        <Button variant="primary">Continue</Button>
+    <GlassSystemProvider renderer="auto" theme={{ appearance: "system" }}>
+      <Glass material="frosted">
+        <Button variant="primary">Create project</Button>
       </Glass>
     </GlassSystemProvider>
   );
 }
 ```
 
-`renderer="auto"` is deliberately CSS-first. Controlled-media WebGL is isolated
-behind the optional `open-glass-ui/webgl` entry point. Server components, build
-tools, and non-React adapters can import pure utilities from
-`open-glass-ui/core` without loading the React client boundary.
+## Why this exists
 
-## Commands
+Most web "liquid glass" is a blur and a border. The rest are single-effect demos
+that fall apart the moment real text, focus rings, or a screen reader arrive.
+OpenGlass UI is built the other way around: the material serves a component
+system, not the reverse.
 
-```bash
+- **One package, zero runtime dependencies.** React and React DOM are peers.
+- **CSS-first.** `renderer="auto"` never silently escalates to something
+  expensive. SVG/SDF is an explicit enhancement; WebGL is an explicit opt-in for
+  image, canvas, or video sources you control.
+- **Accessible by construction.** Reduced motion, reduced transparency, and
+  forced colors are designed states that still look intentional.
+- **SSR and RSC safe.** A server-safe `core` entry never imports React.
+- **Tree-shakes.** Importing one component costs 23% of the full barrel.
+
+## What it does not claim
+
+The project says physics-*inspired*, not physically accurate. CSS implies
+refraction rather than performing true arbitrary-DOM refraction; browsers cannot
+generally sample arbitrary page pixels. WebGL has the highest optical ceiling
+but only over media you own. Full detail in
+[docs/LIMITATIONS.md](./docs/LIMITATIONS.md).
+
+OpenGlass UI is independent and is not affiliated with, endorsed by, or
+sponsored by Apple Inc.
+
+## Documentation
+
+| | |
+| --- | --- |
+| [Components](./docs/COMPONENTS.md) | All forty components and their props |
+| [Theming](./docs/THEMING.md) | Tokens, presets, custom accents |
+| [Renderers](./docs/RENDERERS.md) | How CSS, SVG, and WebGL get chosen |
+| [Architecture](./docs/ARCHITECTURE.md) | How the system fits together |
+| [Accessibility](./docs/ACCESSIBILITY.md) | Keyboard, ARIA, preference handling |
+| [Browser support](./docs/BROWSER-SUPPORT.md) | Baselines and fallbacks |
+| [AI-agent usage](./docs/AI-USAGE.md) | Guidance for coding agents |
+| [Performance](./docs/PERFORMANCE.md) | Measurements and budgets |
+| [Validation](./docs/VALIDATION.md) | What is tested, and how |
+| [Migration](./docs/MIGRATION.md) | Moving from a hand-rolled glass layer |
+| [Limitations](./docs/LIMITATIONS.md) | What this does not do |
+| [Changelog](./CHANGELOG.md) | Release history |
+
+Machine-readable references for coding agents live at
+[`llms.txt`](./llms.txt) and [`llms-full.txt`](./llms-full.txt).
+
+## The research behind it
+
+Five materially different rendering approaches were built and compared under the
+same interaction and difficult-background suite, then scored with visual appeal
+weighted at 50%:
+
+| Rank | Approach | Score | Role in the product |
+| ---: | --- | ---: | --- |
+| 1 | Adaptive Hybrid | 9.36 | The architecture |
+| 2 | Native CSS | 9.25 | The default material |
+| 3 | Spectral WebGL | 8.66 | Opt-in, owned media only |
+| 4 | Organic SVG | 8.60 | Expressive recipe |
+| 5 | Geometric SDF | 8.59 | Deterministic adapter |
+
+The write-ups are in [docs/RESEARCH.md](./docs/RESEARCH.md),
+[docs/EXPERIMENT-REPORT.md](./docs/EXPERIMENT-REPORT.md), and
+[docs/COMPONENT-ATLAS.md](./docs/COMPONENT-ATLAS.md). Every experiment is still
+browsable in the showcase under `/research`, `/library`, and `/experiments/*`.
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the
+workflow, [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) for expectations, and
+[SECURITY.md](./SECURITY.md) for reporting vulnerabilities.
+
+```sh
 pnpm install
-pnpm dev
-pnpm run check
+pnpm dev            # showcase at http://127.0.0.1:4173
+pnpm run check      # lint and format
 pnpm run typecheck
 pnpm run test:unit
-pnpm run build
-pnpm run test:e2e
-pnpm exec playwright test tests/e2e/visual-capture.spec.ts
-pnpm run bench:optics
-pnpm run bench:browser
-pnpm run verify:packages
+pnpm run test:e2e   # browser suite, serialized
 ```
 
-Open [http://127.0.0.1:4173](http://127.0.0.1:4173) after `pnpm dev`. The five
-comparison routes live at:
+`pnpm run release:check` runs the complete publish-blocking gate.
+
+Maintainers and AI workspaces picking up in-flight work should start with
+[HANDOVER.md](./HANDOVER.md) and the [context pack](./context/README.md).
+
+## Repository layout
 
 ```text
-/experiments/css
-/experiments/organic
-/experiments/sdf
-/experiments/webgl
-/experiments/hybrid
+packages/ui         the published open-glass-ui package
+packages/core       framework-independent optics, geometry, theme math
+packages/renderers  CSS, SVG, and WebGL2 capability and rendering
+packages/react      SSR-safe React primitives and capability policy
+packages/recipes    the forty accessible components and their CSS
+apps/showcase       landing page, catalog, docs, research routes
+examples/next       Next.js RSC and static-build fixture
+examples/react18    React 18 compatibility fixture
+tests               workspace and browser validation
 ```
 
-The documentation and live evidence ledger are at `/docs` and `/validation`.
-The weighted ranking and finalist component atlases are at:
-
-```text
-/library
-/library/hybrid
-/library/css
-/library/webgl
-```
-
-## Principles
-
-- Glass is a selective functional layer, not the default content surface.
-- Neutral light and dark themes are the default; accent colors are optional.
-- Browser capability gates explicitly requested enhanced renderers; unsupported
-  effects have an intentional fallback.
-- Text, semantics, focus, and interaction remain DOM-native.
-- Optical inputs map to coherent concepts and have tested bounds.
-- Pointer animation does not flow through React state on every frame.
-- Experimental browser APIs are research adapters, not v1 foundations.
-
-Start with:
-
-- [Architecture](./docs/ARCHITECTURE.md)
-- [Component API](./docs/COMPONENTS.md)
-- [Theming](./docs/THEMING.md)
-- [Renderer selection](./docs/RENDERERS.md)
-- [Accessibility](./docs/ACCESSIBILITY.md)
-- [AI-agent usage](./docs/AI-USAGE.md)
-- [Release checklist](./docs/RELEASE-CHECKLIST.md)
-- [Experiment report](./docs/EXPERIMENT-REPORT.md)
-- [Component atlas and weighted ranking](./docs/COMPONENT-ATLAS.md)
-- [Validation evidence](./docs/VALIDATION.md)
-- [Browser support](./docs/BROWSER-SUPPORT.md)
-- [Performance](./docs/PERFORMANCE.md)
-- [Migration](./docs/MIGRATION.md)
-- [Changelog](./CHANGELOG.md)
-- [Credits and prior art](./CREDITS.md)
-- [Known limitations](./docs/LIMITATIONS.md)
+Only `packages/ui` is published. The `@open-glass-ui/*` packages are private
+build-time boundaries whose code and declarations are inlined into it, which is
+why the published package has no runtime dependencies. Do not import them
+directly; they do not exist on npm.
 
 ## License
 
-MIT. See [LICENSE](./LICENSE).
-
-This independent project is not affiliated with, endorsed by, or sponsored by
-Apple Inc.
+[MIT](./LICENSE).
