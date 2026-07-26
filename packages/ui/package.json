@@ -1,6 +1,6 @@
 {
   "name": "open-glass-ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Accessible Liquid Glass components, React primitives, and optical rendering utilities for the web.",
   "type": "module",
   "license": "MIT",
