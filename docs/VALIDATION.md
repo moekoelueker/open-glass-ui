@@ -11,7 +11,7 @@ interaction contracts. Nothing was published or deployed.
 
 ### Final automated results
 
-- Biome checked 93 files with no diagnostics.
+- Biome checked 97 files with no diagnostics.
 - TypeScript passed for core, renderers, React, recipes, the public facade, the
   Vite showcase, and the Next.js fixture after package declaration builds and
   Next route-type generation.
@@ -24,20 +24,25 @@ interaction contracts. Nothing was published or deployed.
 - Root, `core`, stylesheet, and `webgl` exports passed. The root import contains
   zero eager WebGL inputs; the public `signedDistance` import tree-shakes to
   1,222 bytes.
-- 122 browser checks passed across Chromium, Firefox, and WebKit. Seven checks
+- 155 browser checks passed across Chromium, Firefox, and WebKit. Seven checks
   were intentionally skipped by capability or scope: isolated performance
   mode and browser APIs Playwright cannot deterministically emulate outside
   Chromium.
+- The focused product-landing matrix passed 33 of 33 checks, including the
+  single-line sticky navigation, interactive hero lenses, visible contour and
+  distortion state, radius-matched CTA optics, mobile boundaries, Axe, and
+  reduced-motion behavior.
 - The separately enabled Chromium performance-budget test passed.
 
 ### Final visual evidence
 
-Twenty-seven release-candidate captures were regenerated and visually
-inspected—nine in each browser engine:
+Thirty-three release-candidate captures were regenerated and visually
+inspected—eleven in each browser engine:
 
 ```text
 artifacts/screenshots/open-glass-ui-final/
   desktop/
+    landing-dark-neutral.jpg
     ranking.jpg
     hybrid-dark-neutral.jpg
     hybrid-light-neutral.jpg
@@ -45,6 +50,7 @@ artifacts/screenshots/open-glass-ui-final/
     webgl-dark-neutral.jpg
     theme-studio-light-neutral.jpg
   mobile/
+    landing-dark-neutral.jpg
     hybrid-custom-accent.jpg
     theme-studio-custom-accent.jpg
     button-custom-accent.jpg
@@ -54,7 +60,7 @@ artifacts/screenshots/open-glass-ui-final/
 ```
 
 The review covered neutral dark and light appearance, a custom cobalt accent,
-desktop and mobile boundaries, type rendering, contrast, fixed navigation,
+desktop and mobile boundaries, type rendering, contrast, sticky navigation,
 glass edges, clipping, source visibility, and settled WebGL output. Hybrid
 remains the preferred default, CSS remains the resilient baseline, and WebGL
 remains an explicit cinematic enhancement.

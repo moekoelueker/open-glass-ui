@@ -18,7 +18,12 @@ test.describe("component atlas visual evidence", () => {
   test("desktop ranking, finalists, and component specimens", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/library");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: /Five engines\.\s*Three make the cut\./,
+      }),
+    ).toBeVisible();
     await page.screenshot({
       path: screenshotPath(testInfo.project.name, "desktop", "ranking"),
       type: "jpeg",
@@ -47,7 +52,12 @@ test.describe("component atlas visual evidence", () => {
   test("mobile ranking, finalists, and component specimens", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/library");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: /Five engines\.\s*Three make the cut\./,
+      }),
+    ).toBeVisible();
     await page.screenshot({
       path: screenshotPath(testInfo.project.name, "mobile", "ranking"),
       type: "jpeg",

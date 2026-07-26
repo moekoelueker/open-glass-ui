@@ -16,7 +16,6 @@ import {
   Tooltip,
 } from "@open-glass-ui/recipes";
 import { type ReactNode, useState } from "react";
-import { AppLink } from "./app";
 import {
   ENVIRONMENT_LABELS,
   ENVIRONMENTS,
@@ -32,16 +31,17 @@ import {
   WebGLBackdrop,
 } from "./engine-visuals";
 import { Icon } from "./icons";
+import { AppLink } from "./navigation";
 
 function Wordmark() {
   return (
-    <AppLink href="/" className="wordmark" aria-label="OpenGlass UI comparison home">
+    <AppLink href="/" className="wordmark" aria-label="OpenGlass UI home">
       <span className="wordmark__mark" aria-hidden="true">
         O
       </span>
       <span>
         <strong>OPENGLASS</strong>
-        <small>Material research 001</small>
+        <small>Glass UI for React</small>
       </span>
     </AppLink>
   );
@@ -52,7 +52,7 @@ export function SiteHeader({
   section,
 }: {
   active?: EngineId;
-  section?: "library" | "docs" | "validation";
+  section?: "library" | "docs" | "research" | "validation";
 }) {
   return (
     <>
@@ -63,13 +63,13 @@ export function SiteHeader({
         <Wordmark />
         <nav className="site-header__nav" aria-label="Primary navigation">
           <AppLink href="/" className={!active && !section ? "is-active" : undefined}>
-            Index
+            Overview
           </AppLink>
-          <AppLink href="/library" className={section === "library" ? "is-active" : undefined}>
-            Library
+          <AppLink href="/components" className={section === "library" ? "is-active" : undefined}>
+            Components
           </AppLink>
           <AppLink href="/docs" className={section === "docs" ? "is-active" : undefined}>
-            Architecture
+            Docs
           </AppLink>
           <AppLink
             href="/validation"
@@ -80,7 +80,7 @@ export function SiteHeader({
         </nav>
         <div className="site-header__status">
           <span className="status-light" aria-hidden="true" />
-          Research build
+          Release candidate
         </div>
       </header>
     </>
@@ -92,13 +92,13 @@ export function Footer() {
     <footer className="site-footer">
       <Wordmark />
       <p>
-        Five rendering hypotheses. One shared test harness.
+        Forty accessible React components.
         <br />
-        Built as clean-room, MIT-licensed research.
+        CSS-first glass with opt-in refraction.
       </p>
       <div>
-        <AppLink href="/library">Open component atlas</AppLink>
-        <AppLink href="/docs">Read the architecture</AppLink>
+        <AppLink href="/components">Explore components</AppLink>
+        <AppLink href="/docs">Read the docs</AppLink>
         <AppLink href="/validation">View validation</AppLink>
       </div>
     </footer>
@@ -129,7 +129,7 @@ function HomePreview({ engine }: { engine: EngineId }) {
 export function ComparisonHome() {
   return (
     <div className="site-shell home-page">
-      <SiteHeader />
+      <SiteHeader section="research" />
       <main id="main-content" tabIndex={-1}>
         <section className="home-hero">
           <div className="eyebrow">
@@ -899,9 +899,10 @@ export function DocumentationView() {
 
 export function ValidationView() {
   const checks = [
-    ["Unit + property", "65 passing", "complete"],
-    ["Browser behavior", "122 passing · 7 capability skips", "complete"],
+    ["Unit + property", "88 passing", "complete"],
+    ["Browser behavior", "155 passing · 7 capability skips", "complete"],
     ["Component atlas", "40 recipes · 3 finalist routes", "complete"],
+    ["Product landing", "33 cross-browser checks · desktop + mobile", "complete"],
     ["Atlas evidence", "84 approved captures · 2 visual passes", "complete"],
     ["Engine evidence", "81 approved pass-02 captures", "complete"],
     ["Accessibility", "Axe + keyboard + fallback modes", "complete"],

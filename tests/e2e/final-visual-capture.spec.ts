@@ -29,8 +29,27 @@ test.describe("OpenGlass UI final visual evidence", () => {
   }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
 
+    await page.goto("/");
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: "Glass is not a blur. It’s an interface system.",
+      }),
+    ).toBeVisible();
+    await settleVisual(page);
+    await page.screenshot({
+      path: output(browserName, "desktop", "landing-dark-neutral.jpg"),
+      type: "jpeg",
+      quality: 90,
+    });
+
     await page.goto("/library");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: /Five engines\.\s*Three make the cut\./,
+      }),
+    ).toBeVisible();
     await settleVisual(page);
     await page.screenshot({
       path: output(browserName, "desktop", "ranking.jpg"),
@@ -43,9 +62,7 @@ test.describe("OpenGlass UI final visual evidence", () => {
       await expect(page.locator(".atlas-page")).toHaveAttribute("data-ogui-appearance", "dark");
       await expect(page.locator(".atlas-page")).toHaveAttribute("data-ogui-theme-hydrated", "true");
       await expect(page.locator(".atlas-hero__glass > strong")).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: "OpenGlass UI comparison home" }).first(),
-      ).toBeVisible();
+      await expect(page.getByRole("link", { name: "OpenGlass UI home" }).first()).toBeVisible();
       await settleVisual(page);
       await page.screenshot({
         path: output(browserName, "desktop", `${engine}-dark-neutral.jpg`),
@@ -73,6 +90,20 @@ test.describe("OpenGlass UI final visual evidence", () => {
 
   test("captures a custom accent system at a mobile boundary", async ({ page, browserName }) => {
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: "Glass is not a blur. It’s an interface system.",
+      }),
+    ).toBeVisible();
+    await settleVisual(page);
+    await page.screenshot({
+      path: output(browserName, "mobile", "landing-dark-neutral.jpg"),
+      type: "jpeg",
+      quality: 90,
+    });
+
     await page.goto(
       "/library/hybrid?appearance=dark&preset=neutral&radius=balanced&accent=%232057d4&secondary=%23735ad8&tertiary=%2320a7a0",
     );

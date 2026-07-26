@@ -48,12 +48,22 @@ import {
   Tooltip,
 } from "@open-glass-ui/recipes";
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useState } from "react";
-import { AppLink } from "./app";
 import { EnvironmentBackdrop, WebGLBackdrop } from "./engine-visuals";
 import { Icon } from "./icons";
+import { AppLink } from "./navigation";
 import { Footer, SiteHeader } from "./pages";
 
 export type AtlasVariant = "hybrid" | "css" | "webgl";
+
+export type ComponentAtlasPageProps =
+  | {
+      variant: "hybrid";
+      product: true;
+    }
+  | {
+      variant: AtlasVariant;
+      product?: false;
+    };
 
 interface AtlasThemeState {
   appearance: GlassAppearancePreference;
@@ -388,19 +398,31 @@ function AtlasNav({ active }: { active: AtlasVariant }) {
   );
 }
 
-function AtlasHero({ variant }: { variant: AtlasVariant }) {
+function AtlasHero({ variant, product = false }: { variant: AtlasVariant; product?: boolean }) {
   const meta = ATLAS_META[variant];
+  const title = product ? "One system. Forty components. Built to adapt." : meta.title;
+  const description = product
+    ? "Accessible React components share one neutral theme contract, native DOM semantics, and a CSS-first material that progressively enhances when the surface allows it."
+    : meta.description;
+  const metric = product ? "40 / 40" : meta.metric;
+
   return (
     <section className="atlas-hero">
       <div className="atlas-hero__copy">
         <span className="section-kicker">
-          Rank {meta.rank} / {meta.eyebrow}
+          {product ? "OpenGlass UI / Component system" : `Rank ${meta.rank} / ${meta.eyebrow}`}
         </span>
-        <h1>{meta.title}</h1>
-        <p>{meta.description}</p>
+        <h1>{title}</h1>
+        <p>{description}</p>
         <div>
-          <Badge tone="positive">40 production recipes</Badge>
-          <span>React 19 · native DOM · adaptive motion</span>
+          <Badge tone="positive">
+            {product ? "40 interactive components" : "40 production recipes"}
+          </Badge>
+          <span>
+            {product
+              ? "React 18+ · native DOM · neutral by default"
+              : "React 19 · native DOM · adaptive motion"}
+          </span>
         </div>
       </div>
       <div className="atlas-hero__scene">
@@ -411,27 +433,27 @@ function AtlasHero({ variant }: { variant: AtlasVariant }) {
         )}
         <Glass className="atlas-hero__glass" material="clear" tone="dark" interactive>
           <div className="atlas-hero__glass-meta">
-            <span>OPENGLASS / {variant.toUpperCase()}</span>
+            <span>OPENGLASS / {product ? "COMPONENTS" : variant.toUpperCase()}</span>
             <i aria-hidden="true" />
             <span>LIVE</span>
           </div>
-          <strong>{meta.metric}</strong>
-          <p>Weighted library score</p>
+          <strong>{metric}</strong>
+          <p>{product ? "Interactive React recipes" : "Weighted library score"}</p>
           <Progress
-            label="Capability fit"
-            value={variant === "hybrid" ? 98 : variant === "css" ? 95 : 82}
+            label={product ? "Component coverage" : "Capability fit"}
+            value={product ? 100 : variant === "hybrid" ? 98 : variant === "css" ? 95 : 82}
           />
         </Glass>
         {variant === "hybrid" ? (
           <div className="atlas-policy" aria-hidden="true">
-            <span>HERO</span>
-            <strong>WEBGL</strong>
+            <span>{product ? "BASELINE" : "HERO"}</span>
+            <strong>{product ? "SEMANTIC" : "WEBGL"}</strong>
             <i />
-            <span>CONTROL</span>
-            <strong>CSS</strong>
+            <span>{product ? "MOTION" : "CONTROL"}</span>
+            <strong>{product ? "SYSTEM" : "CSS"}</strong>
             <i />
-            <span>FALLBACK</span>
-            <strong>OPAQUE</strong>
+            <span>{product ? "CONTRAST" : "FALLBACK"}</span>
+            <strong>{product ? "HIGH" : "OPAQUE"}</strong>
           </div>
         ) : null}
       </div>
@@ -457,6 +479,7 @@ function Specimen({
       className={`atlas-specimen${wide ? " atlas-specimen--wide" : ""}`}
       style={{ "--specimen-index": number } as CSSProperties}
       data-component={name}
+      data-component-name={name}
     >
       <header>
         <span>{String(number).padStart(2, "0")}</span>
@@ -633,7 +656,9 @@ function AtlasThemeStudio({
   );
 }
 
-export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
+export function ComponentAtlasPage(props: ComponentAtlasPageProps) {
+  const { variant } = props;
+  const product = props.product === true;
   const [themeState, setThemeState] = useState<AtlasThemeState>(readAtlasThemeState);
   const [page, setPage] = useState(2);
   const [playing, setPlaying] = useState(false);
@@ -682,24 +707,26 @@ export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
     <GlassThemeProvider
       appearance={themeState.appearance}
       theme={theme}
-      className={`site-shell atlas-page atlas--${variant}`}
+      className={`site-shell atlas-page atlas--${variant}${product ? " atlas-page--product" : ""}`}
+      data-catalog-mode={product ? "product" : "comparison"}
     >
       <SiteHeader section="library" />
-      <AtlasNav active={variant} />
+      {product ? null : <AtlasNav active={variant} />}
       <main id="main-content" tabIndex={-1}>
-        <AtlasHero variant={variant} />
+        <AtlasHero variant={variant} product={product} />
         <div className="atlas-manifest">
           <div>
             <span>40</span>
             <small>Components</small>
           </div>
           <div>
-            <span>6</span>
-            <small>Families</small>
+            <span>{product ? "3" : "6"}</span>
+            <small>{product ? "Materials" : "Families"}</small>
           </div>
           <p>
-            Every specimen is live. Tab through it, change it, open it, and stress it. The optical
-            treatment changes; the React contract does not.
+            {product
+              ? "Every specimen is live. Tab through it, change it, open it, and stress it. Theme and material can change without giving up the semantic React contract."
+              : "Every specimen is live. Tab through it, change it, open it, and stress it. The optical treatment changes; the React contract does not."}
           </p>
           <code>pnpm add open-glass-ui</code>
         </div>
@@ -941,7 +968,9 @@ export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
               action={<Button size="small">Review policy</Button>}
               dismissible
             >
-              WebGL is reserved for the hero surface.
+              {product
+                ? "Premium optics stay contained so every control remains responsive."
+                : "WebGL is reserved for the hero surface."}
             </Banner>
           </Specimen>
         </Category>
@@ -949,11 +978,15 @@ export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
         <Category index="C" kicker="Navigation" title="Wayfinding with hierarchy, not haze.">
           <Specimen number={25} name="Breadcrumbs" detail="Compact path context." wide>
             <Breadcrumbs
-              items={[
-                { label: "Library", href: "/library" },
-                { label: variant, href: `/library/${variant}` },
-                { label: "Components" },
-              ]}
+              items={
+                product
+                  ? [{ label: "OpenGlass UI", href: "/" }, { label: "Components" }]
+                  : [
+                      { label: "Library", href: "/library" },
+                      { label: variant, href: `/library/${variant}` },
+                      { label: "Components" },
+                    ]
+              }
             />
           </Specimen>
           <Specimen number={26} name="Pagination" detail="Explicit pages with native controls.">
@@ -1093,15 +1126,26 @@ export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
 
         <section className="atlas-outro">
           <span className="section-index">40 / 40</span>
-          <h2>A component library, not an effects reel.</h2>
+          <h2>
+            {product
+              ? "A complete system, ready to become yours."
+              : "A component library, not an effects reel."}
+          </h2>
           <p>
-            Native semantics and shared React contracts make every variant easy to adopt. The engine
-            is an implementation choice—not a rewrite.
+            {product
+              ? "Forty native-DOM recipes, three semantic materials, and one theme contract give products a premium glass language without sacrificing usability."
+              : "Native semantics and shared React contracts make every variant easy to adopt. The engine is an implementation choice—not a rewrite."}
           </p>
           <div>
-            <AppLink href="/library" className="text-link">
-              Compare the ranking <Icon name="arrow" />
-            </AppLink>
+            {product ? (
+              <AppLink href="/" className="text-link">
+                Return to OpenGlass UI <Icon name="arrow" />
+              </AppLink>
+            ) : (
+              <AppLink href="/library" className="text-link">
+                Compare the ranking <Icon name="arrow" />
+              </AppLink>
+            )}
             <AppLink href="/docs" className="text-link">
               Read the architecture <Icon name="arrow" />
             </AppLink>

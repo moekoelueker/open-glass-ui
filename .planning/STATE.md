@@ -67,8 +67,9 @@
 - SSR-safe capability detection avoids user-agent sniffing.
 - Backdrop blur, backdrop URL syntax, SVG elements, and WebGL2 are represented as
   separate capabilities.
-- Adaptive selection uses controlled-media WebGL2, supplied-DOM SDF/SVG, and an
-  intentional CSS fallback.
+- Adaptive selection is CSS-first; controlled-media WebGL2 is an explicit
+  opt-in, while supplied-DOM SDF/SVG remains available without changing the
+  semantic component contract.
 - Forced colors and reduced transparency always resolve to CSS/opaque material.
 - SVG map encoding, stable map-specific IDs, conservative filter bounds, and RGB
   channel scale separation are implemented.
@@ -159,10 +160,13 @@
 - Neutral adaptive theming, custom accent/secondary/tertiary colors, and the
   combined `GlassSystemProvider` are complete.
 - Eighty-eight unit tests pass across sixteen files.
-- One hundred twenty-two browser checks pass across Chromium, Firefox, and
+- One hundred fifty-five browser checks pass across Chromium, Firefox, and
   WebKit with seven intentional capability-gated skips.
-- Twenty-seven final neutral/custom-accent screenshots were regenerated and
-  inspected across all three browser engines.
+- Thirty-three final neutral/custom-accent/product-landing screenshots were
+  regenerated and inspected across all three browser engines.
+- The public landing now has a one-line sticky glass navigation capsule,
+  interactive hero lenses, explicit material-anatomy studies, authoritative
+  contour/distortion controls, and premium radius-matched CTA optics.
 - The packed facade passes React 18 SSR and declarations, Next.js RSC/static
   build, export, peer, license, tree-shaking, and WebGL-isolation checks.
 - The public root bundles to 18,743 bytes with zero eager WebGL inputs.

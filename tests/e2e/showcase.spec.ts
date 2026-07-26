@@ -18,7 +18,7 @@ const engineAnnotations = {
 } as const;
 
 test("comparison home exposes all five experiments", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/research");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Glass is not");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("a blur.");
 

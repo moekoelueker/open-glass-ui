@@ -24,8 +24,8 @@ test.describe("visual evidence capture", () => {
 
   test("desktop home and experiment specimens", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await page.goto("/research");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Glass is not");
     await page.screenshot({
       path: screenshotPath("pass-02", testInfo.project.name, "desktop", "home"),
       type: "jpeg",
@@ -55,8 +55,8 @@ test.describe("visual evidence capture", () => {
 
   test("mobile home and experiment specimens", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await page.goto("/research");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Glass is not");
     await page.screenshot({
       path: screenshotPath("pass-02", testInfo.project.name, "mobile", "home"),
       type: "jpeg",

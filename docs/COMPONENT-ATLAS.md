@@ -147,6 +147,21 @@ Historical visual evidence is checked in at:
 Each pass contains ranking, hero, and representative component captures at
 desktop and mobile sizes in Chromium, Firefox, and WebKit.
 
+## Public product landing evidence
+
+The public `/` route now presents one OpenGlass UI system instead of the
+renderer comparison. The canonical `/components` route exposes the complete
+forty-recipe catalog without rank or engine framing, while `/research` retains
+the five-engine decision record.
+
+Eleven focused landing contracts pass in each of Chromium, Firefox, and WebKit:
+product messaging, one-line sticky navigation, authoritative playground state,
+interactive lens response, material-anatomy explanations, product
+compositions, install/AI resources, Axe, 320/390 px boundaries, reduced motion,
+and the canonical component catalog. Six dedicated landing captures—desktop
+and mobile in all three browser engines—are included in
+`artifacts/screenshots/open-glass-ui-final`.
+
 ## Historical atlas validation
 
 The 2026-07-24 atlas pass recorded 65 unit/property/SSR/recipe checks and 42

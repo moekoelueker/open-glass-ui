@@ -60,12 +60,20 @@ for (const [id, title] of finalists) {
 
 test("atlas recipes complete their interaction contracts", async ({ page }) => {
   await page.goto("/library/hybrid");
+  await page.addStyleTag({
+    content: `
+      html { scroll-behavior: auto !important; }
+      .atlas-specimen { animation: none !important; transition: none !important; }
+    `,
+  });
+  await expect(page.locator(".atlas-page")).toHaveAttribute("data-ogui-theme-hydrated", "true");
+  await expect(page.locator(".atlas-specimen[data-component]")).toHaveCount(40);
 
-  await page.getByRole("button", { name: "Page 4" }).click();
-  await expect(page.getByRole("button", { name: "Page 4" })).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
+  const pagination = page.locator('[data-component="Pagination"]');
+  await pagination.scrollIntoViewIfNeeded();
+  const pageFour = pagination.getByRole("button", { name: "Page 4" });
+  await pageFour.click();
+  await expect(pageFour).toHaveAttribute("aria-current", "page");
 
   await page.getByRole("button", { name: "What happens without backdrop-filter?" }).click();
   await expect(

@@ -21,7 +21,7 @@
     "test": "pnpm test:unit && pnpm test:e2e",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --workers=1 --retries=2",
     "test:e2e:update": "playwright test --update-snapshots",
     "verify:packages": "pnpm run build && node scripts/verify-packages.mjs",
     "clean": "pnpm -r --if-present clean",

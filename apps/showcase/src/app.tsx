@@ -1,68 +1,114 @@
-import { type MouseEvent, useEffect, useState } from "react";
-import { type AtlasVariant, ComponentAtlasHome, ComponentAtlasPage } from "./component-atlas";
-import { ComparisonHome, DocumentationView, ExperimentPage, ValidationView } from "./pages";
+import { Component, lazy, type ReactNode, Suspense, useEffect, useState } from "react";
+import type { AtlasVariant } from "./component-atlas";
+import { LandingPage } from "./landing-page";
+import { AppLink } from "./navigation";
+
+const loadAtlas = () => import("./component-atlas");
+const loadPages = () => import("./pages");
+
+const ComponentAtlasHome = lazy(() =>
+  loadAtlas().then((module) => ({ default: module.ComponentAtlasHome })),
+);
+const ComponentAtlasPage = lazy(() =>
+  loadAtlas().then((module) => ({ default: module.ComponentAtlasPage })),
+);
+const ComparisonHome = lazy(() =>
+  loadPages().then((module) => ({ default: module.ComparisonHome })),
+);
+const DocumentationView = lazy(() =>
+  loadPages().then((module) => ({ default: module.DocumentationView })),
+);
+const ExperimentPage = lazy(() =>
+  loadPages().then((module) => ({ default: module.ExperimentPage })),
+);
+const ValidationView = lazy(() =>
+  loadPages().then((module) => ({ default: module.ValidationView })),
+);
 
 function normalizedPath() {
   return window.location.pathname.replace(/\/+$/, "") || "/";
 }
 
-export function navigate(href: string) {
-  if (normalizedPath() === href) {
-    return;
-  }
-  window.history.pushState({}, "", href);
-  window.dispatchEvent(new PopStateEvent("popstate"));
-  window.scrollTo({ top: 0, behavior: "instant" });
-}
-
-export function AppLink({
-  href,
-  className,
-  children,
-  "aria-label": ariaLabel,
-}: {
-  href: string;
-  className?: string | undefined;
-  children: React.ReactNode;
-  "aria-label"?: string | undefined;
-}) {
+function RoutePending() {
   return (
-    <a
-      href={href}
-      className={className}
-      aria-label={ariaLabel}
-      onClick={(event: MouseEvent<HTMLAnchorElement>) => {
-        if (
-          event.defaultPrevented ||
-          event.button !== 0 ||
-          event.metaKey ||
-          event.ctrlKey ||
-          event.shiftKey ||
-          event.altKey
-        ) {
-          return;
-        }
-        event.preventDefault();
-        navigate(href);
-      }}
-    >
-      {children}
-    </a>
+    <div className="site-shell route-pending">
+      <main id="main-content" tabIndex={-1} aria-busy="true">
+        <h1 className="ogui-sr-only">OpenGlass UI</h1>
+        <div role="status">
+          <span aria-hidden="true" />
+          Loading OpenGlass UI
+        </div>
+      </main>
+    </div>
   );
 }
 
-export function App() {
-  const [path, setPath] = useState(normalizedPath);
+class RouteErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  override state = { failed: false };
 
-  useEffect(() => {
-    const handlePathChange = () => setPath(normalizedPath());
-    window.addEventListener("popstate", handlePathChange);
-    return () => window.removeEventListener("popstate", handlePathChange);
-  }, []);
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
 
+  override render() {
+    if (!this.state.failed) {
+      return this.props.children;
+    }
+
+    return (
+      <div className="site-shell">
+        <main id="main-content" tabIndex={-1} className="not-found" aria-live="assertive">
+          <span className="section-kicker">Route recovery / Chunk unavailable</span>
+          <h1>This surface could not finish loading.</h1>
+          <p>
+            The app may have updated while this page was open. Reload this route or return to the
+            stable landing page.
+          </p>
+          <div className="landing-hero__actions">
+            <button
+              type="button"
+              className="landing-button landing-button--primary"
+              onClick={() => window.location.reload()}
+            >
+              <span>Reload this route</span>
+            </button>
+            <AppLink className="landing-button" href="/">
+              Return to OpenGlass UI
+            </AppLink>
+          </div>
+        </main>
+      </div>
+    );
+  }
+}
+
+function NotFound() {
+  return (
+    <div className="site-shell">
+      <main id="main-content" tabIndex={-1} className="not-found">
+        <span className="section-kicker">404 / Unknown surface</span>
+        <h1>That glass is not in the system.</h1>
+        <AppLink className="text-link" href="/">
+          Return to OpenGlass UI
+        </AppLink>
+      </main>
+    </div>
+  );
+}
+
+function Route({ path }: { path: string }) {
   const experimentId = path.startsWith("/experiments/") ? path.split("/")[2] : undefined;
   const atlasId = path.startsWith("/library/") ? path.split("/")[2] : undefined;
 
+  if (path === "/") {
+    return <LandingPage />;
+  }
+  if (path === "/components") {
+    return <ComponentAtlasPage variant="hybrid" product />;
+  }
+  if (path === "/research") {
+    return <ComparisonHome />;
+  }
   if (experimentId) {
     return <ExperimentPage key={experimentId} id={experimentId} />;
   }
@@ -78,5 +124,23 @@ export function App() {
   if (path === "/validation") {
     return <ValidationView />;
   }
-  return <ComparisonHome />;
+  return <NotFound />;
+}
+
+export function App() {
+  const [path, setPath] = useState(normalizedPath);
+
+  useEffect(() => {
+    const handlePathChange = () => setPath(normalizedPath());
+    window.addEventListener("popstate", handlePathChange);
+    return () => window.removeEventListener("popstate", handlePathChange);
+  }, []);
+
+  return (
+    <RouteErrorBoundary key={path}>
+      <Suspense fallback={<RoutePending />}>
+        <Route path={path} />
+      </Suspense>
+    </RouteErrorBoundary>
+  );
 }
