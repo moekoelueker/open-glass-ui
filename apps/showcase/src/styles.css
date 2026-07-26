@@ -3257,6 +3257,10 @@ a {
 
 .atlas-grid {
   display: grid;
+  /* Wide specimens (Tabs, Banner, MediaControls) span two columns and would
+     otherwise wrap early, leaving a visible empty cell in the previous row.
+     Dense packing backfills those holes with the next single-width specimen. */
+  grid-auto-flow: dense;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   border: 1px solid var(--atlas-line);
