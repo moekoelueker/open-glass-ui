@@ -13,6 +13,7 @@
     "bench:browser": "OPENGLASS_UI_PERF=1 playwright test tests/e2e/performance.spec.ts",
     "bench:optics": "pnpm --filter @open-glass-ui/core build && node scripts/benchmark-optics.mjs",
     "dev": "pnpm --filter @open-glass-ui/showcase dev",
+    "generate:brand": "node scripts/generate-brand-assets.mjs",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome lint .",

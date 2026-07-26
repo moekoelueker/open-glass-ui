@@ -295,6 +295,76 @@ function LandingBackdrop({ scene, motion }: { scene: LandingScene; motion: boole
   );
 }
 
+/**
+ * The inventory section claims every primitive is interactive, so it has to
+ * show that rather than assert it. These are the exported recipes, not
+ * screenshots or styled markup: they take focus, respond to input, and use the
+ * same tokens a consumer gets.
+ */
+function InventoryBench() {
+  const [notify, setNotify] = useState(true);
+  const [stage, setStage] = useState<"draft" | "review" | "shipped">("review");
+  const [grain, setGrain] = useState(62);
+  const [pinned, setPinned] = useState(false);
+  const [query, setQuery] = useState("");
+
+  return (
+    <Glass
+      as="section"
+      className="landing-bench"
+      material="regular"
+      aria-label="Live component specimens"
+      data-landing-bench=""
+    >
+      <div className="landing-bench__row">
+        <Button variant="primary">Create project</Button>
+        <Button variant="secondary">Duplicate</Button>
+        <Tooltip label="Add a collaborator">
+          <IconButton aria-label="Add a collaborator">+</IconButton>
+        </Tooltip>
+        <SegmentedControl
+          aria-label="Project stage"
+          value={stage}
+          onValueChange={setStage}
+          items={[
+            { value: "draft", label: "Draft" },
+            { value: "review", label: "Review" },
+            { value: "shipped", label: "Shipped" },
+          ]}
+        />
+        <ToggleButton pressed={pinned} onPressedChange={setPinned}>
+          {pinned ? "Pinned" : "Pin"}
+        </ToggleButton>
+        <Badge tone="positive">{stage}</Badge>
+      </div>
+      <div className="landing-bench__row">
+        <Switch label="Notify reviewers" checked={notify} onCheckedChange={setNotify} />
+        <Slider
+          label="Grain"
+          value={grain}
+          unit="%"
+          onChange={(event) => setGrain(Number(event.currentTarget.value))}
+        />
+        <SearchField
+          label="Find a component"
+          placeholder="Search components"
+          value={query}
+          onValueChange={setQuery}
+        />
+        <AvatarGroup>
+          <Avatar name="Ada Lovelace" size="small" />
+          <Avatar name="Grace Hopper" size="small" />
+          <Avatar name="Alan Turing" size="small" />
+        </AvatarGroup>
+      </div>
+      <p className="landing-bench__note">
+        Every control above is the shipped component. Tab into it, type in it, and it behaves the
+        same way in your app.
+      </p>
+    </Glass>
+  );
+}
+
 const RENDERER_REASON_LABEL: Record<string, string> = {
   "css-first": "CSS-first default",
   explicit: "Explicitly requested",
@@ -935,27 +1005,27 @@ export function LandingPage() {
         <section className="landing-proof" aria-label="OpenGlass UI facts">
           <div>
             <strong>40</strong>
-            <span>React components</span>
+            <span>Accessible components</span>
+          </div>
+          <div>
+            <strong>0</strong>
+            <span>Runtime dependencies</span>
+          </div>
+          <div>
+            <strong>1</strong>
+            <span>Package to install</span>
+          </div>
+          <div>
+            <strong>3</strong>
+            <span>Browser engines tested</span>
           </div>
           <div>
             <strong>18+</strong>
-            <span>React peer contract</span>
-          </div>
-          <div>
-            <strong>DOM</strong>
-            <span>Native semantics</span>
-          </div>
-          <div>
-            <strong>CSS</strong>
-            <span>First by default</span>
+            <span>React versions supported</span>
           </div>
           <div>
             <strong>MIT</strong>
-            <span>Open source</span>
-          </div>
-          <div>
-            <strong>03</strong>
-            <span>Browser engines</span>
+            <span>Licensed, free forever</span>
           </div>
         </section>
 
@@ -1131,6 +1201,7 @@ export function LandingPage() {
               </AppLink>
             </div>
           </div>
+          <InventoryBench />
           <div className="landing-inventory__groups">
             {COMPONENT_GROUPS.map((group, groupIndex) => (
               <article key={group.title}>
@@ -1264,7 +1335,7 @@ export function LandingPage() {
           </div>
           <div className="landing-validation__grid">
             <article>
-              <strong>88</strong>
+              <strong>93</strong>
               <span>Unit, SSR, and recipe checks</span>
               <p>Geometry, policy, theming, package contracts, and native interaction behavior.</p>
             </article>
@@ -1279,9 +1350,12 @@ export function LandingPage() {
               <p>The CSS-first package root keeps advanced optics behind an explicit import.</p>
             </article>
             <article>
-              <strong>MIT</strong>
-              <span>Open license</span>
-              <p>Prepared for GitHub and npm publication when the repository owner is ready.</p>
+              <strong>23%</strong>
+              <span>Barrel cost for one component</span>
+              <p>
+                Importing a single component pulls 12.8 KB of the 55.6 KB barrel, so unused
+                components are shaken out rather than shipped.
+              </p>
             </article>
           </div>
         </section>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="OpenGlass UI — the open-source Liquid Glass UI system for React">
+  <title>OpenGlass UI</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0e10" />
+      <stop offset="100%" stop-color="#141a1d" />
+    </linearGradient>
+    <radialGradient id="warmField" cx="22%" cy="72%" r="55%">
+      <stop offset="0%" stop-color="#f26445" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#f26445" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="coolField" cx="82%" cy="34%" r="52%">
+      <stop offset="0%" stop-color="#38bbc0" stop-opacity="0.26" />
+      <stop offset="100%" stop-color="#38bbc0" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="lens" cx="34%" cy="26%" r="80%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.30" />
+      <stop offset="60%" stop-color="#9fb0b4" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#0b0e10" stop-opacity="0.55" />
+    </radialGradient>
+    <clipPath id="lensShape">
+      <path d="M980 150c72 0 128 62 128 140 0 92-58 176-140 176-84 0-142-78-142-168 0-84 62-148 154-148Z" />
+    </clipPath>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect width="1200" height="630" fill="url(#warmField)" />
+  <rect width="1200" height="630" fill="url(#coolField)" />
+
+  <!-- Faint measurement grid, echoing the hero backdrop -->
+  <g stroke="#ffffff" stroke-opacity="0.045" stroke-width="1">
+    <path d="M0 105h1200M0 210h1200M0 315h1200M0 420h1200M0 525h1200" />
+    <path d="M150 0v630M300 0v630M450 0v630M600 0v630M750 0v630M900 0v630M1050 0v630" />
+  </g>
+
+  <!-- Formed glass lens -->
+  <g clip-path="url(#lensShape)">
+    <rect width="1200" height="630" fill="url(#lens)" />
+    <ellipse cx="930" cy="215" rx="66" ry="40" fill="#ffffff" opacity="0.34" />
+  </g>
+  <path
+    d="M980 150c72 0 128 62 128 140 0 92-58 176-140 176-84 0-142-78-142-168 0-84 62-148 154-148Z"
+    fill="none" stroke="#ffffff" stroke-opacity="0.30" stroke-width="2"
+  />
+  <path d="M832 250c-8 20-6 44 2 62" fill="none" stroke="#f26445" stroke-opacity="0.75" stroke-width="4" stroke-linecap="round" />
+  <path d="M1104 300c2 26-6 52-18 72" fill="none" stroke="#38bbc0" stroke-opacity="0.7" stroke-width="4" stroke-linecap="round" />
+
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+    <text x="96" y="132" fill="#8f9895" font-size="21" letter-spacing="5">OPENGLASS UI</text>
+
+    <text x="92" y="286" fill="#f7f6f1" font-size="106" font-weight="600" letter-spacing="-4">Glass is not a blur.</text>
+    <text x="92" y="392" fill="#f7f6f1" font-size="106" font-weight="600" letter-spacing="-4">It’s an interface</text>
+    <text x="92" y="498" fill="#f7f6f1" font-size="106" font-weight="600" letter-spacing="-4">system.</text>
+
+    <text x="96" y="566" fill="#a8b0ad" font-size="25">
+      40 accessible React components · CSS-first · zero runtime dependencies · MIT
+    </text>
+  </g>
+</svg>

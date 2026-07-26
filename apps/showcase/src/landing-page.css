@@ -2929,3 +2929,43 @@ button.landing-button {
     outline-offset: 3px;
   }
 }
+
+/* Live specimen bench in the component inventory section. */
+.landing-bench {
+  display: grid;
+  gap: 1.4rem;
+  margin-bottom: 3rem;
+  padding: 1.9rem;
+  border: 1px solid var(--ogui-material-border);
+  border-radius: 1.4rem 2.6rem 1.4rem 2.2rem;
+}
+
+.landing-bench__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.1rem 1.4rem;
+}
+
+.landing-bench__row .ogui-slider,
+.landing-bench__row .ogui-search-field {
+  min-width: 12rem;
+  flex: 1 1 12rem;
+}
+
+.landing-bench__note {
+  margin: 0;
+  color: var(--ogui-material-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 700px) {
+  .landing-bench {
+    padding: 1.25rem;
+  }
+
+  .landing-bench__row {
+    gap: 0.9rem 1rem;
+  }
+}

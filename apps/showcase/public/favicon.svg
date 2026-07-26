@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="OpenGlass UI">
+  <title>OpenGlass UI</title>
+  <defs>
+    <!-- The irregular optical aperture from the wordmark, flattened to a shape
+         a 16px favicon can still read. -->
+    <radialGradient id="body" cx="34%" cy="26%" r="82%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.34" />
+      <stop offset="52%" stop-color="#8fa3a8" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#0b0e10" stop-opacity="0.9" />
+    </radialGradient>
+    <radialGradient id="warm" cx="26%" cy="58%" r="46%">
+      <stop offset="0%" stop-color="#f26445" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#f26445" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="cool" cx="76%" cy="66%" r="44%">
+      <stop offset="0%" stop-color="#38bbc0" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#38bbc0" stop-opacity="0" />
+    </radialGradient>
+    <clipPath id="aperture">
+      <path d="M32 4C46 4 58 15 58 29c0 15-9 31-26 31C15 60 6 45 6 30 6 15 18 4 32 4Z" />
+    </clipPath>
+  </defs>
+
+  <rect width="64" height="64" rx="14" fill="#0b0e10" />
+
+  <g clip-path="url(#aperture)">
+    <rect width="64" height="64" fill="url(#body)" />
+    <rect width="64" height="64" fill="url(#warm)" />
+    <rect width="64" height="64" fill="url(#cool)" />
+    <!-- Specular highlight -->
+    <ellipse cx="24" cy="17" rx="9" ry="6" fill="#ffffff" opacity="0.5" />
+  </g>
+
+  <!-- Chromatic rim: warm on one edge, cool on the other, as in the wordmark -->
+  <path
+    d="M32 4C46 4 58 15 58 29c0 15-9 31-26 31C15 60 6 45 6 30 6 15 18 4 32 4Z"
+    fill="none"
+    stroke="#ffffff"
+    stroke-opacity="0.42"
+    stroke-width="2"
+  />
+  <path d="M9 22C7 26 6 30 6 33" fill="none" stroke="#f26445" stroke-opacity="0.9" stroke-width="2.5" stroke-linecap="round" />
+  <path d="M57 34c0 4-1 8-3 12" fill="none" stroke="#38bbc0" stroke-opacity="0.85" stroke-width="2.5" stroke-linecap="round" />
+</svg>

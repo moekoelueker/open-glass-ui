@@ -50,8 +50,63 @@ function llmsTextPlugin(): Plugin {
   };
 }
 
+/**
+ * Crawlable routes, in the order a reader would meet them. Kept here rather
+ * than in a checked-in public/sitemap.xml so the origin is configurable and the
+ * file cannot drift from the real route table.
+ */
+const SITE_ROUTES = [
+  { path: "/", priority: "1.0" },
+  { path: "/components", priority: "0.9" },
+  { path: "/docs", priority: "0.9" },
+  { path: "/validation", priority: "0.6" },
+  { path: "/research", priority: "0.6" },
+  { path: "/library", priority: "0.5" },
+  { path: "/library/hybrid", priority: "0.4" },
+  { path: "/library/css", priority: "0.4" },
+  { path: "/library/webgl", priority: "0.4" },
+  { path: "/experiments/css", priority: "0.3" },
+  { path: "/experiments/organic", priority: "0.3" },
+  { path: "/experiments/sdf", priority: "0.3" },
+  { path: "/experiments/webgl", priority: "0.3" },
+  { path: "/experiments/hybrid", priority: "0.3" },
+] as const;
+
+function crawlFilesPlugin(siteUrl: string): Plugin {
+  const origin = siteUrl.replace(/\/+$/, "");
+
+  return {
+    name: "open-glass-ui-crawl-files",
+    transformIndexHtml(html) {
+      // Canonical, og:url and og:image must be absolute, so the origin is
+      // stamped in at build time rather than hardcoded in the document.
+      return html.replaceAll("__SITE_URL__", origin);
+    },
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "robots.txt",
+        source: `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`,
+      });
+
+      const urls = SITE_ROUTES.map(
+        ({ path: routePath, priority }) =>
+          `  <url>\n    <loc>${origin}${routePath}</loc>\n    <priority>${priority}</priority>\n  </url>`,
+      ).join("\n");
+
+      this.emitFile({
+        type: "asset",
+        fileName: "sitemap.xml",
+        source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`,
+      });
+    },
+  };
+}
+
+const siteUrl = process.env.VITE_SITE_URL?.trim() || "https://openglass-ui.vercel.app";
+
 export default defineConfig({
-  plugins: [react(), llmsTextPlugin()],
+  plugins: [react(), llmsTextPlugin(), crawlFilesPlugin(siteUrl)],
   resolve: {
     alias: [
       {
