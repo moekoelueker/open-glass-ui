@@ -1,4 +1,10 @@
-import { Glass } from "@prism-lab/react";
+import type {
+  GlassAppearancePreference,
+  GlassRadius,
+  GlassThemeInput,
+  GlassThemePreset,
+} from "@open-glass-ui/core";
+import { Glass, GlassThemeProvider, useGlassTheme } from "@open-glass-ui/react";
 import {
   Accordion,
   Alert,
@@ -40,14 +46,70 @@ import {
   ToggleButton,
   Toolbar,
   Tooltip,
-} from "@prism-lab/recipes";
-import { type CSSProperties, type ReactNode, useState } from "react";
+} from "@open-glass-ui/recipes";
+import { type CSSProperties, type ReactNode, useEffect, useMemo, useState } from "react";
 import { AppLink } from "./app";
 import { EnvironmentBackdrop, WebGLBackdrop } from "./engine-visuals";
 import { Icon } from "./icons";
 import { Footer, SiteHeader } from "./pages";
 
 export type AtlasVariant = "hybrid" | "css" | "webgl";
+
+interface AtlasThemeState {
+  appearance: GlassAppearancePreference;
+  preset: GlassThemePreset;
+  radius: GlassRadius;
+  accent?: string;
+  secondary?: string;
+  tertiary?: string;
+}
+
+const THEME_PRESETS: readonly GlassThemePreset[] = [
+  "neutral",
+  "cobalt",
+  "teal",
+  "violet",
+  "coral",
+  "amber",
+];
+
+function readAtlasThemeState(): AtlasThemeState {
+  const fallback: AtlasThemeState = {
+    appearance: "system",
+    preset: "neutral",
+    radius: "balanced",
+  };
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  const search = new URLSearchParams(window.location.search);
+  const appearance = search.get("appearance");
+  const preset = search.get("preset");
+  const radius = search.get("radius");
+  const readColor = (name: string) => {
+    const value = search.get(name);
+    return value && /^#[\da-f]{6}$/i.test(value) ? value : undefined;
+  };
+  const accent = readColor("accent");
+  const secondary = readColor("secondary");
+  const tertiary = readColor("tertiary");
+
+  return {
+    appearance:
+      appearance === "dark" || appearance === "light" || appearance === "system"
+        ? appearance
+        : fallback.appearance,
+    preset: THEME_PRESETS.includes(preset as GlassThemePreset)
+      ? (preset as GlassThemePreset)
+      : fallback.preset,
+    radius:
+      radius === "sharp" || radius === "balanced" || radius === "soft" ? radius : fallback.radius,
+    ...(accent ? { accent } : {}),
+    ...(secondary ? { secondary } : {}),
+    ...(tertiary ? { tertiary } : {}),
+  };
+}
 
 interface RankingEntry {
   id: "hybrid" | "css" | "webgl" | "organic" | "sdf";
@@ -182,7 +244,7 @@ export function ComponentAtlasHome() {
   return (
     <div className="site-shell ranking-page">
       <SiteHeader section="library" />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <section className="ranking-hero">
           <div>
             <span className="section-kicker">Weighted decision / 2026.07</span>
@@ -349,7 +411,7 @@ function AtlasHero({ variant }: { variant: AtlasVariant }) {
         )}
         <Glass className="atlas-hero__glass" material="clear" tone="dark" interactive>
           <div className="atlas-hero__glass-meta">
-            <span>PRISM / {variant.toUpperCase()}</span>
+            <span>OPENGLASS / {variant.toUpperCase()}</span>
             <i aria-hidden="true" />
             <span>LIVE</span>
           </div>
@@ -432,7 +494,147 @@ function Category({
   );
 }
 
+function AtlasThemeStudio({
+  value,
+  onChange,
+  onReset,
+}: {
+  value: AtlasThemeState;
+  onChange: (next: AtlasThemeState) => void;
+  onReset: () => void;
+}) {
+  const { palette } = useGlassTheme();
+
+  return (
+    <section className="atlas-theme-studio" aria-labelledby="atlas-theme-heading">
+      <div className="atlas-theme-studio__intro">
+        <span className="section-index">T</span>
+        <div>
+          <p className="section-kicker">Live theme contract</p>
+          <h2 id="atlas-theme-heading">Neutral by default. Yours in seconds.</h2>
+        </div>
+        <p>
+          Every control below updates the same semantic tokens consumers receive. Contrast-safe ink
+          is derived automatically from the accent.
+        </p>
+      </div>
+
+      <div className="atlas-theme-studio__controls">
+        <fieldset>
+          <legend>Appearance</legend>
+          <SegmentedControl
+            aria-label="Theme appearance"
+            value={value.appearance}
+            onValueChange={(appearance) => onChange({ ...value, appearance })}
+            items={[
+              { value: "system", label: "System" },
+              { value: "dark", label: "Dark" },
+              { value: "light", label: "Light" },
+            ]}
+          />
+        </fieldset>
+
+        <Select
+          label="Accent preset"
+          name="theme-preset"
+          value={value.preset}
+          onChange={(event) =>
+            onChange({
+              appearance: value.appearance,
+              preset: event.currentTarget.value as GlassThemePreset,
+              radius: value.radius,
+            })
+          }
+          options={THEME_PRESETS.map((preset) => ({
+            value: preset,
+            label: `${preset[0]?.toUpperCase()}${preset.slice(1)}`,
+          }))}
+        />
+
+        <Select
+          label="Corner language"
+          name="theme-radius"
+          value={value.radius}
+          onChange={(event) =>
+            onChange({ ...value, radius: event.currentTarget.value as GlassRadius })
+          }
+          options={[
+            { value: "sharp", label: "Sharp" },
+            { value: "balanced", label: "Balanced" },
+            { value: "soft", label: "Soft" },
+          ]}
+        />
+
+        <label className="atlas-color-control">
+          <span>
+            Accent
+            <code>{palette.accent}</code>
+          </span>
+          <input
+            type="color"
+            name="theme-accent"
+            value={palette.accent}
+            onChange={(event) => onChange({ ...value, accent: event.currentTarget.value })}
+          />
+        </label>
+
+        <label className="atlas-color-control">
+          <span>
+            Secondary
+            <code>{palette.secondary}</code>
+          </span>
+          <input
+            type="color"
+            name="theme-secondary"
+            value={palette.secondary}
+            onChange={(event) => onChange({ ...value, secondary: event.currentTarget.value })}
+          />
+        </label>
+
+        <label className="atlas-color-control">
+          <span>
+            Tertiary
+            <code>{palette.tertiary}</code>
+          </span>
+          <input
+            type="color"
+            name="theme-tertiary"
+            value={palette.tertiary}
+            onChange={(event) => onChange({ ...value, tertiary: event.currentTarget.value })}
+          />
+        </label>
+      </div>
+
+      <div className="atlas-theme-studio__result">
+        <div className="atlas-theme-swatch" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </div>
+        <dl>
+          <div>
+            <dt>Foreground</dt>
+            <dd>{palette.accentInk}</dd>
+          </div>
+          <div>
+            <dt>Contrast</dt>
+            <dd>{palette.accentContrast.toFixed(2)}:1</dd>
+          </div>
+          <div>
+            <dt>Runtime</dt>
+            <dd>CSS-first</dd>
+          </div>
+        </dl>
+        <Button variant="quiet" onClick={onReset}>
+          Reset neutral theme
+        </Button>
+      </div>
+    </section>
+  );
+}
+
 export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
+  const [themeState, setThemeState] = useState<AtlasThemeState>(readAtlasThemeState);
   const [page, setPage] = useState(2);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(42);
@@ -441,12 +643,50 @@ export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
   const [alertVisible, setAlertVisible] = useState(true);
   const [search, setSearch] = useState("Refraction");
   const [quantity, setQuantity] = useState(3);
+  const [cardSelected, setCardSelected] = useState(false);
+  const theme = useMemo<GlassThemeInput>(
+    () => ({
+      preset: themeState.preset,
+      radius: themeState.radius,
+      contrast: "high",
+      ...(themeState.accent ? { accent: themeState.accent } : {}),
+      ...(themeState.secondary ? { secondary: themeState.secondary } : {}),
+      ...(themeState.tertiary ? { tertiary: themeState.tertiary } : {}),
+    }),
+    [
+      themeState.accent,
+      themeState.preset,
+      themeState.radius,
+      themeState.secondary,
+      themeState.tertiary,
+    ],
+  );
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("appearance", themeState.appearance);
+    url.searchParams.set("preset", themeState.preset);
+    url.searchParams.set("radius", themeState.radius);
+    for (const color of ["accent", "secondary", "tertiary"] as const) {
+      const value = themeState[color];
+      if (value) {
+        url.searchParams.set(color, value);
+      } else {
+        url.searchParams.delete(color);
+      }
+    }
+    window.history.replaceState(window.history.state, "", url);
+  }, [themeState]);
 
   return (
-    <div className={`site-shell atlas-page atlas--${variant}`}>
+    <GlassThemeProvider
+      appearance={themeState.appearance}
+      theme={theme}
+      className={`site-shell atlas-page atlas--${variant}`}
+    >
       <SiteHeader section="library" />
       <AtlasNav active={variant} />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <AtlasHero variant={variant} />
         <div className="atlas-manifest">
           <div>
@@ -461,8 +701,15 @@ export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
             Every specimen is live. Tab through it, change it, open it, and stress it. The optical
             treatment changes; the React contract does not.
           </p>
-          <code>pnpm add @prism-lab/react @prism-lab/recipes</code>
+          <code>pnpm add open-glass-ui</code>
         </div>
+        <AtlasThemeStudio
+          value={themeState}
+          onChange={setThemeState}
+          onReset={() =>
+            setThemeState({ appearance: "system", preset: "neutral", radius: "balanced" })
+          }
+        />
 
         <Category
           index="A"
@@ -471,7 +718,7 @@ export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
         >
           <Specimen number={1} name="Button" detail="Four intent levels, three sizes.">
             <div className="specimen-row">
-              <Button variant="primary">Create prism</Button>
+              <Button variant="primary">Create surface</Button>
               <Button variant="secondary">Preview</Button>
               <Button variant="quiet">Cancel</Button>
             </div>
@@ -621,7 +868,7 @@ export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
           <Specimen number={15} name="Avatar" detail="Image or generated initials.">
             <div className="specimen-row">
               <Avatar name="Moe Lueker" size="large" />
-              <Avatar name="Prism Lab" />
+              <Avatar name="OpenGlass UI" />
               <Avatar name="Glass Runtime" size="small" />
             </div>
           </Specimen>
@@ -637,8 +884,13 @@ export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
             <Card
               eyebrow="Material 07"
               title="Coastal clear"
-              footer={<Badge tone="positive">Production</Badge>}
+              footer={
+                <Badge tone={cardSelected ? "accent" : "positive"}>
+                  {cardSelected ? "Selected" : "Production"}
+                </Badge>
+              }
               interactive
+              onPress={() => setCardSelected((selected) => !selected)}
             >
               High contrast optics tuned for full-bleed photography.
             </Card>
@@ -857,6 +1109,6 @@ export function ComponentAtlasPage({ variant }: { variant: AtlasVariant }) {
         </section>
       </main>
       <Footer />
-    </div>
+    </GlassThemeProvider>
   );
 }

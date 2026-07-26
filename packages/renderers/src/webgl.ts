@@ -1,4 +1,4 @@
-import type { GlassMaterial } from "@prism-lab/core";
+import type { GlassMaterial } from "@open-glass-ui/core";
 
 export const MAX_WEBGL_LENSES = 6;
 

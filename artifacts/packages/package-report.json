@@ -1,42 +1,66 @@
 {
-  "generatedAt": "2026-07-24T23:55:29.186Z",
+  "generatedAt": "2026-07-26T04:42:23.220Z",
   "node": "v24.11.1",
   "packages": {
-    "@prism-lab/core": {
-      "archive": "artifacts/packages/prism-lab-core-0.0.0.tgz",
-      "bytes": 5006,
-      "files": 4,
+    "@open-glass-ui/core": {
+      "archive": "artifacts/packages/open-glass-ui-core-0.1.0-rc.0.tgz",
+      "bytes": 7834,
+      "files": 5,
+      "npmDryRunFiles": 5,
       "sideEffects": false
     },
-    "@prism-lab/renderers": {
-      "archive": "artifacts/packages/prism-lab-renderers-0.0.0.tgz",
-      "bytes": 8081,
-      "files": 4,
+    "@open-glass-ui/renderers": {
+      "archive": "artifacts/packages/open-glass-ui-renderers-0.1.0-rc.0.tgz",
+      "bytes": 8573,
+      "files": 7,
+      "npmDryRunFiles": 7,
       "sideEffects": false
     },
-    "@prism-lab/react": {
-      "archive": "artifacts/packages/prism-lab-react-0.0.0.tgz",
-      "bytes": 8093,
-      "files": 4,
+    "@open-glass-ui/react": {
+      "archive": "artifacts/packages/open-glass-ui-react-0.1.0-rc.0.tgz",
+      "bytes": 9528,
+      "files": 8,
+      "npmDryRunFiles": 8,
       "sideEffects": false
     },
-    "@prism-lab/recipes": {
-      "archive": "artifacts/packages/prism-lab-recipes-0.0.0.tgz",
-      "bytes": 21782,
-      "files": 6,
+    "@open-glass-ui/recipes": {
+      "archive": "artifacts/packages/open-glass-ui-recipes-0.1.0-rc.0.tgz",
+      "bytes": 28620,
+      "files": 7,
+      "npmDryRunFiles": 7,
+      "sideEffects": [
+        "**/*.css"
+      ]
+    },
+    "open-glass-ui": {
+      "archive": "artifacts/packages/open-glass-ui-0.1.0-rc.0.tgz",
+      "bytes": 10221,
+      "files": 10,
+      "npmDryRunFiles": 10,
       "sideEffects": [
         "**/*.css"
       ]
     }
   },
   "packedInstall": "passed",
-  "exportsSmoke": "passed",
+  "facadeExportsSmoke": "passed",
+  "facadeStyles": "passed",
   "peerDependencies": "passed",
+  "react18Compatibility": "passed",
+  "react18Types": "passed",
   "coreRuntimeDependencies": 0,
+  "webglIsolation": {
+    "rootFacadeBytes": 18743,
+    "rootFacadeInputs": 7,
+    "eagerWebGLInputs": 0,
+    "webglSubpathBytes": 12190,
+    "webglSubpathInputs": 6,
+    "status": "passed"
+  },
   "treeShaking": {
-    "entry": "signedDistance only",
+    "entry": "signedDistance from public facade",
     "bytes": 1222,
-    "inputCount": 2,
+    "inputCount": 7,
     "status": "passed"
   }
 }

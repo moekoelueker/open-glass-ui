@@ -1,15 +1,16 @@
 {
-  "name": "@prism-lab/next-fixture",
+  "name": "@open-glass-ui/next-fixture",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "build": "next build",
     "dev": "next dev --port 4174",
+    "typegen": "next typegen",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prism-lab/react": "workspace:*",
     "next": "16.2.11",
+    "open-glass-ui": "workspace:*",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

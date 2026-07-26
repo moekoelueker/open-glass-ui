@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -96,8 +96,53 @@ describe("Menu", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     await user.click(trigger);
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
-    await user.click(screen.getByRole("menuitem", { name: "Duplicate" }));
+    const item = screen.getByRole("menuitem", { name: "Duplicate" });
+    expect(trigger.closest(".ogui-disclosure")?.contains(item)).toBe(false);
+    expect(item.closest("[data-ogui-portal='disclosure']")).toBeTruthy();
+    await user.click(item);
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(document.activeElement).toBe(trigger);
+  });
+
+  it("opens from the keyboard and supports roving focus and typeahead", async () => {
+    render(
+      <Menu label="Layer actions" trigger={<Button>More</Button>}>
+        <MenuItem>Duplicate</MenuItem>
+        <MenuItem>Rename</MenuItem>
+        <MenuItem>Archive</MenuItem>
+      </Menu>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Layer actions" });
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+
+    const duplicate = screen.getByRole("menuitem", { name: "Duplicate" });
+    const rename = screen.getByRole("menuitem", { name: "Rename" });
+    const archive = screen.getByRole("menuitem", { name: "Archive" });
+    await waitFor(() => expect(document.activeElement).toBe(duplicate));
+
+    fireEvent.keyDown(duplicate, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(rename);
+    fireEvent.keyDown(rename, { key: "End" });
+    expect(document.activeElement).toBe(archive);
+    fireEvent.keyDown(archive, { key: "d" });
+    expect(document.activeElement).toBe(duplicate);
+  });
+
+  it("closes a portaled surface on outside pointer interaction", async () => {
+    const user = userEvent.setup();
+    render(
+      <Menu label="More actions" trigger={<Button>More</Button>}>
+        <MenuItem>Duplicate</MenuItem>
+      </Menu>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    await user.click(trigger);
+    expect(screen.getByRole("menu")).toBeTruthy();
+    fireEvent.pointerDown(document.body);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByRole("menu")).toBeNull();
   });
 });

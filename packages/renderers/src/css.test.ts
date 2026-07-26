@@ -19,9 +19,9 @@ describe("semantic CSS materials", () => {
       backdropFilter: true,
     });
 
-    expect(clear["--prism-material-filter"]).toContain("blur(10px)");
-    expect(regular["--prism-material-filter"]).toContain("blur(22px)");
-    expect(frosted["--prism-material-filter"]).toContain("blur(34px)");
+    expect(clear["--ogui-material-filter"]).toContain("blur(10px)");
+    expect(regular["--ogui-material-filter"]).toContain("blur(22px)");
+    expect(frosted["--ogui-material-filter"]).toContain("blur(34px)");
   });
 
   it("uses an opaque intentional surface when transparency is reduced", () => {
@@ -31,8 +31,8 @@ describe("semantic CSS materials", () => {
       reducedTransparency: true,
     });
 
-    expect(tokens["--prism-material-background"]).toBe("#15191c");
-    expect(tokens["--prism-material-filter"]).toBe("none");
+    expect(tokens["--ogui-material-background"]).toBe("#15191c");
+    expect(tokens["--ogui-material-filter"]).toBe("none");
   });
 
   it("uses system colors and no optical decoration in forced-colors mode", () => {
@@ -56,7 +56,7 @@ describe("semantic CSS materials", () => {
       backdropFilter: false,
     });
 
-    expect(tokens["--prism-material-background"]).toContain("/ 0.94)");
-    expect(tokens["--prism-material-filter"]).toBe("none");
+    expect(tokens["--ogui-material-background"]).toContain("/ 0.94)");
+    expect(tokens["--ogui-material-filter"]).toBe("none");
   });
 });

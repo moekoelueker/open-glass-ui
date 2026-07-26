@@ -1,0 +1,411 @@
+# OpenGlass UI: full agent reference
+
+OpenGlass UI is a pre-release React and web UI system for premium glass-like
+interfaces. It combines neutral adaptive themes, forty accessible native-DOM
+recipes, CSS-first materials, explicit SVG/SDF refraction, and opt-in WebGL2 for
+controlled media.
+
+The owner-approved public brand is `OpenGlass UI`. The release-candidate npm
+facade and intended repository slug are `open-glass-ui`; the internal workspace
+namespace is `@open-glass-ui/*`; and the runtime CSS/class/data/ID prefix is
+`ogui`.
+
+## Publication status
+
+Local package manifests define `open-glass-ui@0.1.0-rc.0`, but it has not been
+published to npm. No public remote, deployment, or domain is authorized by the
+local project. Treat all installation commands and public imports below as the
+release-candidate API and verify the exact packed artifact before relying on
+them. Never claim that a namespace is reserved or legally cleared without a
+fresh check.
+
+The project is MIT licensed. It is independent and is not affiliated with,
+endorsed by, or sponsored by Apple Inc. It does not promise pixel parity with a
+proprietary native renderer and must not use Apple assets, fonts, or branding.
+
+## Canonical imports
+
+Consumer code imports the facade, not internal workspace packages:
+
+```tsx
+import "open-glass-ui/styles.css";
+import { Button, Glass, GlassSystemProvider } from "open-glass-ui";
+```
+
+GPU code uses the explicit subpath:
+
+```tsx
+import { WebGLGlassSurface } from "open-glass-ui/webgl";
+```
+
+Server components, build tools, tests, and non-React adapters use the pure
+subpath:
+
+```ts
+import {
+  contrastRatio,
+  createGlassTheme,
+  signedDistance,
+} from "open-glass-ui/core";
+```
+
+`open-glass-ui/styles.css` should be imported once near the application root.
+Do not generate consumer imports from `@open-glass-ui/core`,
+`@open-glass-ui/renderers`, `@open-glass-ui/react`, or
+`@open-glass-ui/recipes`; those are implementation boundaries.
+
+## Minimal integration
+
+```tsx
+import "open-glass-ui/styles.css";
+import { Button, Glass, GlassSystemProvider } from "open-glass-ui";
+
+export function App() {
+  return (
+    <GlassSystemProvider
+      renderer="auto"
+      quality="auto"
+      motion="system"
+      theme={{
+        appearance: "system",
+        defaultAppearance: "dark",
+        theme: { preset: "neutral", contrast: "high", radius: "balanced" },
+      }}
+    >
+      <Glass material="regular" interactive>
+        <Button variant="primary">Continue</Button>
+      </Glass>
+    </GlassSystemProvider>
+  );
+}
+```
+
+`GlassSystemProvider` combines the runtime, theme, and global toast boundaries.
+Its top-level props own renderer, quality, motion, capability, and accessibility
+policy; its `theme` object configures `GlassThemeProvider`. The lower-level
+`GlassProvider`, `GlassThemeProvider`, and `ToastProvider` remain available
+separately.
+
+## Themes
+
+Appearance values are `light`, `dark`, and `system`. With `system`, the server
+uses `defaultAppearance` (default `dark`) and updates from
+`prefers-color-scheme` after hydration.
+
+Theme input:
+
+- `preset`: `neutral`, `cobalt`, `teal`, `violet`, `coral`, or `amber`;
+- `accent`, `secondary`, `tertiary`: 3- or 6-digit hex;
+- `contrast`: `standard` or `high` (default `high`);
+- `radius`: `sharp`, `balanced`, or `soft`.
+
+Public theme utilities include `createGlassTheme`, `createGlassThemeTokens`,
+`contrastRatio`, `relativeLuminance`, and `readableForeground`.
+
+Public theme tokens:
+
+```text
+--ogui-color-background
+--ogui-color-canvas
+--ogui-color-surface
+--ogui-color-surface-strong
+--ogui-color-text
+--ogui-color-muted
+--ogui-color-border
+--ogui-color-border-strong
+--ogui-color-control
+--ogui-color-control-hover
+--ogui-color-control-active
+--ogui-color-accent
+--ogui-color-accent-ink
+--ogui-color-accent-soft
+--ogui-color-secondary
+--ogui-color-tertiary
+--ogui-color-focus
+--ogui-color-danger
+--ogui-color-danger-ink
+--ogui-color-success
+--ogui-color-success-ink
+--ogui-color-warning
+--ogui-color-warning-ink
+--ogui-radius-control
+--ogui-radius-surface
+```
+
+Glass surfaces also resolve `--ogui-material-*` tokens for background, border,
+highlight, shadow, text, muted text, filter, and dimming. Prefer semantic theme
+inputs and validate real foreground/background contrast.
+
+## Components
+
+The public facade contains forty native-DOM React recipes:
+
+1. Button
+2. IconButton
+3. SegmentedControl
+4. Switch
+5. Slider
+6. Toolbar
+7. Dock
+8. Tabs
+9. Menu
+10. MenuItem
+11. Popover
+12. Tooltip
+13. MediaControls
+14. Badge
+15. Avatar
+16. AvatarGroup
+17. Card
+18. Stat
+19. Progress
+20. Meter
+21. Spinner
+22. Skeleton
+23. Alert
+24. Banner
+25. Breadcrumbs
+26. Pagination
+27. Accordion
+28. Dialog
+29. Drawer
+30. Toast
+31. Checkbox
+32. RadioGroup
+33. Select
+34. TextField
+35. Textarea
+36. SearchField
+37. NumberField
+38. Stepper
+39. ToggleButton
+40. FileDropzone
+
+The facade also exposes `GlassSystemProvider`, `GlassProvider`,
+`GlassThemeProvider`, `Glass`, `GlassGroup`, `GlassSource`, `SdfFilterDefinition`,
+`OrganicFilterDefinition`, `useGlassCapabilities`, `useGlassRuntime`,
+`useGlassTheme`, `useGlassGroup`, `useGlassPointerField`, and `useSdfFilter`,
+plus their public types.
+
+Recipe conventions:
+
+- Use native semantics instead of clickable generic elements.
+- Import the stylesheet.
+- `IconButton` requires `aria-label`.
+- `SegmentedControl` requires `aria-label`.
+- Toolbars, docks, tabs, menus, popovers, fields, and file inputs require
+  meaningful labels.
+- Preserve native form props and generated ARIA relationships.
+- Controlled/uncontrolled APIs use `value`/`defaultValue`/`onValueChange`,
+  `open`/`defaultOpen`/`onOpenChange`, or checked/pressed equivalents.
+- Never communicate selected, invalid, loading, or destructive state with
+  transparency/color alone.
+
+## Renderer policy
+
+`renderer="auto"` is deliberately CSS-first. It does not pick the most capable
+GPU/filter path. The CSS renderer is the universal arbitrary-DOM material and
+fallback. It uses blur/tint/border/shadow but does not claim true refraction.
+
+Concrete renderer values are `css`, `organic-svg`, `sdf-svg`, and `webgl2`.
+Sources are `dom` or `media`. Explicit enhanced renderers fall back to CSS when
+unsupported. Forced colors or detected reduced transparency always selects the
+accessibility CSS/opaque path.
+
+Use cases:
+
+```text
+arbitrary DOM -> CSS-first Glass
+stable owned/supplied DOM needing refraction -> explicit SDF/SVG
+owned image/canvas/video needing refraction -> open-glass-ui/webgl
+```
+
+### Explicit SDF/SVG
+
+```tsx
+import { Glass, SdfFilterDefinition, useSdfFilter } from "open-glass-ui";
+
+const geometry = {
+  kind: "rounded-rect",
+  width: 320,
+  height: 160,
+  cornerRadius: 28,
+} as const;
+
+export function RefractedPanel({ children }: { children: React.ReactNode }) {
+  const filter = useSdfFilter({
+    id: "panel",
+    width: 320,
+    height: 160,
+    geometry,
+    quality: "medium",
+  });
+
+  return (
+    <>
+      <SdfFilterDefinition filter={filter} />
+      <Glass renderer="sdf-svg" filterId={filter.filterId} geometry={geometry}>
+        {children}
+      </Glass>
+    </>
+  );
+}
+```
+
+Supported SDF shapes: circle, capsule, rounded rectangle, and superellipse.
+Semantic materials: clear, regular, and frosted. Optical material fields are
+thickness, index of refraction (`ior`), dispersion, edge strength, bevel, and
+frost.
+
+### Opt-in WebGL2
+
+`WebGLGlassSurface` accepts a ref to an owned HTML image/canvas/video,
+`ImageBitmap`, `ImageData`, or `OffscreenCanvas`. It supports at most six lenses
+sharing one source. It cannot generally sample arbitrary page pixels.
+
+```tsx
+"use client";
+
+import { useRef } from "react";
+import { GlassProvider } from "open-glass-ui";
+import { WebGLGlassSurface } from "open-glass-ui/webgl";
+
+const material = {
+  thickness: 0.62,
+  ior: 1.46,
+  dispersion: 0.012,
+  edgeStrength: 0.46,
+  bevel: 0.68,
+  frost: 0.24,
+};
+
+export function MediaLens() {
+  const sourceRef = useRef<HTMLVideoElement>(null);
+
+  return (
+    <GlassProvider>
+      <video ref={sourceRef} src="/demo.mp4" muted playsInline />
+      <WebGLGlassSurface
+        sourceRef={sourceRef}
+        continuous
+        maxDevicePixelRatio={2}
+        lenses={[
+          {
+            x: 240,
+            y: 140,
+            width: 220,
+            height: 92,
+            radius: 0.36,
+            material,
+          },
+        ]}
+      />
+    </GlassProvider>
+  );
+}
+```
+
+Keep the original media and all text/controls in the DOM. The surface handles
+resize, visibility, video-frame callbacks, context loss/restoration, and
+resource cleanup.
+
+## SSR and Next.js
+
+The server does not guess browser capabilities. It renders semantic content and
+the CSS baseline, then the client provider probes backdrop blur, SVG filter
+elements, backdrop URL syntax, WebGL2, device characteristics, and accessibility
+preferences after hydration.
+
+In Next.js App Router, create a client boundary for the React root and WebGL
+entries. Pure theme, geometry, material, quality, and cache helpers may be
+imported directly in server components from `open-glass-ui/core`:
+
+```ts
+import { createGlassTheme } from "open-glass-ui/core";
+```
+
+Create the client boundary around providers and interactive components:
+
+```tsx
+"use client";
+
+import "open-glass-ui/styles.css";
+import { GlassProvider, GlassThemeProvider } from "open-glass-ui";
+
+export function OpenGlassRoot({ children }: { children: React.ReactNode }) {
+  return (
+    <GlassProvider>
+      <GlassThemeProvider appearance="system">{children}</GlassThemeProvider>
+    </GlassProvider>
+  );
+}
+```
+
+Do not access `window`, `document`, `matchMedia`, canvas, or WebGL during server
+render. Do not branch initial semantic markup on capability and do not suppress
+hydration warnings.
+
+## Accessibility
+
+The target is WCAG 2.2 AA, not certification.
+
+- Keep semantics, text, focus, and interaction in native DOM.
+- Normal text target: 4.5:1.
+- Large text, essential boundaries, focus, and state indicators: 3:1.
+- Give every control a visible label or accessible name.
+- Preserve keyboard behavior, focus visibility, and focus restoration.
+- Respect reduced motion, reduced transparency, and forced colors.
+- Test light/dark and difficult photographic/noisy/high-chroma backgrounds.
+- Prefer regular/frosted material for overlays and text-heavy transient UI.
+- Validate VoiceOver, NVDA, zoom/reflow, touch targets, and physical devices.
+- Reduced-transparency media-query support is uneven; apps with strict needs
+  should provide an explicit opaque preference too.
+
+## Performance
+
+- Use CSS for ordinary component surfaces.
+- Use glass selectively for controls/navigation, not every card.
+- Keep one or a few high-value WebGL media stages; never render text as canvas.
+- Keep WebGL DPR at 2 unless real-device measurements justify more.
+- Use `continuous` only for animated sources.
+- Use refs, transforms, and CSS variables for pointer-rate updates, not React
+  state every frame.
+- Do not regenerate SDF maps for position-only movement.
+- Use low quality during resize and cache/defer medium/high stable maps.
+- Profile physical mobile and desktop GPUs before making claims.
+
+## Architecture
+
+The release-candidate facade is `open-glass-ui@0.1.0-rc.0`. Internally:
+
+- `@open-glass-ui/core`: zero-runtime-dependency geometry, materials, quality,
+  cache, and theme math; no React or browser globals.
+- `@open-glass-ui/renderers`: capability policy, CSS material, SVG encoding,
+  and WebGL2.
+- `@open-glass-ui/react`: SSR-safe providers/primitives and post-hydration
+  lifecycle.
+- `@open-glass-ui/recipes`: forty native-DOM components and CSS.
+
+React and React DOM are peer dependencies. CSS is the default; SVG and WebGL are
+bounded enhancements.
+
+## Agent checklist
+
+Before returning generated code:
+
+1. use public facade imports and import CSS once;
+2. choose an existing recipe before creating a custom control;
+3. default to CSS and semantic DOM;
+4. use SVG or WebGL only for a source they can actually sample;
+5. add labels and preserve keyboard/fallback behavior;
+6. keep Next.js output hydration-stable;
+7. type-check against the actual packed/installed package;
+8. test keyboard, focus, reduced motion, forced colors, no-WebGL fallback,
+   contrast, and mobile overflow; and
+9. state the pre-release/local-workspace status honestly.
+
+Detailed local documents: `docs/COMPONENTS.md`, `docs/THEMING.md`,
+`docs/RENDERERS.md`, `docs/ACCESSIBILITY.md`, `docs/AI-USAGE.md`,
+`docs/ARCHITECTURE.md`, `docs/BROWSER-SUPPORT.md`, `docs/PERFORMANCE.md`,
+`docs/LIMITATIONS.md`, `docs/MIGRATION.md`, `docs/RELEASE-CHECKLIST.md`,
+`docs/NAMING-RESEARCH.md`, and `CHANGELOG.md`.

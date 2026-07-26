@@ -1,4 +1,4 @@
-import { getMaterialPreset } from "@prism-lab/core";
+import { getMaterialPreset } from "@open-glass-ui/core";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { GlassProvider } from "./provider";
@@ -47,7 +47,7 @@ describe("WebGLGlassSurface", () => {
     );
 
     expect(markup).toContain("<canvas");
-    expect(markup).toContain('data-prism-webgl-status="idle"');
+    expect(markup).toContain('data-ogui-webgl-status="idle"');
     expect(markup).toContain('aria-hidden="true"');
   });
 });

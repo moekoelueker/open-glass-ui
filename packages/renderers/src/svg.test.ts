@@ -1,4 +1,4 @@
-import { generateDisplacementMap, getMaterialPreset } from "@prism-lab/core";
+import { generateDisplacementMap, getMaterialPreset } from "@open-glass-ui/core";
 import { describe, expect, it, vi } from "vitest";
 import {
   createStableFilterId,

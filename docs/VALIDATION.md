@@ -1,6 +1,80 @@
 # Validation
 
-## Pass 1 — complete
+## Release-candidate verification — complete
+
+Status date: 2026-07-25
+
+`open-glass-ui@0.1.0-rc.0` is ready for local release review. The final clean
+pass covered the neutral adaptive theme, single public facade, server-safe core
+subpath, explicit WebGL subpath, all forty component recipes, and the hardened
+interaction contracts. Nothing was published or deployed.
+
+### Final automated results
+
+- Biome checked 93 files with no diagnostics.
+- TypeScript passed for core, renderers, React, recipes, the public facade, the
+  Vite showcase, and the Next.js fixture after package declaration builds and
+  Next route-type generation.
+- 88 unit, property, SSR, lifecycle, and recipe tests passed across 16 files.
+- The optimized Vite showcase and Next.js 16 RSC/static fixture built
+  successfully.
+- Five package archives were packed, compared with npm dry runs, installed
+  through only the public facade in a clean consumer, and exercised with React
+  18 SSR and strict declaration checks.
+- Root, `core`, stylesheet, and `webgl` exports passed. The root import contains
+  zero eager WebGL inputs; the public `signedDistance` import tree-shakes to
+  1,222 bytes.
+- 122 browser checks passed across Chromium, Firefox, and WebKit. Seven checks
+  were intentionally skipped by capability or scope: isolated performance
+  mode and browser APIs Playwright cannot deterministically emulate outside
+  Chromium.
+- The separately enabled Chromium performance-budget test passed.
+
+### Final visual evidence
+
+Twenty-seven release-candidate captures were regenerated and visually
+inspected—nine in each browser engine:
+
+```text
+artifacts/screenshots/open-glass-ui-final/
+  desktop/
+    ranking.jpg
+    hybrid-dark-neutral.jpg
+    hybrid-light-neutral.jpg
+    css-dark-neutral.jpg
+    webgl-dark-neutral.jpg
+    theme-studio-light-neutral.jpg
+  mobile/
+    hybrid-custom-accent.jpg
+    theme-studio-custom-accent.jpg
+    button-custom-accent.jpg
+  cross-browser/
+    firefox/{desktop,mobile}/
+    webkit/{desktop,mobile}/
+```
+
+The review covered neutral dark and light appearance, a custom cobalt accent,
+desktop and mobile boundaries, type rendering, contrast, fixed navigation,
+glass edges, clipping, source visibility, and settled WebGL output. Hybrid
+remains the preferred default, CSS remains the resilient baseline, and WebGL
+remains an explicit cinematic enhancement.
+
+### Final performance result
+
+On the Apple arm64 reference host with Node v24.11.1:
+
+- CSS material-state update p95: 17.7 ms.
+- WebGL2 frame interval: 17.8 ms median and 34.2 ms p95.
+- No startup or active-window long task was observed.
+- Route teardown left zero instrument videos and zero WebGL surfaces.
+- All low- and medium-quality optics generations stayed within their 4 ms and
+  12 ms p95 budgets.
+
+The machine-readable reports are in `artifacts/packages/` and
+`artifacts/performance/`. The numbered passes below remain as historical
+renderer-research evidence; the result above supersedes their counts.
+
+## Historical pass 1 — complete
 
 Date: 2026-07-24
 
@@ -45,7 +119,7 @@ Mobile evidence includes home, route hero, and instrument.
   compositor stitching artifacts; approved evidence therefore uses bounded hero,
   instrument, and matrix captures.
 
-## Pass 2 — complete
+## Historical pass 2 — complete
 
 Date: 2026-07-24
 
@@ -141,14 +215,15 @@ The comparison home, five experiment routes, architecture view, and validation
 view were inspected in the in-app browser. Menu, popover, lab controls, motion,
 and WebGL readiness were exercised. No console error remained.
 
-### Approved conclusion
+### Historical conclusion
 
 No critical accessibility, runtime, lifecycle, packaging, or responsive defect
-remains in the review build. The adaptive hybrid is approved as the architectural
-foundation for user review, subject to the public-release work listed in
-`LIMITATIONS.md`.
+remained in that review build. The adaptive hybrid was approved as the
+architectural foundation for user review, subject to the public-release work
+listed in `LIMITATIONS.md`. This conclusion does not supersede the current
+release-candidate rerun status above.
 
-## Pass 3 — component atlas complete
+## Historical pass 3 — component atlas complete
 
 Date: 2026-07-24
 
@@ -178,3 +253,8 @@ browser engines. The second pass tightened CSS light-theme semantic contrast,
 modal focus behavior, form labeling, and semantic ranking markup. The approved
 weighted result is Adaptive Hybrid 9.36, Native CSS 9.25, and Spectral WebGL
 8.66.
+
+The OpenGlass UI neutral-token/theme-studio pass and final package facade were
+implemented after these screenshots. Preserve the historical directories as
+research evidence, but use a new release-candidate screenshot directory rather
+than overwriting them.

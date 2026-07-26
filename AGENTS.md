@@ -1,11 +1,14 @@
-# Prism Lab Agent Instructions
+# OpenGlass UI Agent Instructions
 
 ## Scope
 
 - Work only in this standalone repository.
 - The sibling `old-liquid-glass-example` is read-only and must never be edited.
 - Do not create a remote, push, deploy, or publish without explicit user approval.
-- “Prism Lab” and `@prism-lab/*` are internal working identifiers.
+- “OpenGlass UI” is the owner-approved public brand.
+- Use `open-glass-ui` for the eventual public facade and repository slug.
+- Use `@open-glass-ui/*` for workspace implementation packages.
+- The name decision does not authorize creating a remote, deploying, or publishing.
 
 ## Architecture
 
@@ -43,4 +46,3 @@ Run browser tests and visually inspect their screenshots for user-facing changes
 - Each experiment must have a genuinely distinct engine and art direction.
 - Avoid generic purple/cyan gradient glassmorphism.
 - Treat reduced motion, reduced transparency, and forced colors as designed states.
-

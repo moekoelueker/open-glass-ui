@@ -1,4 +1,4 @@
-import { GlassProvider } from "@prism-lab/react";
+import { GlassProvider, GlassThemeProvider } from "@open-glass-ui/react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./app";
@@ -13,7 +13,9 @@ if (!root) {
 createRoot(root).render(
   <StrictMode>
     <GlassProvider renderer="auto" quality="auto" motion="system">
-      <App />
+      <GlassThemeProvider appearance="system" theme={{ preset: "neutral", contrast: "high" }}>
+        <App />
+      </GlassThemeProvider>
     </GlassProvider>
   </StrictMode>,
 );

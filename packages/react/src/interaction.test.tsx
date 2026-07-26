@@ -34,7 +34,7 @@ describe("pointer motion path", () => {
         </Glass>
       </GlassProvider>,
     );
-    const glass = view.container.querySelector<HTMLElement>("[data-prism-glass]");
+    const glass = view.container.querySelector<HTMLElement>("[data-ogui-glass]");
 
     expect(glass).not.toBeNull();
     vi.spyOn(glass as HTMLElement, "getBoundingClientRect").mockReturnValue({
@@ -53,8 +53,8 @@ describe("pointer motion path", () => {
     frameCallbacks.shift()?.(0);
 
     expect(renders).toBe(1);
-    expect(glass?.style.getPropertyValue("--prism-pointer-x")).not.toBe("0");
-    expect(glass?.style.getPropertyValue("--prism-pointer-y")).not.toBe("0");
+    expect(glass?.style.getPropertyValue("--ogui-pointer-x")).not.toBe("0");
+    expect(glass?.style.getPropertyValue("--ogui-pointer-y")).not.toBe("0");
   });
 
   it("cancels a scheduled frame during unmount", () => {
@@ -63,7 +63,7 @@ describe("pointer motion path", () => {
         <Glass interactive>Glass</Glass>
       </GlassProvider>,
     );
-    const glass = view.container.querySelector<HTMLElement>("[data-prism-glass]");
+    const glass = view.container.querySelector<HTMLElement>("[data-ogui-glass]");
     vi.spyOn(glass as HTMLElement, "getBoundingClientRect").mockReturnValue({
       x: 0,
       y: 0,
@@ -91,11 +91,11 @@ describe("glass source groups", () => {
       </GlassGroup>,
     );
 
+    expect(view.container.querySelector("[data-ogui-group]")?.getAttribute("data-ogui-group")).toBe(
+      "media-deck",
+    );
     expect(
-      view.container.querySelector("[data-prism-group]")?.getAttribute("data-prism-group"),
-    ).toBe("media-deck");
-    expect(
-      view.container.querySelector("[data-prism-source]")?.getAttribute("data-prism-source"),
+      view.container.querySelector("[data-ogui-source]")?.getAttribute("data-ogui-source"),
     ).toBe("media-deck");
   });
 });

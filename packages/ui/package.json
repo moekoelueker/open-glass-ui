@@ -1,0 +1,76 @@
+{
+  "name": "open-glass-ui",
+  "version": "0.1.0-rc.0",
+  "description": "Accessible Liquid Glass components, React primitives, and optical rendering utilities for the web.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Moe Luker",
+  "engines": {
+    "node": ">=18.18"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./webgl": {
+      "types": "./dist/webgl.d.ts",
+      "import": "./dist/webgl.js",
+      "default": "./dist/webgl.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js",
+      "default": "./dist/core.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup src/index.tsx src/core.ts src/webgl.ts --format esm --dts --clean --external react --external react-dom && node scripts/copy-styles.mjs",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@open-glass-ui/core": "workspace:*",
+    "@open-glass-ui/react": "workspace:*",
+    "@open-glass-ui/recipes": "workspace:*",
+    "@open-glass-ui/renderers": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "react",
+    "react-components",
+    "ui",
+    "ui-library",
+    "component-library",
+    "design-system",
+    "liquid-glass",
+    "glass-ui",
+    "refraction",
+    "webgl",
+    "accessible",
+    "typescript",
+    "esm",
+    "ssr"
+  ]
+}

@@ -12,4 +12,4 @@ test-results/
 .env.*
 !.env.example
 apps/showcase/public/validation/
-
+docs/naming/naming-signal-ledger.json

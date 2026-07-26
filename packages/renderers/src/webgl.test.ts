@@ -1,6 +1,6 @@
-import { getMaterialPreset } from "@prism-lab/core";
+import { getMaterialPreset } from "@open-glass-ui/core";
 import { describe, expect, it } from "vitest";
-import { MAX_WEBGL_LENSES, packLensUniforms, type WebGLLens } from "./index";
+import { MAX_WEBGL_LENSES, packLensUniforms, type WebGLLens } from "./webgl";
 
 function lens(index: number): WebGLLens {
   return {

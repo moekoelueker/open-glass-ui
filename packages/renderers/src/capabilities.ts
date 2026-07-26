@@ -31,7 +31,7 @@ export interface RendererRequest {
 
 export interface RendererDecision {
   renderer: ConcreteRenderer;
-  reason: "explicit" | "accessibility-fallback" | "media-webgl" | "dom-svg" | "capability-fallback";
+  reason: "explicit" | "accessibility-fallback" | "css-first" | "capability-fallback";
 }
 
 const SERVER_CAPABILITIES: RendererCapabilities = {
@@ -93,8 +93,8 @@ export function detectRendererCapabilities(
       probe.supports("backdrop-filter", "blur(1px)") ||
       probe.supports("-webkit-backdrop-filter", "blur(1px)"),
     backdropUrlSyntax:
-      probe.supports("backdrop-filter", 'url("#prism-capability-probe")') ||
-      probe.supports("-webkit-backdrop-filter", 'url("#prism-capability-probe")'),
+      probe.supports("backdrop-filter", 'url("#ogui-capability-probe")') ||
+      probe.supports("-webkit-backdrop-filter", 'url("#ogui-capability-probe")'),
     svgFilterElements: probe.hasSvgDisplacementElement(),
     webgl2: probe.hasWebGL2(),
     reducedMotion: probe.matches("(prefers-reduced-motion: reduce)"),
@@ -135,13 +135,5 @@ export function selectRenderer(request: RendererRequest): RendererDecision {
       : { renderer: "css", reason: "capability-fallback" };
   }
 
-  if (source === "media" && capabilities.webgl2) {
-    return { renderer: "webgl2", reason: "media-webgl" };
-  }
-
-  if (source === "dom" && capabilities.svgFilterElements) {
-    return { renderer: "sdf-svg", reason: "dom-svg" };
-  }
-
-  return { renderer: "css", reason: "capability-fallback" };
+  return { renderer: "css", reason: "css-first" };
 }

@@ -25,14 +25,3 @@ export {
   createSvgDisplacementFilterSpec,
   encodeDisplacementMap,
 } from "./svg";
-export type {
-  PackedLensUniforms,
-  WebGLGlassRendererOptions,
-  WebGLLens,
-  WebGLRendererStatus,
-} from "./webgl";
-export {
-  MAX_WEBGL_LENSES,
-  packLensUniforms,
-  WebGLGlassRenderer,
-} from "./webgl";

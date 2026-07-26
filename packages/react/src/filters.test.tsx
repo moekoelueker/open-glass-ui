@@ -1,4 +1,4 @@
-import { getMaterialPreset } from "@prism-lab/core";
+import { getMaterialPreset } from "@open-glass-ui/core";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { OrganicFilterDefinition, SdfFilterDefinition, type SdfFilterState } from "./index";
@@ -38,7 +38,7 @@ describe("React SVG filter definitions", () => {
     const html = renderToString(<SdfFilterDefinition filter={filter} />);
 
     expect(html.match(/<feDisplacementMap/g)).toHaveLength(3);
-    expect(html).toContain("PRISM_SPECULAR");
+    expect(html).toContain("OGUI_SPECULAR");
     expect(html).toContain("data:image/png;base64,test");
   });
 

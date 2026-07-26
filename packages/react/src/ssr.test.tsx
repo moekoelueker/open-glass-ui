@@ -12,10 +12,10 @@ describe("Glass SSR contract", () => {
       </GlassProvider>,
     );
 
-    expect(html).toContain('data-prism-renderer="css"');
-    expect(html).toContain('data-prism-hydrated="false"');
-    expect(html).toContain('data-prism-quality="low"');
-    expect(html).toContain('data-prism-thickness="0.900"');
+    expect(html).toContain('data-ogui-renderer="css"');
+    expect(html).toContain('data-ogui-hydrated="false"');
+    expect(html).toContain('data-ogui-quality="low"');
+    expect(html).toContain('data-ogui-thickness="0.900"');
     expect(html).toContain("Play");
   });
 
@@ -28,6 +28,6 @@ describe("Glass SSR contract", () => {
 
     expect(html.startsWith("<nav")).toBe(true);
     expect(html).toContain('aria-label="Primary"');
-    expect(html).toContain('data-prism-material="regular"');
+    expect(html).toContain('data-ogui-material="regular"');
   });
 });

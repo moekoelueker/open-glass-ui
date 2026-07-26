@@ -34,7 +34,7 @@ export function createOpticsCacheKey(input: DisplacementMapInput): string {
   const material = sanitizeMaterial(input.material);
 
   return JSON.stringify([
-    "prism-map-v1",
+    "ogui-map-v1",
     mapDimension(input.width),
     mapDimension(input.height),
     geometry.kind,

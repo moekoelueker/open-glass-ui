@@ -1,0 +1,49 @@
+# OpenGlass UI
+
+> The open-source Liquid Glass UI system for React and the web.
+
+Status: local `open-glass-ui@0.1.0-rc.0` release candidate. It has not been
+published. Do not claim registry installation or availability without a fresh
+check.
+
+Canonical consumer surface:
+
+- `open-glass-ui`: combined `GlassSystemProvider` with a global toast queue,
+  lower-level React primitives, forty native-DOM recipes, theme/material
+  utilities, hooks, and public types.
+- `open-glass-ui/styles.css`: recipe styles; import once.
+- `open-glass-ui/core`: server-safe, framework-independent theme, geometry,
+  material, quality, and cache utilities.
+- `open-glass-ui/webgl`: explicit opt-in controlled-media WebGL2 surface.
+- Do not use internal `@open-glass-ui/*` workspace packages in consumer code.
+
+Core rules:
+
+- `renderer="auto"` is CSS-first.
+- SVG/SDF refraction is explicit.
+- WebGL is opt-in and only for an owned image, canvas, or video.
+- Keep text, controls, semantics, and fallbacks in the DOM.
+- Use neutral adaptive themes and `--ogui-*` tokens.
+- Preserve reduced-motion, reduced-transparency, forced-colors, and SSR behavior.
+- In Next.js App Router, put providers and hook-using UI behind `"use client"`.
+
+Documentation:
+
+- [Self-contained agent reference](./llms-full.txt)
+- [Components](./docs/COMPONENTS.md)
+- [Theming](./docs/THEMING.md)
+- [Renderers](./docs/RENDERERS.md)
+- [Accessibility](./docs/ACCESSIBILITY.md)
+- [AI-agent usage](./docs/AI-USAGE.md)
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Browser support](./docs/BROWSER-SUPPORT.md)
+- [Performance](./docs/PERFORMANCE.md)
+- [Known limitations](./docs/LIMITATIONS.md)
+- [Migration](./docs/MIGRATION.md)
+- [Changelog](./CHANGELOG.md)
+- [Release checklist](./docs/RELEASE-CHECKLIST.md)
+- [Naming research](./docs/NAMING-RESEARCH.md)
+- [License](./LICENSE)
+
+License: MIT. OpenGlass UI is independent and is not affiliated with, endorsed
+by, or sponsored by Apple Inc.

@@ -7,6 +7,7 @@
       "!**/dist",
       "!**/.next",
       "!artifacts",
+      "!docs/naming/naming-signal-ledger.json",
       "!**/playwright-report",
       "!**/test-results"
     ]

@@ -21,9 +21,9 @@ The requested weighting gives visual appeal half of the final score:
 
 **Adaptive Hybrid is the preferred system.** It does not have WebGL's absolute
 visual ceiling or CSS's absolute simplicity, but it is the only approach that
-can selectively provide both while preserving accessible fallbacks. It makes
-rendering policy an implementation detail instead of forcing every consumer to
-choose an engine.
+can expose both behind one semantic vocabulary while preserving accessible
+fallbacks. CSS remains the automatic baseline; consumers explicitly opt into
+SDF/SVG or controlled-media WebGL only when the source and payoff justify it.
 
 **Native CSS is the preferred library foundation.** It is the cheapest to ship,
 easiest to inspect, easiest for an agent to extend, and most compatible with
@@ -46,7 +46,7 @@ The finalist routes use the same React contracts and live components while
 changing layout, material strategy, and visual hierarchy:
 
 - `/library/hybrid` — dense systems glass, capability telemetry, four-column
-  control matrix, acid-green operational accent.
+  control matrix, neutral adaptive theme, and user-selectable accents.
 - `/library/css` — light editorial composition, native layered translucency,
   asymmetric two-column specimens, serif display typography.
 - `/library/webgl` — cinematic controlled-media stage, source-aware refraction,
@@ -114,10 +114,12 @@ agents to discover and compose.
 - Micro-animations are transform/opacity based and disabled or reduced with the
   user's motion preference.
 
-The current showcase production bundle is about 292 KB of JavaScript before
-gzip and 84 KB of CSS before gzip. Those numbers include the research site and
-all five experimental engines; they are not proposed per-consumer library costs.
-Package splitting and export-level tree shaking remain publication work.
+The showcase bundle includes the research site and all five experimental
+engines, so it is not a per-consumer library cost. The release-candidate package
+is now measured separately: the public root facade excludes WebGL inputs,
+`open-glass-ui/webgl` is a distinct opt-in entry, and a minimal core import is
+tree-shaken independently. Current byte measurements and their exact method are
+recorded in [Performance](./PERFORMANCE.md).
 
 ## Second visual pass
 
@@ -127,10 +129,17 @@ The follow-up pass improved:
 - CSS: darker semantic status colors on light material and stronger form
   contrast.
 - WebGL: one controlled optical stage rather than repeated GPU surfaces.
-- All variants: semantic ranking table, modal focus entry/trap/restoration,
-  corrected NumberField labeling, and an explicitly named file input.
+- All variants: semantic ranking markup, modal focus
+  entry/trap/restoration, corrected field labeling, and an explicitly named
+  file input.
 
-Visual evidence is checked in at:
+The later OpenGlass UI release-candidate pass added neutral light/dark defaults
+and a live theme studio for presets and custom
+accent/secondary/tertiary colors. Its current screenshots live in
+`artifacts/screenshots/open-glass-ui-final`; the historical paths below predate
+that pass.
+
+Historical visual evidence is checked in at:
 
 - `artifacts/screenshots/atlas-pass-01`
 - `artifacts/screenshots/atlas-pass-02`
@@ -138,15 +147,20 @@ Visual evidence is checked in at:
 Each pass contains ranking, hero, and representative component captures at
 desktop and mobile sizes in Chromium, Firefox, and WebKit.
 
-## Validation
+## Historical atlas validation
 
-- 65 unit/property/SSR/recipe checks pass.
-- 42 atlas-specific browser and capture checks pass across three engines.
-- Every finalist renders forty unique component specimens.
-- Axe reports no automatically detectable violations on the three atlas routes.
-- Desktop and 390 px mobile layouts have no document-level horizontal overflow.
-- Dialog, pagination, accordion, toast, search, number, stepper, and upload
-  interaction contracts are browser tested.
+The 2026-07-24 atlas pass recorded 65 unit/property/SSR/recipe checks and 42
+atlas-specific browser/capture checks across Chromium, Firefox, and WebKit.
+That historical pass rendered forty unique component specimens per finalist,
+reported no automatically detectable Axe violations, found no document-level
+horizontal overflow at desktop or 390 px mobile, and exercised the principal
+overlay, navigation, feedback, and form interactions.
 
-The atlas remains an internal prototype. Naming, public package exports, remote
-repository creation, and publication are intentionally not authorized yet.
+Those counts predate the OpenGlass UI theming and interaction-hardening pass and
+must not be presented as the final release-candidate result. See
+[Validation](./VALIDATION.md) for the current verification status and refreshed
+evidence.
+
+The atlas now uses the owner-approved OpenGlass UI identity and the
+`open-glass-ui@0.1.0-rc.0` facade. Remote repository creation, deployment, and
+npm publication remain intentionally unauthorized.

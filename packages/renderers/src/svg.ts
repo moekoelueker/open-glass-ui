@@ -1,4 +1,4 @@
-import type { DisplacementMap, GlassMaterial } from "@prism-lab/core";
+import type { DisplacementMap, GlassMaterial } from "@open-glass-ui/core";
 
 export interface Canvas2DLike {
   width: number;
@@ -49,7 +49,7 @@ function safeId(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  return sanitized || "prism-filter";
+  return sanitized || "ogui-filter";
 }
 
 export function createStableFilterId(base: string, cacheKey: string) {

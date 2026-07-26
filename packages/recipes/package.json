@@ -1,20 +1,29 @@
 {
-  "name": "@prism-lab/recipes",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@open-glass-ui/recipes",
+  "version": "0.1.0-rc.0",
+  "description": "Accessible, interactive React component recipes for OpenGlass UI.",
   "type": "module",
+  "license": "MIT",
+  "author": "Moe Luker",
   "sideEffects": [
     "**/*.css"
   ],
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
   ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
-    "./styles.css": "./dist/styles.css"
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
   },
   "scripts": {
     "build": "tsup src/index.tsx --format esm --dts --clean --external react --external react-dom && cp src/styles.css dist/styles.css",
@@ -22,10 +31,29 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prism-lab/react": "workspace:*"
+    "@open-glass-ui/react": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
-  }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=18.18"
+  },
+  "keywords": [
+    "react",
+    "react-components",
+    "liquid-glass",
+    "glass-ui",
+    "ui-library",
+    "component-library",
+    "design-system",
+    "accessible",
+    "typescript",
+    "esm"
+  ]
 }

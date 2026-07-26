@@ -1,5 +1,5 @@
-import type { WebGLLens, WebGLRendererStatus } from "@prism-lab/renderers";
-import { WebGLGlassRenderer } from "@prism-lab/renderers";
+import type { WebGLLens, WebGLRendererStatus } from "@open-glass-ui/renderers/webgl";
+import { WebGLGlassRenderer } from "@open-glass-ui/renderers/webgl";
 import {
   type CanvasHTMLAttributes,
   forwardRef,
@@ -241,7 +241,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
       if (!canvas || status === "idle") {
         return;
       }
-      canvas.dataset.prismRenderKey = String(renderKey ?? "");
+      canvas.dataset.oguiRenderKey = String(renderKey ?? "");
       drawRef.current();
     }, [renderKey, status]);
 
@@ -252,9 +252,9 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
         aria-hidden={rest["aria-label"] ? undefined : true}
         className={className}
         style={style}
-        data-prism-webgl-surface=""
-        data-prism-webgl-status={status}
-        data-prism-webgl-error={errorMessage ?? undefined}
+        data-ogui-webgl-surface=""
+        data-ogui-webgl-status={status}
+        data-ogui-webgl-error={errorMessage ?? undefined}
       />
     );
   },

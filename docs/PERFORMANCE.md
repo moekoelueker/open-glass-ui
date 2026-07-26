@@ -1,6 +1,6 @@
 # Performance Baseline
 
-Measured: 2026-07-24
+Measured: 2026-07-25 PT (2026-07-26 UTC in the machine-readable reports)
 
 Environment:
 
@@ -19,18 +19,18 @@ pnpm run bench:optics
 
 ## Optics map generation
 
-| Shape | Low p95 | Medium p95 | High p95 |
-| --- | ---: | ---: | ---: |
-| Circle | 2.024 ms at 72×72 | 4.727 ms at 132×132 | 13.951 ms at 240×240 |
-| Capsule | 1.606 ms at 96×38 | 4.355 ms at 176×70 | 14.467 ms at 320×128 |
-| Rounded rect | 2.271 ms at 96×62 | 19.792 ms at 176×114 | 22.904 ms at 320×208 |
-| Superellipse | 3.974 ms at 90×62 | 11.859 ms at 165×114 | 34.796 ms at 300×208 |
+| Shape        |           Low p95 |           Medium p95 |             High p95 |
+| ------------ | ----------------: | -------------------: | -------------------: |
+| Circle       | 1.662 ms at 72×72 | 4.736 ms at 132×132 | 14.412 ms at 240×240 |
+| Capsule      | 1.276 ms at 96×38 |  4.072 ms at 176×70 | 15.051 ms at 320×128 |
+| Rounded rect | 2.434 ms at 96×62 | 7.082 ms at 176×114 | 22.527 ms at 320×208 |
+| Superellipse | 3.348 ms at 90×62 | 9.207 ms at 165×114 | 30.092 ms at 300×208 |
 
 ## Initial budgets and policy
 
 - Low-quality generation target: less than 4 ms p95 on the reference host.
-- Medium-quality generation target: less than 12 ms p95. One rounded-rectangle
-  sample exceeded this target and is retained as an honest outlier.
+- Medium-quality generation target: less than 12 ms p95. Every final reference
+  sample remained within this budget.
 - High quality is not suitable for repeated main-thread regeneration at large
   sizes; use it for stable geometry, deferred work, or worker generation.
 - Position-only movement must never regenerate a map.
@@ -41,8 +41,9 @@ pnpm run bench:optics
 ## Interpretation
 
 Superellipse power operations are currently the most expensive geometry path.
-This is acceptable for the research prototype because maps are cached, but a
-lookup/approximation optimization is a post-visual-validation candidate.
+The cache keeps this path off position-only movement, but a
+lookup/approximation optimization remains a release-candidate follow-up for
+large or frequently changing geometry.
 
 ## Browser reference probe
 
@@ -55,15 +56,15 @@ pnpm run bench:browser
 The browser probe is deliberately isolated to Chromium on the reference host;
 cross-browser functionality is tested separately.
 
-| Metric | Result | Research budget |
-| --- | ---: | ---: |
-| CSS material-state update p95 | 18.5 ms | < 100 ms |
-| WebGL2 frame interval median | 18.5 ms | recorded |
-| WebGL2 frame interval p95 | 33.4 ms | < 60 ms |
-| Active-window longest task | 0 ms observed | < 100 ms |
-| Cold development startup longest task | 448 ms | recorded, not approved as production |
-| Surfaces after route teardown | 0 | 0 |
-| Instrument videos after route teardown | 0 | 0 |
+| Metric                                 |        Result |                      Research budget |
+| -------------------------------------- | ------------: | -----------------------------------: |
+| CSS material-state update p95          |       17.7 ms |                             < 100 ms |
+| WebGL2 frame interval median           |       17.8 ms |                             recorded |
+| WebGL2 frame interval p95              |       34.2 ms |                              < 60 ms |
+| Active-window longest task             | 0 ms observed |                             < 100 ms |
+| Cold development startup longest task  | 0 ms observed |                             recorded |
+| Surfaces after route teardown          |             0 |                                    0 |
+| Instrument videos after route teardown |             0 |                                    0 |
 
 The headless software-backed result is acceptable for this research build but
 must be retested on physical integrated and discrete GPUs before a performance
@@ -71,18 +72,26 @@ claim.
 
 ## Built output
 
-| Artifact | Raw | Gzip / packed |
-| --- | ---: | ---: |
-| `@prism-lab/core` ESM | 12.60 KB | 5,006 B tarball |
-| `@prism-lab/renderers` ESM | 21.63 KB | 8,081 B tarball |
-| `@prism-lab/react` ESM | 23.88 KB | 8,093 B tarball |
-| `@prism-lab/recipes` ESM | 14.90 KB | 8,505 B tarball |
-| Showcase JavaScript | 258.67 KB | 80.68 KB gzip |
-| Showcase CSS | 44.12 KB | 10.14 KB gzip |
+Release-candidate package evidence was regenerated on 2026-07-25 after a clean
+five-package build and offline packed-install test.
 
-A `signedDistance`-only consumer bundles to 1,222 bytes minified, confirming
-that the side-effect-free core can tree-shake. Recipe CSS is intentionally
-declared as a side effect.
+| Artifact                            |                 Verified size |
+| ----------------------------------- | ----------------------------: |
+| Public facade CSS-first root bundle |             18,743 B minified |
+| Opt-in public WebGL subpath bundle  |             12,190 B minified |
+| `signedDistance`-only facade import |              1,222 B minified |
+| `open-glass-ui` tarball             |                      10,221 B |
+| `@open-glass-ui/core` tarball       |                       7,834 B |
+| `@open-glass-ui/renderers` tarball  |                       8,573 B |
+| `@open-glass-ui/react` tarball      |                       9,528 B |
+| `@open-glass-ui/recipes` tarball    |                      28,620 B |
+| Showcase JavaScript                 | 312.48 KB raw / 95.18 KB gzip |
+| Showcase CSS                        |  95.49 KB raw / 18.72 KB gzip |
+
+The public root bundle contains zero eager WebGL inputs. A
+`signedDistance`-only consumer still bundles to 1,222 bytes, confirming that
+the side-effect-free implementation packages tree-shake through the facade.
+Recipe CSS is intentionally declared as a side effect.
 
 Machine-readable evidence:
 

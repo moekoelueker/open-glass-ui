@@ -1,20 +1,20 @@
 {
-  "measuredAt": "2026-07-24T22:54:31.717Z",
+  "measuredAt": "2026-07-26T04:39:21.116Z",
   "browser": "chromium",
-  "inputUpdateMs": 18.5,
+  "inputUpdateMs": 17.7,
   "inputUpdateSamples": [
-    11.8,
-    16.3,
+    10.1,
+    10.2,
+    13.2,
+    17.7,
     16.7,
-    16.7,
-    14.7,
-    18.5
+    14.8
   ],
   "frames": {
     "count": 60,
-    "medianMs": 18.5,
-    "p95Ms": 33.4,
-    "maxMs": 33.7
+    "medianMs": 17.8,
+    "p95Ms": 34.2,
+    "maxMs": 50
   },
   "longTasks": {
     "supported": true,
@@ -23,8 +23,8 @@
   },
   "startupLongTasks": {
     "supported": true,
-    "count": 1,
-    "maxMs": 448
+    "count": 0,
+    "maxMs": 0
   },
   "rendererStatus": "ready",
   "released": {

@@ -1,5 +1,5 @@
 {
-  "name": "@prism-lab/showcase",
+  "name": "@open-glass-ui/showcase",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,10 +10,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prism-lab/core": "workspace:*",
-    "@prism-lab/react": "workspace:*",
-    "@prism-lab/recipes": "workspace:*",
-    "@prism-lab/renderers": "workspace:*",
+    "@open-glass-ui/core": "workspace:*",
+    "@open-glass-ui/react": "workspace:*",
+    "@open-glass-ui/recipes": "workspace:*",
+    "@open-glass-ui/renderers": "workspace:*",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

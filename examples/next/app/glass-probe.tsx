@@ -1,11 +1,12 @@
-"use client";
-
-import { Glass, GlassProvider } from "@prism-lab/react";
+import { Button, Glass, GlassSystemProvider } from "open-glass-ui";
 
 export function GlassProbe() {
   return (
-    <GlassProvider>
-      <Glass material="regular">Prism Lab SSR fixture</Glass>
-    </GlassProvider>
+    <GlassSystemProvider theme={{ appearance: "system", theme: { preset: "neutral" } }}>
+      <Glass material="regular">
+        OpenGlass UI SSR fixture
+        <Button variant="primary">Continue</Button>
+      </Glass>
+    </GlassSystemProvider>
   );
 }

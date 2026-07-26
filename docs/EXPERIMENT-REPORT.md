@@ -1,8 +1,14 @@
 # Experiment Report
 
-Status: second validation pass complete  
-Evidence date: 2026-07-24  
-Test host: macOS, Node 24.11, Playwright 1.61
+- Status: archived renderer research; architecture decision incorporated into
+  the OpenGlass UI release candidate
+- Evidence date: 2026-07-24
+- Test host: macOS, Node 24.11, Playwright 1.61
+
+> The scores and evidence below describe the research passes completed on the
+> evidence date. The resulting product policy is now fixed: `renderer="auto"`
+> is CSS-first, SDF/SVG is explicit, and controlled-media WebGL is available
+> only through the opt-in `open-glass-ui/webgl` entry.
 
 ## Equal-weight rubric
 
@@ -34,19 +40,23 @@ weighted to force the recommendation.
 
 ## Final recommendation
 
-The **Adaptive Hybrid Engine** is the best v1 architecture. It is the only
-candidate that preserves one stable semantic API while selecting:
+The **Adaptive Hybrid Engine** is the best v1 architecture. “Hybrid” means one
+stable semantic API with bounded renderer choices and coherent fallbacks; it
+does not mean that `auto` silently upgrades ordinary components to GPU or SVG
+rendering:
 
-- WebGL2 for owned image/canvas/video sources;
-- deterministic SDF/SVG for suitable DOM sources;
-- layered CSS for arbitrary DOM and unsupported enhanced paths;
-- opaque material for forced colors or reduced transparency.
+- `auto` uses layered CSS for arbitrary DOM;
+- deterministic SDF/SVG is an explicit enhancement for suitable owned or
+  supplied DOM;
+- `open-glass-ui/webgl` is an explicit controlled-media adapter for an owned
+  image, canvas, or video; and
+- forced colors or reduced transparency can select an opaque semantic material.
 
 Use Layered CSS as the always-installed baseline. Keep SDF/SVG as the enhanced
-DOM path. Ship WebGL2 as an advanced controlled-media adapter—potentially an
-optional export if bundle analysis during API freeze supports that split.
-Organic SVG should ship later as an expressive recipe because its identity is
-excellent but its cost and browser variation are less predictable.
+DOM path. Ship WebGL2 as an advanced controlled-media adapter through the
+separate public subpath so CSS/SVG consumers do not load it.
+Keep Organic SVG as an explicit expressive filter recipe, never the automatic
+material, because its cost and browser variation are less predictable.
 
 WebGL2 remains the best pure optical result. Layered CSS remains the best
 universal single renderer. Organic SVG remains the strongest expressive art
@@ -95,7 +105,8 @@ contract.
 ### 05 — Adaptive hybrid
 
 - Added a live renderer policy rail for DOM, media, and accessibility branches.
-- Exposed the selected branch instead of hiding policy in small telemetry.
+- Exposed the available/recommended branch instead of hiding policy in small
+  telemetry; the rail does not change the CSS-first `auto` contract.
 - Verified low-concurrency quality, reduced motion, reduced transparency, forced
   colors, unsupported WebGL2, and route-state isolation.
 
@@ -105,10 +116,10 @@ restyled SDF demo.
 ## First-pass finding
 
 The adaptive hybrid is the recommended v1 architecture. It does not win every
-single visual category, but it is the only approach that can choose WebGL2 for
-owned media, deterministic SVG/SDF for supplied DOM, layered CSS for arbitrary
-DOM, and opaque semantic material for accessibility preferences without leaving
-missing effects.
+single visual category, but it is the only approach that can expose explicit
+WebGL2 for owned media, explicit SVG/SDF for supplied DOM, CSS-first material
+for arbitrary DOM, and opaque semantic material for accessibility preferences
+without leaving missing effects.
 
 The strongest standalone optical result is WebGL2. The strongest expressive art
 direction is Organic SVG. The strongest universal baseline is Layered CSS.

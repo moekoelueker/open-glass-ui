@@ -32,6 +32,17 @@ test("comparison home exposes all five experiments", async ({ page }) => {
   expect(overflow).toBe(false);
 });
 
+test("keyboard users can bypass repeated navigation", async ({ page, browserName }) => {
+  await page.goto("/");
+  const skipLink = page.getByRole("link", { name: "Skip to content" });
+  // Safari's default macOS preference uses Option-Tab for links; users who
+  // enable full keyboard access use Tab like the other engines.
+  await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+  await expect(skipLink).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#main-content")).toBeFocused();
+});
+
 for (const [id, title] of experiments) {
   test(`${id} route renders the shared comparison burden`, async ({ page }) => {
     await page.goto(`/experiments/${id}`);
@@ -47,7 +58,7 @@ for (const [id, title] of experiments) {
 
     await page.getByRole("button", { name: "Frosted" }).click();
     await expect(page.locator(".engine-surface").first()).toHaveAttribute(
-      "data-prism-material",
+      "data-ogui-material",
       "frosted",
     );
     await page.getByRole("slider", { name: "Optical intensity" }).fill("84");
@@ -79,7 +90,7 @@ test("shared controls expose and update authoritative state", async ({ page }) =
   await expect(more).toBeFocused();
 
   await page.getByRole("button", { name: "Frosted" }).click();
-  await expect(page.locator(".engine-surface")).toHaveAttribute("data-prism-material", "frosted");
+  await expect(page.locator(".engine-surface")).toHaveAttribute("data-ogui-material", "frosted");
 
   const layout = page.getByRole("button", { name: "Change layout" });
   await layout.hover();
@@ -108,10 +119,10 @@ test("shared controls expose and update authoritative state", async ({ page }) =
 
 test("WebGL surface reaches a stable renderer state", async ({ page, browserName }) => {
   await page.goto("/experiments/webgl");
-  const surface = page.locator("[data-prism-webgl-surface]");
+  const surface = page.locator("[data-ogui-webgl-surface]");
   await expect(surface).toBeAttached();
-  const status = await surface.getAttribute("data-prism-webgl-status");
-  const rendererError = await surface.getAttribute("data-prism-webgl-error");
+  const status = await surface.getAttribute("data-ogui-webgl-status");
+  const rendererError = await surface.getAttribute("data-ogui-webgl-error");
 
   if (browserName === "chromium") {
     expect(status, rendererError ?? "WebGL renderer should be ready").toBe("ready");
@@ -124,8 +135,8 @@ test("reduced motion freezes optical animation and media", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/experiments/organic");
 
-  await expect(page.locator(".engine-surface").first()).toHaveAttribute("data-prism-motion", "off");
-  await expect(page.locator("[data-prism-organic-definition] animate")).toHaveCount(0);
+  await expect(page.locator(".engine-surface").first()).toHaveAttribute("data-ogui-motion", "off");
+  await expect(page.locator("[data-ogui-organic-definition] animate")).toHaveCount(0);
   await expect
     .poll(() =>
       page
@@ -149,9 +160,9 @@ test("reduced transparency selects the accessibility renderer", async ({ page })
   await page.goto("/experiments/hybrid");
 
   const glass = page.locator(".engine-surface").first();
-  await expect(glass).toHaveAttribute("data-prism-renderer", "css");
-  await expect(glass).toHaveAttribute("data-prism-renderer-reason", "accessibility-fallback");
-  await expect(glass).toHaveAttribute("data-prism-quality", "low");
+  await expect(glass).toHaveAttribute("data-ogui-renderer", "css");
+  await expect(glass).toHaveAttribute("data-ogui-renderer-reason", "accessibility-fallback");
+  await expect(glass).toHaveAttribute("data-ogui-quality", "low");
   await expect(page.getByText("A11Y / OPAQUE", { exact: true })).toHaveClass(/is-active/);
 });
 
@@ -164,8 +175,8 @@ test("forced colors selects the opaque policy branch", async ({ page, browserNam
   await page.goto("/experiments/hybrid");
 
   const glass = page.locator(".engine-surface").first();
-  await expect(glass).toHaveAttribute("data-prism-renderer", "css");
-  await expect(glass).toHaveAttribute("data-prism-renderer-reason", "accessibility-fallback");
+  await expect(glass).toHaveAttribute("data-ogui-renderer", "css");
+  await expect(glass).toHaveAttribute("data-ogui-renderer-reason", "accessibility-fallback");
   await expect(page.getByText("A11Y / OPAQUE", { exact: true })).toHaveClass(/is-active/);
 });
 
@@ -177,10 +188,7 @@ test("auto quality drops on low-concurrency hardware", async ({ page }) => {
     });
   });
   await page.goto("/experiments/css");
-  await expect(page.locator(".engine-surface").first()).toHaveAttribute(
-    "data-prism-quality",
-    "low",
-  );
+  await expect(page.locator(".engine-surface").first()).toHaveAttribute("data-ogui-quality", "low");
 });
 
 test("WebGL unavailability exposes a stable CSS fallback", async ({ page }) => {
@@ -198,8 +206,8 @@ test("WebGL unavailability exposes a stable CSS fallback", async ({ page }) => {
   });
   await page.goto("/experiments/webgl");
 
-  await expect(page.locator("[data-prism-webgl-surface]")).toHaveAttribute(
-    "data-prism-webgl-status",
+  await expect(page.locator("[data-ogui-webgl-surface]")).toHaveAttribute(
+    "data-ogui-webgl-status",
     "unavailable",
   );
   await expect(page.locator(".webgl-backdrop")).toBeVisible();
@@ -251,7 +259,7 @@ test("route remounts and visibility transitions release WebGL resources", async 
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto("/experiments/webgl");
-  const surface = page.locator("[data-prism-webgl-surface]");
+  const surface = page.locator("[data-ogui-webgl-surface]");
   await expect(surface).toBeAttached();
 
   await page.evaluate(() => {
@@ -269,14 +277,14 @@ test("route remounts and visibility transitions release WebGL resources", async 
 
   await page.getByRole("link", { name: "Experiment 01: CSS Material" }).click();
   await expect(page).toHaveURL(/\/experiments\/css$/);
-  await expect(page.locator("[data-prism-webgl-surface]")).toHaveCount(0);
+  await expect(page.locator("[data-ogui-webgl-surface]")).toHaveCount(0);
   await expect(page.locator(".instrument video")).toHaveCount(0);
   await page.getByRole("link", { name: "Experiment 04: WebGL2 Optics" }).click();
   await expect(page).toHaveURL(/\/experiments\/webgl$/);
-  await expect(page.locator("[data-prism-webgl-surface]")).toBeAttached();
+  await expect(page.locator("[data-ogui-webgl-surface]")).toBeAttached();
   if (browserName === "chromium") {
-    await expect(page.locator("[data-prism-webgl-surface]")).toHaveAttribute(
-      "data-prism-webgl-status",
+    await expect(page.locator("[data-ogui-webgl-surface]")).toHaveAttribute(
+      "data-ogui-webgl-status",
       "ready",
     );
   }
@@ -286,30 +294,30 @@ test("route remounts and visibility transitions release WebGL resources", async 
 test("WebGL context loss and recovery remain observable", async ({ page, browserName }) => {
   test.skip(browserName !== "chromium", "deterministic WEBGL_lose_context coverage uses Chromium");
   await page.goto("/experiments/webgl");
-  const surface = page.locator("[data-prism-webgl-surface]");
-  await expect(surface).toHaveAttribute("data-prism-webgl-status", "ready");
+  const surface = page.locator("[data-ogui-webgl-surface]");
+  await expect(surface).toHaveAttribute("data-ogui-webgl-status", "ready");
 
   const extensionAvailable = await surface.evaluate((canvas) => {
     const context = (canvas as HTMLCanvasElement).getContext("webgl2");
     const extension = context?.getExtension("WEBGL_lose_context");
     const testWindow = window as typeof window & {
-      __restorePrismContext?: () => void;
+      __restoreOpenGlassContext?: () => void;
     };
-    testWindow.__restorePrismContext = () => extension?.restoreContext();
+    testWindow.__restoreOpenGlassContext = () => extension?.restoreContext();
     extension?.loseContext();
     return Boolean(extension);
   });
   test.skip(!extensionAvailable, "WEBGL_lose_context is unavailable in this browser build");
-  await expect(surface).toHaveAttribute("data-prism-webgl-status", "lost");
+  await expect(surface).toHaveAttribute("data-ogui-webgl-status", "lost");
 
   await page.evaluate(() => {
     const testWindow = window as typeof window & {
-      __restorePrismContext?: () => void;
+      __restoreOpenGlassContext?: () => void;
     };
-    testWindow.__restorePrismContext?.();
+    testWindow.__restoreOpenGlassContext?.();
   });
-  await expect(surface).toHaveAttribute("data-prism-webgl-status", "restored");
-  await expect(surface).not.toHaveAttribute("data-prism-webgl-error", /.+/);
+  await expect(surface).toHaveAttribute("data-ogui-webgl-status", "restored");
+  await expect(surface).not.toHaveAttribute("data-ogui-webgl-error", /.+/);
 });
 
 test("portrait and landscape resizing preserve the page boundary", async ({ page }) => {

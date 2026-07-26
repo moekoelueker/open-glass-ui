@@ -5,14 +5,14 @@ import {
   getMaterialPreset,
   type LensGeometry,
   type OpticsQuality,
-} from "@prism-lab/core";
+} from "@open-glass-ui/core";
 import {
   type CanvasFactory,
   createStableFilterId,
   createSvgDisplacementFilterSpec,
   encodeDisplacementMap,
   type SvgDisplacementFilterSpec,
-} from "@prism-lab/renderers";
+} from "@open-glass-ui/renderers";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 export interface SdfFilterOptions {
@@ -148,7 +148,7 @@ export function SdfFilterDefinition({ filter }: SdfFilterDefinitionProps) {
   return (
     <svg
       aria-hidden="true"
-      data-prism-sdf-definition={filter.filterId}
+      data-ogui-sdf-definition={filter.filterId}
       focusable="false"
       height="0"
       style={{ position: "absolute" }}
@@ -167,56 +167,56 @@ export function SdfFilterDefinition({ filter }: SdfFilterDefinitionProps) {
             height="100%"
             href={spec.href}
             preserveAspectRatio="none"
-            result="PRISM_MAP"
+            result="OGUI_MAP"
             width="100%"
           />
           <feDisplacementMap
             in="SourceGraphic"
-            in2="PRISM_MAP"
-            result="PRISM_RED_SHIFT"
+            in2="OGUI_MAP"
+            result="OGUI_RED_SHIFT"
             scale={spec.redScale}
             xChannelSelector="R"
             yChannelSelector="G"
           />
-          <feColorMatrix in="PRISM_RED_SHIFT" result="PRISM_RED" type="matrix" values={redMatrix} />
+          <feColorMatrix in="OGUI_RED_SHIFT" result="OGUI_RED" type="matrix" values={redMatrix} />
           <feDisplacementMap
             in="SourceGraphic"
-            in2="PRISM_MAP"
-            result="PRISM_GREEN_SHIFT"
+            in2="OGUI_MAP"
+            result="OGUI_GREEN_SHIFT"
             scale={spec.greenScale}
             xChannelSelector="R"
             yChannelSelector="G"
           />
           <feColorMatrix
-            in="PRISM_GREEN_SHIFT"
-            result="PRISM_GREEN"
+            in="OGUI_GREEN_SHIFT"
+            result="OGUI_GREEN"
             type="matrix"
             values={greenMatrix}
           />
           <feDisplacementMap
             in="SourceGraphic"
-            in2="PRISM_MAP"
-            result="PRISM_BLUE_SHIFT"
+            in2="OGUI_MAP"
+            result="OGUI_BLUE_SHIFT"
             scale={spec.blueScale}
             xChannelSelector="R"
             yChannelSelector="G"
           />
           <feColorMatrix
-            in="PRISM_BLUE_SHIFT"
-            result="PRISM_BLUE"
+            in="OGUI_BLUE_SHIFT"
+            result="OGUI_BLUE"
             type="matrix"
             values={blueMatrix}
           />
-          <feBlend in="PRISM_RED" in2="PRISM_GREEN" mode="screen" result="PRISM_RG" />
-          <feBlend in="PRISM_RG" in2="PRISM_BLUE" mode="screen" result="PRISM_RGB" />
+          <feBlend in="OGUI_RED" in2="OGUI_GREEN" mode="screen" result="OGUI_RG" />
+          <feBlend in="OGUI_RG" in2="OGUI_BLUE" mode="screen" result="OGUI_RGB" />
           <feColorMatrix
-            in="PRISM_MAP"
-            result="PRISM_SPECULAR"
+            in="OGUI_MAP"
+            result="OGUI_SPECULAR"
             type="matrix"
             values={specularMatrix}
           />
-          <feComposite in="PRISM_SPECULAR" in2="SourceGraphic" operator="in" result="PRISM_SPEC" />
-          <feBlend in="PRISM_RGB" in2="PRISM_SPEC" mode="screen" />
+          <feComposite in="OGUI_SPECULAR" in2="SourceGraphic" operator="in" result="OGUI_SPEC" />
+          <feBlend in="OGUI_RGB" in2="OGUI_SPEC" mode="screen" />
         </filter>
       </defs>
     </svg>
@@ -239,7 +239,7 @@ export function OrganicFilterDefinition({
   return (
     <svg
       aria-hidden="true"
-      data-prism-organic-definition={id}
+      data-ogui-organic-definition={id}
       focusable="false"
       height="0"
       style={{ position: "absolute" }}
@@ -257,7 +257,7 @@ export function OrganicFilterDefinition({
           <feTurbulence
             baseFrequency={`${baseFrequency} ${baseFrequency * 1.35}`}
             numOctaves={octaves}
-            result="PRISM_FLOW"
+            result="OGUI_FLOW"
             seed={Math.round(seed)}
             type="fractalNoise"
           >
@@ -272,17 +272,17 @@ export function OrganicFilterDefinition({
               />
             ) : null}
           </feTurbulence>
-          <feGaussianBlur in="PRISM_FLOW" result="PRISM_SILK" stdDeviation="0.55" />
+          <feGaussianBlur in="OGUI_FLOW" result="OGUI_SILK" stdDeviation="0.55" />
           <feDisplacementMap
             in="SourceGraphic"
-            in2="PRISM_SILK"
-            result="PRISM_ORGANIC"
+            in2="OGUI_SILK"
+            result="OGUI_ORGANIC"
             scale={displacementScale}
             xChannelSelector="R"
             yChannelSelector="B"
           />
           <feColorMatrix
-            in="PRISM_ORGANIC"
+            in="OGUI_ORGANIC"
             type="matrix"
             values="1.04 0 0 0 0  0 1.04 0 0 0  0 0 1.08 0 0  0 0 0 1 0"
           />

@@ -59,14 +59,14 @@ describe("renderer capability policy", () => {
     expect(capabilities.svgFilterElements).toBe(true);
   });
 
-  it("selects WebGL2 for controlled media and SDF/SVG for DOM", () => {
+  it("keeps automatic rendering CSS-first for arbitrary content", () => {
     expect(selectRenderer({ source: "media", capabilities: capable })).toEqual({
-      renderer: "webgl2",
-      reason: "media-webgl",
+      renderer: "css",
+      reason: "css-first",
     });
     expect(selectRenderer({ source: "dom", capabilities: capable })).toEqual({
-      renderer: "sdf-svg",
-      reason: "dom-svg",
+      renderer: "css",
+      reason: "css-first",
     });
   });
 

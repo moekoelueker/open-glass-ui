@@ -1,0 +1,70 @@
+name: Bug report
+description: Report a reproducible OpenGlass UI problem.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve OpenGlass UI. Do not include secrets or private media.
+  - type: input
+    id: version
+    attributes:
+      label: OpenGlass UI version
+      placeholder: 0.1.0-rc.0
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, operating system, device class, React version, and framework.
+      placeholder: Safari 18, macOS, React 19, Next.js App Router
+    validations:
+      required: true
+  - type: dropdown
+    id: renderer
+    attributes:
+      label: Renderer
+      options:
+        - CSS / auto
+        - SVG / SDF
+        - WebGL
+        - Opaque fallback
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Link to a small repository or provide exact code and steps.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include console output and screenshots where useful.
+    validations:
+      required: true
+  - type: checkboxes
+    id: accessibility
+    attributes:
+      label: Accessibility preferences
+      options:
+        - label: Reduced motion, reduced transparency, forced colors, zoom, or assistive technology affects this report.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and removed secrets or private data.
+          required: true

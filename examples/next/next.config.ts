@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
-  transpilePackages: ["@prism-lab/core", "@prism-lab/renderers", "@prism-lab/react"],
+  transpilePackages: [
+    "open-glass-ui",
+    "@open-glass-ui/core",
+    "@open-glass-ui/renderers",
+    "@open-glass-ui/react",
+    "@open-glass-ui/recipes",
+  ],
 };
 
 export default config;

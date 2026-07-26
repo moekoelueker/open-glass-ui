@@ -1,12 +1,11 @@
-import { getMaterialPreset, type MaterialPresetName } from "@prism-lab/core";
+import { getMaterialPreset, type MaterialPresetName } from "@open-glass-ui/core";
 import {
   OrganicFilterDefinition,
   SdfFilterDefinition,
   useGlassRuntime,
   useSdfFilter,
-  WebGLGlassSurface,
-  type WebGLSource,
-} from "@prism-lab/react";
+} from "@open-glass-ui/react";
+import { WebGLGlassSurface, type WebGLSource } from "@open-glass-ui/react/webgl";
 import {
   type CSSProperties,
   forwardRef,

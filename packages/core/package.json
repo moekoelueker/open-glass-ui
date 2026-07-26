@@ -1,21 +1,46 @@
 {
-  "name": "@prism-lab/core",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@open-glass-ui/core",
+  "version": "0.1.0-rc.0",
+  "description": "Framework-agnostic geometry, optics, materials, and adaptive theme tokens for OpenGlass UI.",
   "type": "module",
+  "license": "MIT",
+  "author": "Moe Luker",
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
   ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
-  }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=18.18"
+  },
+  "keywords": [
+    "liquid-glass",
+    "glass-ui",
+    "refraction",
+    "optics",
+    "design-tokens",
+    "typescript",
+    "esm"
+  ]
 }

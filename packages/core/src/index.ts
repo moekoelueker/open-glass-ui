@@ -16,6 +16,23 @@ export {
   resolveMapDimensions,
 } from "./quality";
 export type {
+  GlassAppearance,
+  GlassAppearancePreference,
+  GlassContrast,
+  GlassRadius,
+  GlassThemeInput,
+  GlassThemePalette,
+  GlassThemePreset,
+  GlassThemeTokens,
+} from "./theme";
+export {
+  contrastRatio,
+  createGlassTheme,
+  createGlassThemeTokens,
+  readableForeground,
+  relativeLuminance,
+} from "./theme";
+export type {
   DisplacementMap,
   DisplacementMapInput,
   GlassMaterial,

@@ -36,10 +36,10 @@ export function useGlassPointerField(enabled: boolean): GlassPointerField {
       current.y += (target.y - current.y) * 0.18;
 
       if (element) {
-        element.style.setProperty("--prism-pointer-x", current.x.toFixed(4));
-        element.style.setProperty("--prism-pointer-y", current.y.toFixed(4));
+        element.style.setProperty("--ogui-pointer-x", current.x.toFixed(4));
+        element.style.setProperty("--ogui-pointer-y", current.y.toFixed(4));
         element.style.setProperty(
-          "--prism-pointer-distance",
+          "--ogui-pointer-distance",
           Math.hypot(current.x, current.y).toFixed(4),
         );
       }
@@ -72,19 +72,19 @@ export function useGlassPointerField(enabled: boolean): GlassPointerField {
       elementRef.current = event.currentTarget;
       targetRef.current.x = 0;
       targetRef.current.y = 0;
-      event.currentTarget.style.setProperty("--prism-press", "0");
+      event.currentTarget.style.setProperty("--ogui-press", "0");
       schedule();
     },
     onPointerDown(event) {
       if (enabled) {
-        event.currentTarget.style.setProperty("--prism-press", "1");
+        event.currentTarget.style.setProperty("--ogui-press", "1");
       }
     },
     onPointerUp(event) {
-      event.currentTarget.style.setProperty("--prism-press", "0");
+      event.currentTarget.style.setProperty("--ogui-press", "0");
     },
     onPointerCancel(event) {
-      event.currentTarget.style.setProperty("--prism-press", "0");
+      event.currentTarget.style.setProperty("--ogui-press", "0");
     },
   };
 }

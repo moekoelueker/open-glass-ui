@@ -1,3 +1,5 @@
+"use client";
+
 export type {
   OrganicFilterDefinitionProps,
   SdfFilterDefinitionProps,
@@ -31,8 +33,7 @@ export type {
 } from "./source";
 export { GlassGroup, GlassSource, useGlassGroup } from "./source";
 export type {
-  WebGLGlassSurfaceProps,
-  WebGLSource,
-  WebGLSurfaceStatus,
-} from "./webgl-surface";
-export { scaleWebGLLenses, WebGLGlassSurface } from "./webgl-surface";
+  GlassThemeProviderProps,
+  GlassThemeRuntime,
+} from "./theme";
+export { GlassThemeProvider, useGlassTheme } from "./theme";

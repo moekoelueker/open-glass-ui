@@ -2,7 +2,7 @@
 
 Research snapshot: 2026-07-24
 
-Prism Lab is a clean-room research implementation. At repository initialization,
+OpenGlass UI is a clean-room research implementation. At repository initialization,
 it contains no source code or visual assets copied from the projects below.
 
 ## Standards and platform guidance

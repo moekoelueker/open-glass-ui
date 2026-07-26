@@ -1,5 +1,5 @@
-import type { MaterialPresetName } from "@prism-lab/core";
-import { Glass, useGlassRuntime } from "@prism-lab/react";
+import type { MaterialPresetName } from "@open-glass-ui/core";
+import { Glass, useGlassRuntime } from "@open-glass-ui/react";
 import {
   Button,
   Dock,
@@ -14,7 +14,7 @@ import {
   Tabs,
   Toolbar,
   Tooltip,
-} from "@prism-lab/recipes";
+} from "@open-glass-ui/recipes";
 import { type ReactNode, useState } from "react";
 import { AppLink } from "./app";
 import {
@@ -35,12 +35,12 @@ import { Icon } from "./icons";
 
 function Wordmark() {
   return (
-    <AppLink href="/" className="wordmark" aria-label="Prism Lab comparison home">
+    <AppLink href="/" className="wordmark" aria-label="OpenGlass UI comparison home">
       <span className="wordmark__mark" aria-hidden="true">
-        P
+        O
       </span>
       <span>
-        <strong>PRISM</strong>
+        <strong>OPENGLASS</strong>
         <small>Material research 001</small>
       </span>
     </AppLink>
@@ -55,27 +55,35 @@ export function SiteHeader({
   section?: "library" | "docs" | "validation";
 }) {
   return (
-    <header className="site-header">
-      <Wordmark />
-      <nav className="site-header__nav" aria-label="Primary navigation">
-        <AppLink href="/" className={!active && !section ? "is-active" : undefined}>
-          Index
-        </AppLink>
-        <AppLink href="/library" className={section === "library" ? "is-active" : undefined}>
-          Library
-        </AppLink>
-        <AppLink href="/docs" className={section === "docs" ? "is-active" : undefined}>
-          Architecture
-        </AppLink>
-        <AppLink href="/validation" className={section === "validation" ? "is-active" : undefined}>
-          Validation
-        </AppLink>
-      </nav>
-      <div className="site-header__status">
-        <span className="status-light" aria-hidden="true" />
-        Research build
-      </div>
-    </header>
+    <>
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
+      <header className="site-header">
+        <Wordmark />
+        <nav className="site-header__nav" aria-label="Primary navigation">
+          <AppLink href="/" className={!active && !section ? "is-active" : undefined}>
+            Index
+          </AppLink>
+          <AppLink href="/library" className={section === "library" ? "is-active" : undefined}>
+            Library
+          </AppLink>
+          <AppLink href="/docs" className={section === "docs" ? "is-active" : undefined}>
+            Architecture
+          </AppLink>
+          <AppLink
+            href="/validation"
+            className={section === "validation" ? "is-active" : undefined}
+          >
+            Validation
+          </AppLink>
+        </nav>
+        <div className="site-header__status">
+          <span className="status-light" aria-hidden="true" />
+          Research build
+        </div>
+      </header>
+    </>
   );
 }
 
@@ -122,7 +130,7 @@ export function ComparisonHome() {
   return (
     <div className="site-shell home-page">
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <section className="home-hero">
           <div className="eyebrow">
             <span>Independent material study</span>
@@ -636,7 +644,7 @@ export function ExperimentPage({ id }: { id: string }) {
     return (
       <div className="site-shell">
         <SiteHeader />
-        <main className="not-found">
+        <main id="main-content" tabIndex={-1} className="not-found">
           <p className="section-kicker">Unknown specimen</p>
           <h1>That experiment does not exist.</h1>
           <AppLink href="/" className="text-link">
@@ -653,7 +661,7 @@ export function ExperimentPage({ id }: { id: string }) {
       style={{ "--experiment-accent": experiment.accent } as React.CSSProperties}
     >
       <SiteHeader active={experiment.id} />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <ExperimentNav active={experiment.id} />
         <section className="experiment-hero">
           <div className="experiment-hero__index">{experiment.index}</div>
@@ -810,7 +818,7 @@ function DocumentationShell({
   return (
     <div className="site-shell document-page">
       <SiteHeader section={section} />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <header className="document-hero">
           <p className="section-kicker">{kicker}</p>
           <h1>{title}</h1>
@@ -892,7 +900,7 @@ export function DocumentationView() {
 export function ValidationView() {
   const checks = [
     ["Unit + property", "65 passing", "complete"],
-    ["Browser behavior", "110 passing · 7 capability skips", "complete"],
+    ["Browser behavior", "122 passing · 7 capability skips", "complete"],
     ["Component atlas", "40 recipes · 3 finalist routes", "complete"],
     ["Atlas evidence", "84 approved captures · 2 visual passes", "complete"],
     ["Engine evidence", "81 approved pass-02 captures", "complete"],
@@ -915,7 +923,7 @@ export function ValidationView() {
         <strong>Pass 02 / approved</strong>
       </div>
       <table className="validation-table">
-        <caption className="pl-sr-only">Validation status</caption>
+        <caption className="ogui-sr-only">Validation status</caption>
         <tbody>
           {checks.map(([name, value, status]) => (
             <tr key={name}>

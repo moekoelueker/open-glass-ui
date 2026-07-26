@@ -1,14 +1,14 @@
 # Architecture
 
-Status: review-ready research architecture  
-Evidence date: 2026-07-24
+- Status: release-candidate architecture; not published
+- Decision date: 2026-07-25
 
 ## Recommendation
 
-The v1 foundation should be the adaptive hybrid, with a deliberately small
-default:
+The v1 foundation is the adaptive hybrid, with a deliberately small default:
 
-1. Layered CSS is the universal DOM material and safety net.
+1. Layered CSS is the universal DOM material, the `auto` result, and the safety
+   net.
 2. Deterministic SDF/SVG is an opt-in enhancement for owned or supplied DOM.
 3. WebGL2 is an opt-in controlled-media renderer for image, canvas, and video.
 4. Organic turbulence stays an expressive recipe, not the default engine.
@@ -20,10 +20,15 @@ This is one capability policy with several bounded renderers, not one
 ## Package boundaries
 
 ```text
-@prism-lab/recipes ──────► @prism-lab/react
+open-glass-ui
+├── . ─────────► React primitives + forty recipes + shared utilities
+├── /core ─────► server-safe, framework-independent utilities
+└── /webgl ────► explicit controlled-media WebGL entry
+
+@open-glass-ui/recipes ──────► @open-glass-ui/react
                                   │
                                   ▼
-@prism-lab/core ◄──────── @prism-lab/renderers
+@open-glass-ui/core ◄──────── @open-glass-ui/renderers
         ▲                         ▲
         └─────────────────────────┘
 ```
@@ -33,26 +38,32 @@ This is one capability policy with several bounded renderers, not one
 | `core` | SDFs, normals, material values, maps, quality, cache | React, DOM, browser globals |
 | `renderers` | Capability policy, CSS tokens, SVG encoding, WebGL2 renderer | Component behavior |
 | `react` | Hydration-safe policy, primitives, filter and media lifecycles | Recipe styling or per-frame React state |
-| `recipes` | Accessible component behavior and optional CSS | Optical math or renderer selection |
+| `recipes` | Accessible component behavior and recipe CSS | Optical math or renderer selection |
 
 The optics core has zero runtime dependencies. React and React DOM are peer
 dependencies of the React-facing packages. Each package is ESM, has declaration
-output, and is independently packable.
+output, and is independently packable. The public release-candidate facade is
+`open-glass-ui@0.1.0-rc.0`; the `@open-glass-ui/*` packages are its
+implementation dependency chain, not normal consumer entry points.
 
 ## Runtime decision policy
 
-Renderer selection is source-aware and capability-driven:
+`renderer="auto"` is intentionally CSS-first. It does not promote a surface to
+SVG or WebGL simply because the browser supports those technologies. Enhanced
+renderers require an explicit consumer choice and a source they can legally and
+technically sample:
 
-| State | DOM source | Controlled media |
+| Request | Supported result | Unsupported or accessibility fallback |
 | --- | --- | --- |
-| Forced colors or reduced transparency | opaque CSS | opaque CSS |
-| Supported enhanced path | SDF/SVG | WebGL2 |
-| Unsupported or pre-hydration | layered CSS | source media + CSS controls |
+| `auto` or `css` over arbitrary DOM | layered CSS | opaque semantic CSS |
+| explicit `organic-svg` or `sdf-svg` | requested SVG filter | layered or opaque CSS |
+| `open-glass-ui/webgl` over owned media | WebGL2 surface | original media + DOM controls |
 
 The server never guesses browser support. It emits stable semantic content with
 the CSS baseline, then the provider detects individual capabilities after
 hydration. Support for backdrop blur, SVG filter elements, backdrop URL syntax,
-and WebGL2 is recorded separately.
+and WebGL2 is recorded separately. Forced colors or reduced transparency can
+override any visual branch with an opaque semantic material.
 
 ## Optical model
 
@@ -69,14 +80,19 @@ This is physics-inspired and coherent; it is not a spectral path tracer.
 
 ## React surface
 
-The intended initial API remains semantic:
+The consumer API remains semantic:
 
 ```tsx
-<GlassProvider quality="auto" motion="system">
+<GlassSystemProvider
+  renderer="auto"
+  quality="auto"
+  motion="system"
+  theme={{ appearance: "system", theme: { preset: "neutral" } }}
+>
   <Glass material="regular" source="dom" interactive>
     <Toolbar label="Editing tools">…</Toolbar>
   </Glass>
-</GlassProvider>
+</GlassSystemProvider>
 ```
 
 Advanced paths remain explicit:
@@ -84,7 +100,11 @@ Advanced paths remain explicit:
 ```tsx
 <GlassGroup id="workspace-source">
   <GlassSource>{content}</GlassSource>
-  <Glass filterId={filter.filterId} geometry={geometry}>
+  <Glass
+    renderer="sdf-svg"
+    filterId={filter.filterId}
+    geometry={geometry}
+  >
     {content}
   </Glass>
 </GlassGroup>
@@ -99,19 +119,23 @@ Advanced paths remain explicit:
 />
 ```
 
-Recommended v1 public surface:
+Release-candidate public surface:
 
-- `GlassProvider`
-- `Glass`
-- `GlassGroup` and `GlassSource`
-- semantic material presets: `clear`, `regular`, `frosted`
-- `useSdfFilter`, `SdfFilterDefinition`, and `OrganicFilterDefinition`
-- `WebGLGlassSurface` as an advanced controlled-media primitive
-- framework-independent geometry, map, cache, and policy functions
+- the single `open-glass-ui` consumer facade;
+- `GlassSystemProvider`, combining runtime, theme, and toast boundaries;
+- `GlassProvider`;
+- `Glass`;
+- `GlassGroup` and `GlassSource`;
+- semantic material presets: `clear`, `regular`, `frosted`;
+- `useSdfFilter`, `SdfFilterDefinition`, and `OrganicFilterDefinition`;
+- forty native-DOM recipe components and their shared stylesheet;
+- framework-independent geometry, map, cache, policy, and theme functions from
+  the server-safe `open-glass-ui/core` subpath;
+- `WebGLGlassSurface` from the explicit `open-glass-ui/webgl` subpath.
 
-Recipe components should remain in a separate optional package. Experimental
-shader internals, raw filter graphs, and showcase-only annotations should not be
-promoted to public API.
+Recipe components are included in the public facade. Experimental shader
+internals, raw filter graphs, internal package boundaries, and showcase-only
+annotations are not public API.
 
 ## Performance and lifecycle
 
@@ -140,12 +164,16 @@ zoom, and real-device review before a public release.
 
 ## Release boundary
 
-The architecture is ready for API review, not npm publication. Before release:
+The owner has approved the OpenGlass UI identity and the local package
+architecture. All five package manifests are prepared at `0.1.0-rc.0`, but
+nothing has been published and no public remote has been created. Before
+release:
 
-- approve a public name and package namespace;
-- freeze the supported API and version policy;
+- recheck and reserve the npm and repository namespaces;
+- complete the release-candidate API and semver review;
 - test representative physical iOS, Android, macOS, and Windows devices;
 - complete VoiceOver, NVDA, and high-zoom review;
-- decide whether WebGL2 ships in the main React package or an optional subpath;
-- replace internal version `0.0.0` and remove `private` only with explicit
-  publication approval.
+- run the release checklist against clean packed consumers and final
+  screenshots; and
+- obtain explicit owner authorization before creating a remote, deploying, or
+  publishing.

@@ -1,6 +1,9 @@
-import { Glass, type GlassProps } from "@prism-lab/react";
+"use client";
+
+import { Glass, type GlassProps, useGlassTheme } from "@open-glass-ui/react";
 import {
   type ButtonHTMLAttributes,
+  type CSSProperties,
   cloneElement,
   createContext,
   type FieldsetHTMLAttributes,
@@ -13,9 +16,11 @@ import {
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import "./styles.css";
 
 export type {
@@ -33,6 +38,7 @@ export type {
   OverlayProps,
   PaginationProps,
   ProgressProps,
+  RadioGroupProps,
   RadioItem,
   SearchFieldProps,
   SelectOption,
@@ -42,7 +48,10 @@ export type {
   StepItem,
   TextareaProps,
   TextFieldProps,
+  ToastController,
+  ToastOptions,
   ToastProps,
+  ToastProviderProps,
   ToggleButtonProps,
 } from "./atlas";
 export {
@@ -72,11 +81,17 @@ export {
   Textarea,
   TextField,
   Toast,
+  ToastProvider,
   ToggleButton,
+  useToast,
 } from "./atlas";
 
 function classes(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
+}
+
+function idPart(value: string) {
+  return encodeURIComponent(value).replaceAll("%", "_");
 }
 
 function useControllableValue<T>(
@@ -123,11 +138,16 @@ export function Button({
     <button
       {...props}
       type={type}
-      className={classes("pl-button", `pl-button--${variant}`, `pl-control--${size}`, className)}
+      className={classes(
+        "ogui-button",
+        `ogui-button--${variant}`,
+        `ogui-control--${size}`,
+        className,
+      )}
     >
-      {leadingIcon ? <span className="pl-button__icon">{leadingIcon}</span> : null}
-      <span className="pl-button__label">{children}</span>
-      {trailingIcon ? <span className="pl-button__icon">{trailingIcon}</span> : null}
+      {leadingIcon ? <span className="ogui-button__icon">{leadingIcon}</span> : null}
+      <span className="ogui-button__label">{children}</span>
+      {trailingIcon ? <span className="ogui-button__icon">{trailingIcon}</span> : null}
     </button>
   );
 }
@@ -149,7 +169,7 @@ export function IconButton({
       {...props}
       size={size}
       variant={variant}
-      className={classes("pl-icon-button", className)}
+      className={classes("ogui-icon-button", className)}
     >
       {children}
     </Button>
@@ -187,13 +207,13 @@ export function SegmentedControl<T extends string>({
   const [value, setValue] = useControllableValue(controlledValue, defaultValue, onValueChange);
 
   return (
-    <fieldset {...props} className={classes("pl-segments", className)}>
-      <legend className="pl-sr-only">{label}</legend>
+    <fieldset {...props} className={classes("ogui-segments", className)}>
+      <legend className="ogui-sr-only">{label}</legend>
       {items.map((item) => (
         <button
           key={item.value}
           type="button"
-          className="pl-segments__item"
+          className="ogui-segments__item"
           aria-pressed={item.value === value}
           disabled={item.disabled}
           onClick={() => setValue(item.value)}
@@ -237,12 +257,13 @@ export function Switch({
   return (
     <label
       {...labelProps}
-      className={classes("pl-switch", labelProps?.className, className)}
+      className={classes("ogui-switch", labelProps?.className, className)}
       htmlFor={id}
     >
       <input
         {...props}
         id={id}
+        name={props.name ?? id}
         type="checkbox"
         role="switch"
         checked={checked}
@@ -254,18 +275,18 @@ export function Switch({
           onChange?.(event);
         }}
       />
-      <span className="pl-switch__copy">
-        <span id={`${id}-label`} className="pl-switch__label">
+      <span className="ogui-switch__copy">
+        <span id={`${id}-label`} className="ogui-switch__label">
           {label}
         </span>
         {description ? (
-          <span id={descriptionId} className="pl-switch__description">
+          <span id={descriptionId} className="ogui-switch__description">
             {description}
           </span>
         ) : null}
       </span>
-      <span className="pl-switch__track" aria-hidden="true">
-        <span className="pl-switch__thumb" />
+      <span className="ogui-switch__track" aria-hidden="true">
+        <span className="ogui-switch__thumb" />
       </span>
     </label>
   );
@@ -291,20 +312,23 @@ export function Slider({
 }: SliderProps) {
   const generatedId = useId();
   const id = suppliedId ?? generatedId;
+  const labelId = `${id}-label`;
   const [liveValue, setLiveValue] = useState(defaultValue ?? min);
   const shownValue = value ?? liveValue;
   const numericValue = Array.isArray(shownValue) ? shownValue[0] : shownValue;
 
   return (
-    <label className={classes("pl-slider", className)} htmlFor={id}>
-      <span className="pl-slider__header">
-        <span>{label}</span>
+    <label className={classes("ogui-slider", className)} htmlFor={id}>
+      <span className="ogui-slider__header">
+        <span id={labelId}>{label}</span>
         <output htmlFor={id}>{valueText ?? `${numericValue}${unit}`}</output>
       </span>
       <input
         {...props}
         id={id}
+        name={props.name ?? id}
         type="range"
+        aria-labelledby={labelId}
         min={min}
         max={max}
         value={value}
@@ -329,7 +353,7 @@ export function Toolbar({
   label,
   orientation = "horizontal",
   material = "regular",
-  tone = "dark",
+  tone = "auto",
   className,
   children,
   ...props
@@ -337,7 +361,7 @@ export function Toolbar({
   return (
     <Glass
       {...props}
-      className={classes("pl-toolbar", className)}
+      className={classes("ogui-toolbar", className)}
       role="toolbar"
       aria-label={label}
       aria-orientation={orientation}
@@ -359,7 +383,7 @@ export interface DockProps extends HTMLAttributes<HTMLElement> {
 export function Dock({
   label,
   material = "regular",
-  tone = "dark",
+  tone = "auto",
   className,
   children,
   ...props
@@ -369,7 +393,7 @@ export function Dock({
       {...props}
       as="nav"
       aria-label={label}
-      className={classes("pl-dock", className)}
+      className={classes("ogui-dock", className)}
       material={material}
       tone={tone}
     >
@@ -398,17 +422,21 @@ export function Tabs<T extends string>({
   label,
   items,
   value: controlledValue,
-  defaultValue = items[0]?.value,
+  defaultValue: suppliedDefaultValue,
   onValueChange,
   className,
   ...props
 }: TabsProps<T>) {
+  const firstEnabled = items.find((item) => !item.disabled);
+  const defaultValue =
+    items.find((item) => item.value === suppliedDefaultValue && !item.disabled)?.value ??
+    firstEnabled?.value;
   if (defaultValue === undefined) {
-    throw new Error("Tabs requires at least one item or a defaultValue.");
+    throw new Error("Tabs requires at least one enabled item.");
   }
   const id = useId();
   const [value, setValue] = useControllableValue(controlledValue, defaultValue, onValueChange);
-  const activeItem = items.find((item) => item.value === value) ?? items[0];
+  const activeItem = items.find((item) => item.value === value && !item.disabled) ?? firstEnabled;
   const tabsRef = useRef<HTMLDivElement>(null);
 
   const move = (currentValue: T, direction: number) => {
@@ -437,19 +465,20 @@ export function Tabs<T extends string>({
   };
 
   return (
-    <div {...props} className={classes("pl-tabs", className)}>
-      <div ref={tabsRef} className="pl-tabs__list" role="tablist" aria-label={label}>
+    <div {...props} className={classes("ogui-tabs", className)}>
+      <div ref={tabsRef} className="ogui-tabs__list" role="tablist" aria-label={label}>
         {items.map((item) => {
           const selected = item.value === activeItem?.value;
+          const itemId = idPart(item.value);
           return (
             <button
               key={item.value}
-              id={`${id}-tab-${item.value}`}
+              id={`${id}-tab-${itemId}`}
               type="button"
               role="tab"
               data-tab-value={item.value}
               aria-selected={selected}
-              aria-controls={`${id}-panel-${item.value}`}
+              aria-controls={`${id}-panel-${itemId}`}
               tabIndex={selected ? 0 : -1}
               disabled={item.disabled}
               onClick={() => setValue(item.value)}
@@ -479,10 +508,10 @@ export function Tabs<T extends string>({
       </div>
       {activeItem ? (
         <div
-          id={`${id}-panel-${activeItem.value}`}
+          id={`${id}-panel-${idPart(activeItem.value)}`}
           role="tabpanel"
-          aria-labelledby={`${id}-tab-${activeItem.value}`}
-          className="pl-tabs__panel"
+          aria-labelledby={`${id}-tab-${idPart(activeItem.value)}`}
+          className="ogui-tabs__panel"
         >
           {activeItem.content}
         </div>
@@ -500,6 +529,8 @@ export interface DisclosureSurfaceProps extends Omit<HTMLAttributes<HTMLDivEleme
   defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  focusOnOpen?: "none" | "first" | "last";
+  openOnArrowKeys?: boolean;
 }
 
 const DisclosureCloseContext = createContext<(() => void) | null>(null);
@@ -508,20 +539,38 @@ function DisclosureSurface({
   trigger,
   triggerLabel,
   material = "frosted",
-  tone = "dark",
+  tone = "auto",
   placement = "start",
   defaultOpen = false,
   open: controlledOpen,
   onOpenChange,
+  focusOnOpen = "none",
+  openOnArrowKeys = false,
   className,
   children,
   ...props
 }: DisclosureSurfaceProps) {
   const id = useId();
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const surfaceRef = useRef<HTMLElement>(null);
+  const requestedFocusRef = useRef(focusOnOpen);
+  const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
+  const [surfacePosition, setSurfacePosition] = useState<CSSProperties>({
+    top: -10_000,
+    left: -10_000,
+  });
   const [open, setOpen] = useControllableValue(controlledOpen, defaultOpen, onOpenChange);
+  const { appearance, tokens } = useGlassTheme();
   const focusTrigger = useCallback(() => {
     wrapperRef.current?.querySelector<HTMLButtonElement>("button[aria-controls]")?.focus();
+  }, []);
+
+  useEffect(() => {
+    const host = document.createElement("div");
+    host.setAttribute("data-ogui-portal", "disclosure");
+    document.body.append(host);
+    setPortalHost(host);
+    return () => host.remove();
   }, []);
 
   useEffect(() => {
@@ -530,7 +579,11 @@ function DisclosureSurface({
     }
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (event.target instanceof Node && !wrapperRef.current?.contains(event.target)) {
+      if (
+        event.target instanceof Node &&
+        !wrapperRef.current?.contains(event.target) &&
+        !surfaceRef.current?.contains(event.target)
+      ) {
         setOpen(false);
       }
     };
@@ -548,6 +601,72 @@ function DisclosureSurface({
     };
   }, [focusTrigger, open, setOpen]);
 
+  useEffect(() => {
+    if (!open || !portalHost || requestedFocusRef.current === "none") {
+      return;
+    }
+
+    const focusFrame = requestAnimationFrame(() => {
+      const items = [
+        ...(surfaceRef.current?.querySelectorAll<HTMLElement>(
+          '[role="menuitem"]:not([disabled]), [data-ogui-autofocus]:not([disabled])',
+        ) ?? []),
+      ];
+      const target = requestedFocusRef.current === "last" ? items.at(-1) : items[0];
+      target?.focus();
+    });
+
+    return () => cancelAnimationFrame(focusFrame);
+  }, [open, portalHost]);
+
+  useLayoutEffect(() => {
+    if (!open || !portalHost) {
+      return;
+    }
+
+    const updatePosition = () => {
+      const trigger = wrapperRef.current?.querySelector<HTMLButtonElement>("button[aria-controls]");
+      const surface = surfaceRef.current;
+      if (!trigger || !surface) {
+        return;
+      }
+
+      const gap = 8;
+      const edge = 8;
+      const triggerRect = trigger.getBoundingClientRect();
+      const surfaceRect = surface.getBoundingClientRect();
+      const viewportWidth = document.documentElement.clientWidth;
+      const viewportHeight = document.documentElement.clientHeight;
+      const roomBelow = viewportHeight - triggerRect.bottom - gap;
+      const roomAbove = triggerRect.top - gap;
+      const placeAbove = surfaceRect.height > roomBelow && roomAbove > roomBelow;
+      const preferredTop = placeAbove
+        ? triggerRect.top - surfaceRect.height - gap
+        : triggerRect.bottom + gap;
+      const preferredLeft =
+        placement === "center"
+          ? triggerRect.left + (triggerRect.width - surfaceRect.width) / 2
+          : placement === "end"
+            ? triggerRect.right - surfaceRect.width
+            : triggerRect.left;
+      const maxLeft = Math.max(edge, viewportWidth - surfaceRect.width - edge);
+      const maxTop = Math.max(edge, viewportHeight - surfaceRect.height - edge);
+
+      setSurfacePosition({
+        top: Math.min(Math.max(preferredTop, edge), maxTop),
+        left: Math.min(Math.max(preferredLeft, edge), maxLeft),
+      });
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open, placement, portalHost]);
+
   const close = useCallback(() => {
     setOpen(false);
     focusTrigger();
@@ -557,7 +676,7 @@ function DisclosureSurface({
     <div
       {...props}
       ref={wrapperRef}
-      className={classes("pl-disclosure", className)}
+      className={classes("ogui-disclosure", className)}
       data-placement={placement}
       data-open={open ? "true" : "false"}
     >
@@ -566,25 +685,53 @@ function DisclosureSurface({
         "aria-label": triggerLabel ?? trigger.props["aria-label"],
         "aria-expanded": open,
         "aria-controls": `${id}-surface`,
+        "aria-haspopup": openOnArrowKeys ? "menu" : trigger.props["aria-haspopup"],
         onClick: (event) => {
           trigger.props.onClick?.(event);
           if (!event.defaultPrevented) {
+            requestedFocusRef.current = focusOnOpen;
             setOpen(!open);
           }
         },
+        onKeyDown: (event) => {
+          trigger.props.onKeyDown?.(event);
+          if (
+            !event.defaultPrevented &&
+            openOnArrowKeys &&
+            (event.key === "ArrowDown" || event.key === "ArrowUp")
+          ) {
+            event.preventDefault();
+            requestedFocusRef.current = event.key === "ArrowUp" ? "last" : "first";
+            setOpen(true);
+          }
+        },
       })}
-      {open ? (
-        <DisclosureCloseContext.Provider value={close}>
-          <Glass
-            id={`${id}-surface`}
-            className="pl-disclosure__surface"
-            material={material}
-            tone={tone}
-          >
-            {children}
-          </Glass>
-        </DisclosureCloseContext.Provider>
-      ) : null}
+      {open && portalHost
+        ? createPortal(
+            <DisclosureCloseContext.Provider value={close}>
+              <Glass
+                ref={surfaceRef}
+                id={`${id}-surface`}
+                className="ogui-disclosure__surface ogui-disclosure__surface--portal"
+                material={material}
+                tone={tone}
+                data-ogui-appearance={appearance}
+                data-ogui-disclosure-surface=""
+                data-placement={placement}
+                style={
+                  {
+                    ...tokens,
+                    colorScheme: appearance,
+                    ...surfacePosition,
+                  } as CSSProperties
+                }
+              >
+                {children}
+              </Glass>
+            </DisclosureCloseContext.Provider>,
+            portalHost,
+          )
+        : null}
     </div>
   );
 }
@@ -593,16 +740,101 @@ export interface MenuProps extends DisclosureSurfaceProps {
   label: string;
 }
 
+function MenuItems({ label, children }: { label: string; children: ReactNode }) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const close = useContext(DisclosureCloseContext);
+
+  const focusItem = (intent: "first" | "last" | "next" | "previous", current?: HTMLElement) => {
+    const items = [
+      ...(menuRef.current?.querySelectorAll<HTMLButtonElement>(
+        '[role="menuitem"]:not([disabled])',
+      ) ?? []),
+    ];
+    if (items.length === 0) {
+      return;
+    }
+    if (intent === "first") {
+      items[0]?.focus();
+      return;
+    }
+    if (intent === "last") {
+      items.at(-1)?.focus();
+      return;
+    }
+    const currentIndex = current ? items.indexOf(current as HTMLButtonElement) : -1;
+    const delta = intent === "next" ? 1 : -1;
+    items[(currentIndex + delta + items.length) % items.length]?.focus();
+  };
+
+  return (
+    <div
+      ref={menuRef}
+      role="menu"
+      aria-label={label}
+      className="ogui-menu__items"
+      onKeyDown={(event) => {
+        const current = event.target instanceof HTMLElement ? event.target : undefined;
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          focusItem("next", current);
+          return;
+        }
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          focusItem("previous", current);
+          return;
+        }
+        if (event.key === "Home") {
+          event.preventDefault();
+          focusItem("first");
+          return;
+        }
+        if (event.key === "End") {
+          event.preventDefault();
+          focusItem("last");
+          return;
+        }
+        if (event.key === "Tab") {
+          close?.();
+          return;
+        }
+        if (event.key.length === 1 && /\S/.test(event.key)) {
+          const items = [
+            ...(menuRef.current?.querySelectorAll<HTMLButtonElement>(
+              '[role="menuitem"]:not([disabled])',
+            ) ?? []),
+          ];
+          const currentIndex = current ? items.indexOf(current as HTMLButtonElement) : -1;
+          const orderedItems = [
+            ...items.slice(currentIndex + 1),
+            ...items.slice(0, currentIndex + 1),
+          ];
+          orderedItems
+            .find((item) =>
+              item.textContent
+                ?.trim()
+                .toLocaleLowerCase()
+                .startsWith(event.key.toLocaleLowerCase()),
+            )
+            ?.focus();
+        }
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function Menu({ label, children, ...props }: MenuProps) {
   return (
     <DisclosureSurface
       {...props}
       triggerLabel={label}
-      className={classes("pl-menu", props.className)}
+      className={classes("ogui-menu", props.className)}
+      focusOnOpen="first"
+      openOnArrowKeys
     >
-      <div role="menu" aria-label={label} className="pl-menu__items">
-        {children}
-      </div>
+      <MenuItems label={label}>{children}</MenuItems>
     </DisclosureSurface>
   );
 }
@@ -626,7 +858,8 @@ export function MenuItem({
       {...props}
       type={type}
       role="menuitem"
-      className={classes("pl-menu__item", destructive && "is-destructive", className)}
+      tabIndex={-1}
+      className={classes("ogui-menu__item", destructive && "is-destructive", className)}
       onClick={(event) => {
         onClick?.(event);
         if (!event.defaultPrevented) {
@@ -648,9 +881,9 @@ export function Popover({ label, children, ...props }: PopoverProps) {
     <DisclosureSurface
       {...props}
       triggerLabel={label}
-      className={classes("pl-popover", props.className)}
+      className={classes("ogui-popover", props.className)}
     >
-      <div className="pl-popover__content" role="dialog" aria-label={label}>
+      <div className="ogui-popover__content" role="dialog" aria-label={label}>
         {children}
       </div>
     </DisclosureSurface>
@@ -665,11 +898,12 @@ export interface TooltipProps {
 
 export function Tooltip({ label, children, placement = "top" }: TooltipProps) {
   const id = useId();
+  const describedBy = [children.props["aria-describedby"], id].filter(Boolean).join(" ");
 
   return (
-    <span className="pl-tooltip" data-placement={placement}>
-      {cloneElement(children, { "aria-describedby": id })}
-      <span id={id} role="tooltip" className="pl-tooltip__bubble">
+    <span className="ogui-tooltip" data-placement={placement}>
+      {cloneElement(children, { "aria-describedby": describedBy })}
+      <span id={id} role="tooltip" className="ogui-tooltip__bubble">
         {label}
       </span>
     </span>
@@ -707,7 +941,7 @@ export function MediaControls({
   const seekId = useId();
 
   return (
-    <div {...props} className={classes("pl-media", className)}>
+    <div {...props} className={classes("ogui-media", className)}>
       <IconButton
         size="small"
         variant="quiet"
@@ -716,8 +950,8 @@ export function MediaControls({
       >
         <span aria-hidden="true">{playing ? "Ⅱ" : "▶"}</span>
       </IconButton>
-      <label className="pl-media__seek" htmlFor={seekId}>
-        <span className="pl-sr-only">Seek media</span>
+      <label className="ogui-media__seek" htmlFor={seekId}>
+        <span className="ogui-sr-only">Seek media</span>
         <input
           id={seekId}
           type="range"
@@ -728,7 +962,7 @@ export function MediaControls({
           onChange={(event) => onSeek(Number(event.currentTarget.value))}
         />
       </label>
-      <output className="pl-media__time" htmlFor={seekId}>
+      <output className="ogui-media__time" htmlFor={seekId}>
         {formatTime(currentTime)} / {formatTime(duration)}
       </output>
       {onMutedChange ? (

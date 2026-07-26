@@ -2,8 +2,13 @@
 
 ## Current
 
-- This is an internal research prototype, not a supported package release.
-- The public name and API are not frozen.
+- OpenGlass UI is a local `0.1.0-rc.0` release candidate, not a published or
+  supported npm release.
+- The owner selected the OpenGlass UI name and `open-glass-ui` package slug, but
+  no npm namespace, GitHub repository, domain, or trademark right has been
+  reserved or legally cleared.
+- The public facade is defined, but pre-`1.0.0` APIs can still change while the
+  release candidate is hardened.
 - Live backdrop refraction is not a portable baseline.
 - SVG filters can have browser-specific caching, source-size, and compositing
   behavior.
@@ -13,10 +18,9 @@
   override is required for validation.
 - The checked WebGL performance baseline uses headless Chromium with a
   software-capable context; it is not a mobile-GPU claim.
-- Cold development startup produced a 448 ms long task on the reference run.
-  Production profiling and code splitting are required before release.
-- A medium-quality rounded-rectangle generation sample exceeded the 12 ms p95
-  research budget. Resize interactions should remain low quality and cached.
+- The final headless reference run observed no startup or active-window long
+  task and all medium-quality maps met their p95 budget. These measurements
+  remain host-specific rather than broad device claims.
 - The generated demonstration video is H.264 only; a public demo should add a
   second broadly appropriate codec if its support target requires one.
 - Full screen-reader testing requires human assistive-technology review in
@@ -24,16 +28,19 @@
 
 ## Before public release
 
-- Approve a collision-checked public name, package scope, and domain.
-- Freeze the API and define semver/support policy.
+- Repeat exact namespace checks and complete a confusing-similarity review for
+  the selected name.
+- Complete the facade/API review and define the pre-`1.0` semver/support policy.
 - Test physical iOS Safari, Android Chrome, macOS Safari/Firefox/Chrome, and
   Windows Firefox/Chrome/Edge across representative GPU tiers.
 - Complete VoiceOver and NVDA review, 200–400% zoom review, and touch target
   review on physical devices.
-- Decide whether WebGL2 and organic filters are separate optional exports.
+- Confirm the explicit `open-glass-ui/webgl` subpath and SVG fallbacks in packed
+  external consumers.
 - Add production bundle budgets and real-device frame/memory traces.
-- Remove `private`, set release versions, and publish only after explicit user
-  authorization.
+- Add real repository, homepage, and issue-tracker metadata only after an
+  authorized remote exists.
+- Publish the prepared public packages only after explicit owner authorization.
 
 ## Non-goals
 

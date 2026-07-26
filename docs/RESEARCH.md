@@ -70,7 +70,7 @@ comparison is published.
 
 ## Architecture consequence
 
-No single project supplies all required qualities. Prism Lab therefore separates:
+No single project supplies all required qualities. OpenGlass UI therefore separates:
 
 1. Deterministic framework-independent optics.
 2. Explicit renderer backends.

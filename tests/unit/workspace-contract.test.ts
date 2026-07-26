@@ -9,6 +9,10 @@ function readPackage(relativePath: string) {
     dependencies?: Record<string, string>;
     peerDependencies?: Record<string, string>;
     private?: boolean;
+    version?: string;
+    license?: string;
+    publishConfig?: { access?: string; provenance?: boolean };
+    engines?: { node?: string };
     sideEffects?: boolean | string[];
   };
 }
@@ -33,16 +37,25 @@ describe("workspace package contract", () => {
     },
   );
 
-  it("keeps all research packages private", () => {
+  it("keeps the facade dependency chain on one publishable release version", () => {
     const paths = [
       "packages/core/package.json",
       "packages/renderers/package.json",
       "packages/react/package.json",
       "packages/recipes/package.json",
+      "packages/ui/package.json",
     ];
 
+    const expectedVersion = readPackage("packages/ui/package.json").version;
+    expect(expectedVersion).toBeTruthy();
+
     for (const manifestPath of paths) {
-      expect(readPackage(manifestPath).private).toBe(true);
+      const manifest = readPackage(manifestPath);
+      expect(manifest.private).not.toBe(true);
+      expect(manifest.version).toBe(expectedVersion);
+      expect(manifest.license).toBe("MIT");
+      expect(manifest.publishConfig).toEqual({ access: "public", provenance: true });
+      expect(manifest.engines?.node).toBe(">=18.18");
     }
   });
 });

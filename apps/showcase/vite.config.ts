@@ -8,12 +8,32 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: {
-      "@prism-lab/core": path.resolve(root, "../../packages/core/src/index.ts"),
-      "@prism-lab/renderers": path.resolve(root, "../../packages/renderers/src/index.ts"),
-      "@prism-lab/react": path.resolve(root, "../../packages/react/src/index.tsx"),
-      "@prism-lab/recipes": path.resolve(root, "../../packages/recipes/src/index.tsx"),
-    },
+    alias: [
+      {
+        find: "@open-glass-ui/renderers/webgl",
+        replacement: path.resolve(root, "../../packages/renderers/src/webgl.ts"),
+      },
+      {
+        find: "@open-glass-ui/react/webgl",
+        replacement: path.resolve(root, "../../packages/react/src/webgl.ts"),
+      },
+      {
+        find: "@open-glass-ui/core",
+        replacement: path.resolve(root, "../../packages/core/src/index.ts"),
+      },
+      {
+        find: "@open-glass-ui/renderers",
+        replacement: path.resolve(root, "../../packages/renderers/src/index.ts"),
+      },
+      {
+        find: "@open-glass-ui/react",
+        replacement: path.resolve(root, "../../packages/react/src/index.tsx"),
+      },
+      {
+        find: "@open-glass-ui/recipes",
+        replacement: path.resolve(root, "../../packages/recipes/src/index.tsx"),
+      },
+    ],
   },
   server: {
     port: 4173,

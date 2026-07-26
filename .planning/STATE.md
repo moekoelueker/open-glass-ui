@@ -1,15 +1,17 @@
 # State
 
-- Internal name: Prism Lab
-- Phase: Forty-component finalist atlas complete
+- Public name: OpenGlass UI
+- Public package slug: `open-glass-ui`
+- Workspace namespace: `@open-glass-ui/*`
+- Phase: Local release candidate complete
 - Completed plans: 00-01, 01-01, 01-02, 02-01, 02-02, 03-01, 03-02, 04-01,
   04-02, 05-01, 05-02, 05-03, 05-04, 06-01, 07-01, 07-02
-- Next plan: user review and public API/name decision
-- Public name: unresolved by design
+- Next plan: owner-authorized namespace, remote, physical-device, and
+  publication work
+- Public name: approved by owner on 2026-07-25
 - Remote/publishing: not authorized
 - Old example: read-only and outside this repository
-- Next implementation: public API/package split after user review; no publishing
-  is authorized
+- Next implementation: external launch gates only; no publishing is authorized
 
 ## Plan 00-01 evidence
 
@@ -26,6 +28,10 @@
 ## Decisions
 
 - MIT license.
+- OpenGlass UI is the selected public brand.
+- `open-glass-ui` is the intended facade package and repository slug.
+- `@open-glass-ui/*` is the workspace implementation namespace.
+- `ogui` is the CSS custom-property, class, DOM-data, and generated-ID prefix.
 - pnpm workspace with core, renderers, React, recipes, showcase, and Next fixture.
 - TypeScript 5.9.3 until the declaration bundler supports TypeScript 7.
 - CSS/SVG/WebGL2 progressive architecture.
@@ -144,3 +150,25 @@
   screenshots across desktop and mobile.
 - Modal focus management, form labeling, semantic ranking markup, light-theme
   status contrast, and mobile boundaries were refined during the second pass.
+
+## Release-candidate completion evidence
+
+- `open-glass-ui@0.1.0-rc.0` is the single documented facade, with
+  `open-glass-ui/core`, `open-glass-ui/styles.css`, and opt-in
+  `open-glass-ui/webgl` subpaths.
+- Neutral adaptive theming, custom accent/secondary/tertiary colors, and the
+  combined `GlassSystemProvider` are complete.
+- Eighty-eight unit tests pass across sixteen files.
+- One hundred twenty-two browser checks pass across Chromium, Firefox, and
+  WebKit with seven intentional capability-gated skips.
+- Twenty-seven final neutral/custom-accent screenshots were regenerated and
+  inspected across all three browser engines.
+- The packed facade passes React 18 SSR and declarations, Next.js RSC/static
+  build, export, peer, license, tree-shaking, and WebGL-isolation checks.
+- The public root bundles to 18,743 bytes with zero eager WebGL inputs.
+- The final reference performance probe records 17.7 ms input-update p95,
+  34.2 ms frame p95, no observed long tasks, and zero leaked media/GPU
+  resources after teardown.
+- `pnpm run release:check` is the publish-blocking gate and passed in full.
+- No npm publication, GitHub remote creation, domain purchase, or deployment
+  has occurred.

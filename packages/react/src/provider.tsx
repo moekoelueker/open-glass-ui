@@ -1,9 +1,9 @@
-import type { OpticsQuality } from "@prism-lab/core";
+import type { OpticsQuality } from "@open-glass-ui/core";
 import {
   detectRendererCapabilities,
   type RendererCapabilities,
   type RendererPreference,
-} from "@prism-lab/renderers";
+} from "@open-glass-ui/renderers";
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 
 export type GlassMotionPreference = "system" | "on" | "off";

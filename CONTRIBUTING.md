@@ -1,7 +1,8 @@
 # Contributing
 
-Prism Lab is currently an owner-directed research prototype. Contributions can
-be evaluated after the public identity and API are approved.
+OpenGlass UI is currently an owner-directed release candidate. Contributions
+are welcome during pre-`1.0` stabilization once the public repository is
+available; expect the API to keep evolving until `1.0.0`.
 
 ## Local checks
 
@@ -20,4 +21,3 @@ be evaluated after the public identity and API are approved.
 - Do not introduce code or assets without a verified compatible license.
 - Update `CREDITS.md` for direct adaptations.
 - Avoid render-time access to browser globals.
-

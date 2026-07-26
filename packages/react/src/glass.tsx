@@ -3,7 +3,7 @@ import {
   getMaterialPreset,
   type LensGeometry,
   type MaterialPresetName,
-} from "@prism-lab/core";
+} from "@open-glass-ui/core";
 import {
   createCssMaterialStyle,
   createCssMaterialTokens,
@@ -11,7 +11,7 @@ import {
   type RendererPreference,
   type RendererSource,
   selectRenderer,
-} from "@prism-lab/renderers";
+} from "@open-glass-ui/renderers";
 import {
   type CSSProperties,
   createElement,
@@ -21,6 +21,7 @@ import {
 } from "react";
 import { useGlassPointerField } from "./interaction";
 import { useGlassRuntime } from "./provider";
+import { useGlassTheme } from "./theme";
 
 type GlassElement = "aside" | "div" | "nav" | "section" | "span";
 
@@ -28,7 +29,7 @@ export interface GlassProps extends Omit<HTMLAttributes<HTMLElement>, "color"> {
   as?: GlassElement;
   children?: ReactNode;
   material?: MaterialPresetName;
-  tone?: MaterialTone;
+  tone?: MaterialTone | "auto";
   renderer?: RendererPreference;
   source?: RendererSource;
   interactive?: boolean;
@@ -43,7 +44,7 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     children,
     className,
     material = "regular",
-    tone = "dark",
+    tone = "auto",
     renderer,
     source = "dom",
     interactive = false,
@@ -61,16 +62,19 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
   ref,
 ) {
   const runtime = useGlassRuntime();
+  const theme = useGlassTheme();
+  const resolvedTone = tone === "auto" ? theme.appearance : tone;
   const pointerField = useGlassPointerField(interactive && runtime.motion === "on");
   const resolvedMaterial = { ...getMaterialPreset(material), ...optics };
+  const rendererPreference = renderer ?? (filterId ? "sdf-svg" : runtime.renderer);
   const decision = selectRenderer({
     source,
-    preference: renderer ?? runtime.renderer,
+    preference: rendererPreference,
     capabilities: runtime.capabilities,
   });
   const tokens = createCssMaterialTokens({
     material,
-    tone,
+    tone: resolvedTone,
     backdropFilter: runtime.capabilities.backdropFilter,
     reducedTransparency: runtime.capabilities.reducedTransparency,
     forcedColors: runtime.capabilities.forcedColors,
@@ -79,11 +83,11 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
   const mergedStyle = {
     ...tokens,
     ...materialStyle,
-    "--prism-pointer-x": "0",
-    "--prism-pointer-y": "0",
-    "--prism-pointer-distance": "0",
-    "--prism-press": "0",
-    ...(filterId ? { filter: `url(#${filterId})` } : {}),
+    "--ogui-pointer-x": "0",
+    "--ogui-pointer-y": "0",
+    "--ogui-pointer-distance": "0",
+    "--ogui-press": "0",
+    ...(filterId && decision.renderer !== "css" ? { filter: `url(#${filterId})` } : {}),
     ...style,
   } as CSSProperties;
 
@@ -114,17 +118,18 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
         pointerField.onPointerCancel(event);
         onPointerCancel?.(event);
       },
-      "data-prism-glass": "",
-      "data-prism-material": material,
-      "data-prism-renderer": decision.renderer,
-      "data-prism-renderer-reason": decision.reason,
-      "data-prism-interactive": interactive ? "true" : "false",
-      "data-prism-hydrated": runtime.hydrated ? "true" : "false",
-      "data-prism-motion": runtime.motion,
-      "data-prism-quality": runtime.quality,
-      "data-prism-shape": geometry?.kind ?? "rounded-rect",
-      "data-prism-thickness": resolvedMaterial.thickness.toFixed(3),
-      "data-prism-ior": resolvedMaterial.ior.toFixed(3),
+      "data-ogui-glass": "",
+      "data-ogui-material": material,
+      "data-ogui-tone": resolvedTone,
+      "data-ogui-renderer": decision.renderer,
+      "data-ogui-renderer-reason": decision.reason,
+      "data-ogui-interactive": interactive ? "true" : "false",
+      "data-ogui-hydrated": runtime.hydrated ? "true" : "false",
+      "data-ogui-motion": runtime.motion,
+      "data-ogui-quality": runtime.quality,
+      "data-ogui-shape": geometry?.kind ?? "rounded-rect",
+      "data-ogui-thickness": resolvedMaterial.thickness.toFixed(3),
+      "data-ogui-ior": resolvedMaterial.ior.toFixed(3),
     },
     children,
   );

@@ -1,0 +1,38 @@
+name: Feature request
+description: Propose a focused component, API, renderer, or documentation improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user or integration problem should OpenGlass UI solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API or behavior
+      description: Include a small usage example when possible.
+    validations:
+      required: true
+  - type: textarea
+    id: fallback
+    attributes:
+      label: Baseline and accessibility behavior
+      description: Explain the semantic DOM, keyboard, reduced-motion, and no-enhancement path.
+    validations:
+      required: true
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Performance and compatibility tradeoffs
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: This proposal works through the public `open-glass-ui` facade.
+          required: true

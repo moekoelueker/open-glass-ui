@@ -35,7 +35,7 @@ let adaptor = AVAssetWriterInputPixelBufferAdaptor(
 )
 
 guard writer.canAdd(input) else {
-  throw NSError(domain: "PrismMotion", code: 1, userInfo: [
+  throw NSError(domain: "OpenGlassMotion", code: 1, userInfo: [
     NSLocalizedDescriptionKey: "Unable to add the generated video input.",
   ])
 }
@@ -67,7 +67,7 @@ for frame in 0..<frames {
   )
 
   guard status == kCVReturnSuccess, let pixelBuffer = buffer else {
-    throw NSError(domain: "PrismMotion", code: 2, userInfo: [
+    throw NSError(domain: "OpenGlassMotion", code: 2, userInfo: [
       NSLocalizedDescriptionKey: "Unable to allocate a generated video frame.",
     ])
   }
@@ -75,7 +75,7 @@ for frame in 0..<frames {
   CVPixelBufferLockBaseAddress(pixelBuffer, [])
   guard let base = CVPixelBufferGetBaseAddress(pixelBuffer) else {
     CVPixelBufferUnlockBaseAddress(pixelBuffer, [])
-    throw NSError(domain: "PrismMotion", code: 3)
+    throw NSError(domain: "OpenGlassMotion", code: 3)
   }
 
   let rowBytes = CVPixelBufferGetBytesPerRow(pixelBuffer)
@@ -121,7 +121,7 @@ for frame in 0..<frames {
   CVPixelBufferUnlockBaseAddress(pixelBuffer, [])
   let time = CMTime(value: Int64(frame), timescale: frameRate)
   if !adaptor.append(pixelBuffer, withPresentationTime: time) {
-    throw writer.error ?? NSError(domain: "PrismMotion", code: 4)
+    throw writer.error ?? NSError(domain: "OpenGlassMotion", code: 4)
   }
 }
 
@@ -129,7 +129,7 @@ input.markAsFinished()
 await writer.finishWriting()
 
 if writer.status != .completed {
-  throw writer.error ?? NSError(domain: "PrismMotion", code: 5)
+  throw writer.error ?? NSError(domain: "OpenGlassMotion", code: 5)
 }
 
 print(output.path)

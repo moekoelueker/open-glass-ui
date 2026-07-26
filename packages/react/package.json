@@ -1,29 +1,61 @@
 {
-  "name": "@prism-lab/react",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@open-glass-ui/react",
+  "version": "0.1.0-rc.0",
+  "description": "React primitives, providers, and renderer orchestration for OpenGlass UI.",
   "type": "module",
+  "license": "MIT",
+  "author": "Moe Luker",
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
   ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./webgl": {
+      "types": "./dist/webgl.d.ts",
+      "import": "./dist/webgl.js",
+      "default": "./dist/webgl.js"
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup src/index.tsx --format esm --dts --clean --external react --external react-dom",
+    "build": "tsup src/index.tsx src/webgl.ts --format esm --dts --clean --external react --external react-dom",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prism-lab/core": "workspace:*",
-    "@prism-lab/renderers": "workspace:*"
+    "@open-glass-ui/core": "workspace:*",
+    "@open-glass-ui/renderers": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
-  }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=18.18"
+  },
+  "keywords": [
+    "react",
+    "react-components",
+    "liquid-glass",
+    "glass-ui",
+    "refraction",
+    "design-system",
+    "typescript",
+    "esm",
+    "ssr"
+  ]
 }
