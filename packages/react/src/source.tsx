@@ -24,7 +24,7 @@ export interface GlassSourceProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
 }
 
-const GlassGroupContext = createContext<GlassGroupRuntime | null>(null);
+const GlassGroupContext = /* @__PURE__ */ createContext<GlassGroupRuntime | null>(null);
 
 function safeId(id: string) {
   return id.replace(/[^a-zA-Z0-9_-]+/g, "-");

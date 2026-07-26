@@ -533,7 +533,7 @@ export interface DisclosureSurfaceProps extends Omit<HTMLAttributes<HTMLDivEleme
   openOnArrowKeys?: boolean;
 }
 
-const DisclosureCloseContext = createContext<(() => void) | null>(null);
+const DisclosureCloseContext = /* @__PURE__ */ createContext<(() => void) | null>(null);
 
 function DisclosureSurface({
   trigger,

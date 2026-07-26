@@ -128,8 +128,9 @@ publication:
 - [ ] Reserve or confirm the package/repository namespace.
 - [ ] Create the authorized remote and push the reviewed commit.
 - [ ] Add and verify the real repository, homepage, and issue-tracker metadata.
-- [ ] Publish implementation packages first and the `open-glass-ui` facade last,
-      with provenance, from the reviewed CI workflow.
+- [ ] Publish the single `open-glass-ui` package with provenance from the
+      reviewed CI workflow. The `@open-glass-ui/*` workspace packages are
+      private build-time boundaries and are never published.
 - [ ] Install the published version into a clean external fixture.
 - [ ] Verify documentation URLs, package metadata, license, types, and subpath
       imports from the public registry.

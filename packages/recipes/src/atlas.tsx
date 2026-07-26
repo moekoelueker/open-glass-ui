@@ -856,7 +856,7 @@ interface ToastNotice extends ToastOptions {
   id: string;
 }
 
-const ToastContext = createContext<ToastController | null>(null);
+const ToastContext = /* @__PURE__ */ createContext<ToastController | null>(null);
 
 export interface ToastProviderProps {
   children: ReactNode;

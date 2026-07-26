@@ -28,13 +28,18 @@ Consumer application
 
 ## Package ownership
 
+`open-glass-ui` is the only published package. The four `@open-glass-ui/*`
+packages below are private build-time boundaries: tsup inlines both their code
+and their declarations into the published artifact, so the tarball has zero
+runtime dependencies and consumers can never import an internal path.
+
 | Path | Runtime role | Key constraints |
 | --- | --- | --- |
 | `packages/core` | Geometry, SDF, normals, maps, materials, quality, cache, theme math | Zero runtime dependencies; no React, DOM, or browser globals |
 | `packages/renderers` | Capability policy, CSS tokens, SVG map encoding, WebGL2 renderer | No component behavior |
 | `packages/react` | Providers, glass primitives, filters, source groups, pointer/media lifecycle | No recipe styling; no browser access during render |
 | `packages/recipes` | Forty accessible React recipes and shared CSS | No renderer policy or optical math |
-| `packages/ui` | Single consumer-facing facade and subpath re-exports | Preserve public import stability and WebGL isolation |
+| `packages/ui` | The one published package (`open-glass-ui`); facade and subpath re-exports | Preserve public import stability and WebGL isolation; zero runtime dependencies |
 | `apps/showcase` | Product landing, research routes, catalogs, live evidence | Private app; may use workspace source aliases |
 | `examples/next` | Next.js App Router/RSC/static compatibility fixture | Must remain deterministic and use public facade |
 

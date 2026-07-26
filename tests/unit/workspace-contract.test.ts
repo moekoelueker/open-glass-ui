@@ -14,6 +14,9 @@ function readPackage(relativePath: string) {
     publishConfig?: { access?: string; provenance?: boolean };
     engines?: { node?: string };
     sideEffects?: boolean | string[];
+    repository?: { url?: string };
+    homepage?: string;
+    bugs?: { url?: string };
   };
 }
 
@@ -37,25 +40,39 @@ describe("workspace package contract", () => {
     },
   );
 
-  it("keeps the facade dependency chain on one publishable release version", () => {
-    const paths = [
-      "packages/core/package.json",
-      "packages/renderers/package.json",
-      "packages/react/package.json",
-      "packages/recipes/package.json",
-      "packages/ui/package.json",
-    ];
+  it.each([
+    "packages/core/package.json",
+    "packages/renderers/package.json",
+    "packages/react/package.json",
+    "packages/recipes/package.json",
+  ])("keeps the build-time boundary %s unpublishable", (manifestPath) => {
+    const manifest = readPackage(manifestPath);
 
-    const expectedVersion = readPackage("packages/ui/package.json").version;
-    expect(expectedVersion).toBeTruthy();
+    // These are compile-time boundaries whose code and declarations are inlined
+    // into `open-glass-ui`. Publishing them would expose an import surface the
+    // project does not support, so `private` is the guard against that.
+    expect(manifest.private).toBe(true);
+    expect(manifest.publishConfig).toBeUndefined();
+  });
 
-    for (const manifestPath of paths) {
-      const manifest = readPackage(manifestPath);
-      expect(manifest.private).not.toBe(true);
-      expect(manifest.version).toBe(expectedVersion);
-      expect(manifest.license).toBe("MIT");
-      expect(manifest.publishConfig).toEqual({ access: "public", provenance: true });
-      expect(manifest.engines?.node).toBe(">=18.18");
-    }
+  it("publishes exactly one package, with no runtime dependencies", () => {
+    const manifest = readPackage("packages/ui/package.json");
+
+    expect(manifest.private).not.toBe(true);
+    expect(manifest.dependencies).toBeUndefined();
+    expect(manifest.peerDependencies?.react).toBe(">=18");
+    expect(manifest.peerDependencies?.["react-dom"]).toBe(">=18");
+    expect(manifest.license).toBe("MIT");
+    expect(manifest.publishConfig).toEqual({ access: "public", provenance: true });
+    expect(manifest.engines?.node).toBe(">=18.18");
+    expect(manifest.version).toBeTruthy();
+  });
+
+  it("declares the metadata npm and provenance attestation need", () => {
+    const manifest = readPackage("packages/ui/package.json");
+
+    expect(manifest.repository?.url).toMatch(/^git\+https:\/\/github\.com\/.+\.git$/);
+    expect(manifest.homepage).toMatch(/^https:\/\//);
+    expect(manifest.bugs?.url).toMatch(/^https:\/\//);
   });
 });

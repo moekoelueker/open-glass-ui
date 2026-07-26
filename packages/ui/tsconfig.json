@@ -1,4 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@open-glass-ui/react/webgl": ["../react/dist/webgl.d.ts"],
+      "@open-glass-ui/renderers/webgl": ["../renderers/dist/webgl.d.ts"]
+    }
+  },
   "include": ["src"]
 }

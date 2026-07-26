@@ -1,6 +1,7 @@
 {
   "name": "@open-glass-ui/recipes",
   "version": "0.1.0-rc.0",
+  "private": true,
   "description": "Accessible, interactive React component recipes for OpenGlass UI.",
   "type": "module",
   "license": "MIT",
@@ -36,10 +37,6 @@
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
   },
   "engines": {
     "node": ">=18.18"

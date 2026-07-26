@@ -5,6 +5,15 @@
   "type": "module",
   "license": "MIT",
   "author": "Moe Luker",
+  "homepage": "https://github.com/moekoelueker/open-glass-ui#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moekoelueker/open-glass-ui.git",
+    "directory": "packages/ui"
+  },
+  "bugs": {
+    "url": "https://github.com/moekoelueker/open-glass-ui/issues"
+  },
   "engines": {
     "node": ">=18.18"
   },
@@ -39,11 +48,11 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup src/index.tsx src/core.ts src/webgl.ts --format esm --dts --clean --external react --external react-dom && node scripts/copy-styles.mjs",
+    "build": "tsup && node scripts/copy-styles.mjs",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
+  "devDependencies": {
     "@open-glass-ui/core": "workspace:*",
     "@open-glass-ui/react": "workspace:*",
     "@open-glass-ui/recipes": "workspace:*",
@@ -66,7 +75,9 @@
     "design-system",
     "liquid-glass",
     "glass-ui",
+    "glassmorphism",
     "refraction",
+    "backdrop-filter",
     "webgl",
     "accessible",
     "typescript",

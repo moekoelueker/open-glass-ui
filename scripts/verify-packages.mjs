@@ -26,6 +26,9 @@ const npmCacheDirectory = join(temporaryDirectory, "npm-cache");
 const releaseVersion = JSON.parse(
   readFileSync(join(root, "packages", "ui", "package.json"), "utf8"),
 ).version;
+// `open-glass-ui` is the only published package. The `@open-glass-ui/*`
+// workspace packages are build-time boundaries whose code and declarations are
+// inlined into the facade, so they are verified as private, not as artifacts.
 const implementationPackageNames = [
   "@open-glass-ui/core",
   "@open-glass-ui/renderers",
@@ -33,7 +36,7 @@ const implementationPackageNames = [
   "@open-glass-ui/recipes",
 ];
 const facadePackageName = "open-glass-ui";
-const packageNames = [...implementationPackageNames, facadePackageName];
+const packageNames = [facadePackageName];
 
 function run(command, args, options = {}) {
   return execFileSync(command, args, {
@@ -111,6 +114,13 @@ try {
     assert.ok(manifest.keywords?.length >= 5, `${packageName} needs discoverability keywords.`);
     assert.ok(manifest.exports?.["."], `${packageName} must expose its root entry.`);
     assert.ok(manifest.exports?.["./package.json"], `${packageName} must expose package metadata.`);
+    assert.match(
+      manifest.repository?.url ?? "",
+      /^git\+https:\/\/github\.com\/.+\.git$/,
+      `${packageName} must declare a git repository so npm can link and attest it.`,
+    );
+    assert.ok(manifest.homepage?.startsWith("https://"), `${packageName} needs a homepage.`);
+    assert.ok(manifest.bugs?.url?.startsWith("https://"), `${packageName} needs an issue tracker.`);
     assert.ok(
       archiveFiles.includes("package/dist/index.js"),
       `${packageName} archive is missing JavaScript output.`,
@@ -182,19 +192,24 @@ try {
     assert.equal(manifest.peerDependencies?.["react-dom"], ">=18");
   }
 
-  const facadeManifest = extractedManifest(facadePackageName);
-  assert.deepEqual(
-    Object.keys(facadeManifest.dependencies ?? {}).sort(),
-    [...implementationPackageNames].sort(),
-    "The facade must depend on every implementation package and nothing else.",
-  );
   for (const packageName of implementationPackageNames) {
+    const packageDirectory = packageName.split("/").at(-1);
+    const manifest = JSON.parse(
+      readFileSync(join(root, "packages", packageDirectory, "package.json"), "utf8"),
+    );
     assert.equal(
-      facadeManifest.dependencies?.[packageName],
-      releaseVersion,
-      `The packed facade must pin ${packageName} to the coordinated release.`,
+      manifest.private,
+      true,
+      `${packageName} is a build-time boundary and must stay private so it can never be published.`,
     );
   }
+
+  const facadeManifest = extractedManifest(facadePackageName);
+  assert.deepEqual(
+    Object.keys(facadeManifest.dependencies ?? {}),
+    [],
+    "The published facade must have zero runtime dependencies; React is a peer.",
+  );
   assert.equal(facadeManifest.peerDependencies?.react, ">=18");
   assert.equal(facadeManifest.peerDependencies?.["react-dom"], ">=18");
   assert.ok(facadeManifest.exports?.["./webgl"], "The facade must expose opt-in WebGL.");
@@ -234,12 +249,30 @@ try {
       join(extractionDirectory, packageSlug(packageName), "package", "dist", file),
       "utf8",
     );
+
+  // Every workspace import must be inlined. A surviving `@open-glass-ui/*`
+  // specifier in shipped code or declarations is unresolvable for consumers,
+  // because those packages are private and never published.
+  const facadeDistDirectory = join(
+    extractionDirectory,
+    packageSlug(facadePackageName),
+    "package",
+    "dist",
+  );
+  for (const file of readdirSync(facadeDistDirectory)) {
+    if (!/\.(?:js|d\.ts)$/.test(file)) {
+      continue;
+    }
+    assert.doesNotMatch(
+      readFileSync(join(facadeDistDirectory, file), "utf8"),
+      /@open-glass-ui\//,
+      `dist/${file} still references a private workspace package; consumers cannot resolve it.`,
+    );
+  }
+
   for (const [packageName, file] of [
     [facadePackageName, "index.js"],
     [facadePackageName, "webgl.js"],
-    ["@open-glass-ui/react", "index.js"],
-    ["@open-glass-ui/react", "webgl.js"],
-    ["@open-glass-ui/recipes", "index.js"],
   ]) {
     assert.match(
       packedSource(packageName, file),
@@ -280,9 +313,6 @@ try {
       "react-dom": `file:${reactDomDirectory}`,
       scheduler: `file:${schedulerDirectory}`,
     },
-    overrides: Object.fromEntries(
-      implementationPackageNames.map((packageName) => [packageName, localTarballs[packageName]]),
-    ),
   };
   writeFileSync(
     join(installDirectory, "package.json"),
@@ -532,11 +562,34 @@ console.log(WebGLGlassRenderer, WebGLGlassSurface);
     "The WebGL subpath bundle did not include the WebGL implementation.",
   );
 
-  const treeShakeEntry = join(installDirectory, "tree-shake.mjs");
-  const treeShakeOutput = join(installDirectory, "tree-shake.js");
-  writeFileSync(
-    treeShakeEntry,
-    `import { signedDistance } from "open-glass-ui";
+  // Tree-shaking is measured on the two paths consumers actually use: pure
+  // utilities from the server-safe `core` subpath, and a single component from
+  // the root barrel. The root barrel is a client-component entry, so it carries
+  // a shared runtime floor; what matters is that one component does not drag in
+  // the other thirty-nine.
+  const measureBundle = async (name, source) => {
+    const entry = join(installDirectory, `${name}.mjs`);
+    const outfile = join(installDirectory, `${name}.bundle.js`);
+    writeFileSync(entry, source);
+    const result = await build({
+      absWorkingDir: installDirectory,
+      bundle: true,
+      entryPoints: [entry],
+      external: ["react", "react-dom", "react/jsx-runtime"],
+      format: "esm",
+      logLevel: "silent",
+      metafile: true,
+      minify: true,
+      outfile,
+      platform: "browser",
+      treeShaking: true,
+    });
+    return { bytes: statSync(outfile).size, inputs: Object.keys(result.metafile.inputs).length };
+  };
+
+  const coreProbe = await measureBundle(
+    "tree-shake-core",
+    `import { signedDistance } from "open-glass-ui/core";
 console.log(signedDistance({ x: 0, y: 0 }, {
   kind: "circle",
   centerX: 0,
@@ -545,23 +598,27 @@ console.log(signedDistance({ x: 0, y: 0 }, {
 }));
 `,
   );
-  const bundle = await build({
-    absWorkingDir: installDirectory,
-    bundle: true,
-    entryPoints: [treeShakeEntry],
-    format: "esm",
-    logLevel: "silent",
-    metafile: true,
-    minify: true,
-    outfile: treeShakeOutput,
-    platform: "browser",
-    treeShaking: true,
-    external: ["react", "react-dom", "react/jsx-runtime"],
-  });
-  const treeShakenBytes = statSync(treeShakeOutput).size;
   assert.ok(
-    treeShakenBytes < 2_000,
-    `Core tree-shaken probe is unexpectedly ${treeShakenBytes} B.`,
+    coreProbe.bytes < 2_000,
+    `The server-safe core probe is unexpectedly ${coreProbe.bytes} B.`,
+  );
+
+  const singleComponentProbe = await measureBundle(
+    "tree-shake-button",
+    `import { Button } from "open-glass-ui";
+console.log(Button);
+`,
+  );
+  const fullBarrelProbe = await measureBundle(
+    "tree-shake-barrel",
+    `import * as everything from "open-glass-ui";
+console.log(everything);
+`,
+  );
+  assert.ok(
+    singleComponentProbe.bytes < fullBarrelProbe.bytes * 0.5,
+    `Importing one component pulled in ${singleComponentProbe.bytes} B of the ` +
+      `${fullBarrelProbe.bytes} B barrel; per-component tree-shaking has regressed.`,
   );
 
   const report = {
@@ -584,9 +641,24 @@ console.log(signedDistance({ x: 0, y: 0 }, {
       status: "passed",
     },
     treeShaking: {
-      entry: "signedDistance from public facade",
-      bytes: treeShakenBytes,
-      inputCount: Object.keys(bundle.metafile.inputs).length,
+      serverSafeCore: {
+        entry: "signedDistance from open-glass-ui/core",
+        bytes: coreProbe.bytes,
+        inputCount: coreProbe.inputs,
+      },
+      singleComponent: {
+        entry: "Button from open-glass-ui",
+        bytes: singleComponentProbe.bytes,
+        inputCount: singleComponentProbe.inputs,
+      },
+      fullBarrel: {
+        entry: "* from open-glass-ui",
+        bytes: fullBarrelProbe.bytes,
+        inputCount: fullBarrelProbe.inputs,
+      },
+      singleComponentShareOfBarrel: Number(
+        (singleComponentProbe.bytes / fullBarrelProbe.bytes).toFixed(3),
+      ),
       status: "passed",
     },
   };

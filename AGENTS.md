@@ -17,8 +17,10 @@
 - The sibling `old-liquid-glass-example` is read-only and must never be edited.
 - Do not create a remote, push, deploy, or publish without explicit user approval.
 - “OpenGlass UI” is the owner-approved public brand.
-- Use `open-glass-ui` for the eventual public facade and repository slug.
-- Use `@open-glass-ui/*` for workspace implementation packages.
+- Use `open-glass-ui` for the public package and repository slug.
+- `@open-glass-ui/*` are private build-time boundaries. Their code and
+  declarations are inlined into `open-glass-ui`; they are never published, and
+  they must never appear in consumer-facing examples.
 - The name decision does not authorize creating a remote, deploying, or publishing.
 
 ## Architecture

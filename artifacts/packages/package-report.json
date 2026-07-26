@@ -1,42 +1,12 @@
 {
-  "generatedAt": "2026-07-26T04:42:23.220Z",
-  "node": "v24.11.1",
+  "generatedAt": "2026-07-26T11:36:35.598Z",
+  "node": "v24.12.0",
   "packages": {
-    "@open-glass-ui/core": {
-      "archive": "artifacts/packages/open-glass-ui-core-0.1.0-rc.0.tgz",
-      "bytes": 7834,
-      "files": 5,
-      "npmDryRunFiles": 5,
-      "sideEffects": false
-    },
-    "@open-glass-ui/renderers": {
-      "archive": "artifacts/packages/open-glass-ui-renderers-0.1.0-rc.0.tgz",
-      "bytes": 8573,
-      "files": 7,
-      "npmDryRunFiles": 7,
-      "sideEffects": false
-    },
-    "@open-glass-ui/react": {
-      "archive": "artifacts/packages/open-glass-ui-react-0.1.0-rc.0.tgz",
-      "bytes": 9528,
-      "files": 8,
-      "npmDryRunFiles": 8,
-      "sideEffects": false
-    },
-    "@open-glass-ui/recipes": {
-      "archive": "artifacts/packages/open-glass-ui-recipes-0.1.0-rc.0.tgz",
-      "bytes": 28620,
-      "files": 7,
-      "npmDryRunFiles": 7,
-      "sideEffects": [
-        "**/*.css"
-      ]
-    },
     "open-glass-ui": {
       "archive": "artifacts/packages/open-glass-ui-0.1.0-rc.0.tgz",
-      "bytes": 10221,
-      "files": 10,
-      "npmDryRunFiles": 10,
+      "bytes": 44925,
+      "files": 12,
+      "npmDryRunFiles": 12,
       "sideEffects": [
         "**/*.css"
       ]
@@ -50,17 +20,30 @@
   "react18Types": "passed",
   "coreRuntimeDependencies": 0,
   "webglIsolation": {
-    "rootFacadeBytes": 18743,
-    "rootFacadeInputs": 7,
+    "rootFacadeBytes": 18726,
+    "rootFacadeInputs": 4,
     "eagerWebGLInputs": 0,
     "webglSubpathBytes": 12190,
-    "webglSubpathInputs": 6,
+    "webglSubpathInputs": 3,
     "status": "passed"
   },
   "treeShaking": {
-    "entry": "signedDistance from public facade",
-    "bytes": 1222,
-    "inputCount": 7,
+    "serverSafeCore": {
+      "entry": "signedDistance from open-glass-ui/core",
+      "bytes": 1222,
+      "inputCount": 3
+    },
+    "singleComponent": {
+      "entry": "Button from open-glass-ui",
+      "bytes": 12785,
+      "inputCount": 4
+    },
+    "fullBarrel": {
+      "entry": "* from open-glass-ui",
+      "bytes": 55638,
+      "inputCount": 4
+    },
+    "singleComponentShareOfBarrel": 0.23,
     "status": "passed"
   }
 }

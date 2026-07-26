@@ -44,7 +44,7 @@ const DEFAULT_RUNTIME: GlassRuntime = {
   hydrated: false,
 };
 
-const GlassRuntimeContext = createContext<GlassRuntime>(DEFAULT_RUNTIME);
+const GlassRuntimeContext = /* @__PURE__ */ createContext<GlassRuntime>(DEFAULT_RUNTIME);
 
 function resolveQuality(
   preference: GlassQualityPreference,

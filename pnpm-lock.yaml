@@ -193,6 +193,13 @@ importers:
 
   packages/ui:
     dependencies:
+      react:
+        specifier: '>=18'
+        version: 19.2.8
+      react-dom:
+        specifier: '>=18'
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
       '@open-glass-ui/core':
         specifier: workspace:*
         version: link:../core
@@ -205,12 +212,6 @@ importers:
       '@open-glass-ui/renderers':
         specifier: workspace:*
         version: link:../renderers
-      react:
-        specifier: '>=18'
-        version: 19.2.8
-      react-dom:
-        specifier: '>=18'
-        version: 19.2.8(react@19.2.8)
 
 packages:
 

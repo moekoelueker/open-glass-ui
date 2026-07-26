@@ -2,22 +2,11 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [
-    [
-      "open-glass-ui",
-      "@open-glass-ui/core",
-      "@open-glass-ui/renderers",
-      "@open-glass-ui/react",
-      "@open-glass-ui/recipes"
-    ]
-  ],
+  "fixed": [],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "@open-glass-ui/showcase",
-    "@open-glass-ui/next-fixture",
-    "@open-glass-ui/react18-fixture"
-  ]
+  "ignore": [],
+  "privatePackages": false
 }

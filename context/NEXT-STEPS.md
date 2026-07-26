@@ -165,9 +165,9 @@ Refresh any volatile competitor/package facts before publishing.
 
 Only after the release checklist and explicit approval:
 
-1. Publish implementation packages in dependency order.
-2. Publish `open-glass-ui` facade last.
-3. Use provenance.
+1. Publish the single `open-glass-ui` package. The `@open-glass-ui/*`
+   workspace packages are private and inlined into it at build time.
+2. Use provenance.
 4. Install the public registry version into clean external fixtures.
 5. Verify public exports, styles, types, metadata, license, and links.
 6. Deploy the documentation/landing site.

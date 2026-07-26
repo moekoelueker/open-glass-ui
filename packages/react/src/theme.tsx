@@ -43,7 +43,7 @@ const DEFAULT_THEME: GlassThemeRuntime = {
   hydrated: false,
 };
 
-const GlassThemeContext = createContext<GlassThemeRuntime>(DEFAULT_THEME);
+const GlassThemeContext = /* @__PURE__ */ createContext<GlassThemeRuntime>(DEFAULT_THEME);
 
 function readSystemAppearance(): GlassAppearance {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {

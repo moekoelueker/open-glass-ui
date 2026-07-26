@@ -1,6 +1,7 @@
 {
   "name": "@open-glass-ui/react",
   "version": "0.1.0-rc.0",
+  "private": true,
   "description": "React primitives, providers, and renderer orchestration for OpenGlass UI.",
   "type": "module",
   "license": "MIT",
@@ -39,10 +40,6 @@
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
   },
   "engines": {
     "node": ">=18.18"
