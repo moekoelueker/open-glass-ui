@@ -342,18 +342,21 @@ import {
   WebGLGlassSurface
 } from "open-glass-ui/webgl";
 
-const distance = signedDistance({ x: 0, y: 0 }, {
-  kind: "circle",
-  centerX: 0,
-  centerY: 0,
-  radius: 12
-});
+// A 20x20 circle has radius 10, so the centre must read exactly -10 and a
+// point 20 units out must read +10. Asserting only "inside is negative" would
+// pass for any geometry at all, including one whose fields the types reject:
+// sanitizeGeometry defaults a missing width/height to 1, so the centre is
+// always inside something.
+const geometry = { kind: "circle", width: 20, height: 20 };
+const inside = signedDistance({ x: 0, y: 0 }, geometry);
+const outside = signedDistance({ x: 20, y: 0 }, geometry);
 const stylesheet = await readFile(
   fileURLToPath(import.meta.resolve("open-glass-ui/styles.css")),
   "utf8"
 );
 if (
-  !(distance < 0) ||
+  Math.abs(inside - -10) > 1e-9 ||
+  Math.abs(outside - 10) > 1e-9 ||
   typeof WebGLGlassRenderer !== "function" ||
   !Glass ||
   !Button ||
@@ -371,13 +374,11 @@ if (
   writeFileSync(
     serverSmokeEntry,
     `import { signedDistance } from "open-glass-ui/core";
-const distance = signedDistance({ x: 0, y: 0 }, {
-  kind: "circle",
-  centerX: 0,
-  centerY: 0,
-  radius: 12
-});
-if (!(distance < 0)) {
+const geometry = { kind: "circle", width: 20, height: 20 };
+if (
+  Math.abs(signedDistance({ x: 0, y: 0 }, geometry) - -10) > 1e-9 ||
+  Math.abs(signedDistance({ x: 20, y: 0 }, geometry) - 10) > 1e-9
+) {
   throw new Error("Server-safe core export smoke check failed.");
 }
 `,
@@ -590,12 +591,7 @@ console.log(WebGLGlassRenderer, WebGLGlassSurface);
   const coreProbe = await measureBundle(
     "tree-shake-core",
     `import { signedDistance } from "open-glass-ui/core";
-console.log(signedDistance({ x: 0, y: 0 }, {
-  kind: "circle",
-  centerX: 0,
-  centerY: 0,
-  radius: 10
-}));
+console.log(signedDistance({ x: 0, y: 0 }, { kind: "circle", width: 20, height: 20 }));
 `,
   );
   assert.ok(

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-26T13:00:42.265Z",
+  "generatedAt": "2026-07-26T13:06:43.399Z",
   "node": "v24.12.0",
   "packages": {
     "open-glass-ui": {
       "archive": "artifacts/packages/open-glass-ui-0.1.0.tgz",
-      "bytes": 46089,
+      "bytes": 46087,
       "files": 12,
       "npmDryRunFiles": 12,
       "sideEffects": [
@@ -30,7 +30,7 @@
   "treeShaking": {
     "serverSafeCore": {
       "entry": "signedDistance from open-glass-ui/core",
-      "bytes": 1222,
+      "bytes": 1211,
       "inputCount": 3
     },
     "singleComponent": {
