@@ -54,7 +54,7 @@ type LandingScene = "motion" | "photo" | "topography" | "chroma";
 type ScenarioId = "studio" | "analytics" | "builder" | "feedback";
 type LensResponse = "balanced" | "frosted" | "spectral";
 
-const INSTALL_COMMAND = "pnpm add open-glass-ui react react-dom";
+const INSTALL_COMMAND = "npm install open-glass-ui react react-dom";
 const QUICKSTART = `import "open-glass-ui/styles.css";
 import { Button, Glass, GlassSystemProvider } from "open-glass-ui";
 
@@ -778,8 +778,8 @@ function FeedbackSystem() {
 
   return (
     <div className="landing-scenario landing-scenario--feedback" data-use-case="feedback-overlays">
-      <Banner title="Release candidate ready" dismissible>
-        Package checks are green. Publication remains under owner control.
+      <Banner title="Now on npm" dismissible>
+        open-glass-ui 0.1.0 is published. Install it and open an issue if anything breaks.
       </Banner>
       <div className="landing-feedback__grid">
         <div>
@@ -937,7 +937,7 @@ export function LandingPage() {
               <small>{announcement.startsWith("Install command copied") ? "Copied" : "Copy"}</small>
             </button>
             <small className="landing-release-note">
-              Release candidate · registry command reserved for publication
+              Published on npm · MIT · zero runtime dependencies
             </small>
           </div>
 
@@ -1234,8 +1234,8 @@ export function LandingPage() {
             <span className="landing-index">05 / Setup</span>
             <h2 id="setup-heading">One stylesheet. One provider. Use the components you need.</h2>
             <p>
-              The public facade is prepared for a single-package install. The command below is
-              reserved for the release candidate and is not presented as published yet.
+              One package, zero runtime dependencies, and React stays a peer so your app owns its
+              version. Copy the command and you are three lines from a glass surface.
             </p>
           </div>
           <div className="landing-setup__grid">
@@ -1266,7 +1266,7 @@ export function LandingPage() {
             </div>
             <div>
               <CodePanel
-                label="Terminal · planned registry command"
+                label="Terminal"
                 value={INSTALL_COMMAND}
                 onCopy={() => void copy(INSTALL_COMMAND, "Install command")}
               />
@@ -1365,7 +1365,7 @@ export function LandingPage() {
             <i />
           </span>
           <div>
-            <span className="landing-kicker">OpenGlass UI / release candidate</span>
+            <span className="landing-kicker">OpenGlass UI / open source</span>
             <h2>Make the interface feel dimensional. Keep the product usable.</h2>
             <p>
               Explore every live component, theme the system, and take a production-minded glass

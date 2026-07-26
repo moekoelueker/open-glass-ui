@@ -2,13 +2,11 @@
 
 ## Current
 
-- OpenGlass UI is a local `0.1.0-rc.0` release candidate, not a published or
-  supported npm release.
-- The owner selected the OpenGlass UI name and `open-glass-ui` package slug, but
-  no npm namespace, GitHub repository, domain, or trademark right has been
-  reserved or legally cleared.
-- The public facade is defined, but pre-`1.0.0` APIs can still change while the
-  release candidate is hardened.
+- OpenGlass UI is `0.1.0`, an early public release. Pre-`1.0.0` APIs can still
+  change; pin an exact version if you need stability.
+- The `open-glass-ui` npm name and the GitHub repository are held by the
+  project, but no domain or trademark right has been registered or legally
+  cleared.
 - Live backdrop refraction is not a portable baseline.
 - SVG filters can have browser-specific caching, source-size, and compositing
   behavior.

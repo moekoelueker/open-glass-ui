@@ -2,7 +2,7 @@
 
 > The open-source Liquid Glass UI system for React and the web.
 
-Status: local `open-glass-ui@0.1.0-rc.0` release candidate. It has not been
+Status: local `open-glass-ui@0.1.0` release candidate. It has not been
 published. Do not claim registry installation or availability without a fresh
 check.
 

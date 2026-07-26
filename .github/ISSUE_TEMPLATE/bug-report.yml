@@ -12,7 +12,7 @@ body:
     id: version
     attributes:
       label: OpenGlass UI version
-      placeholder: 0.1.0-rc.0
+      placeholder: 0.1.0
     validations:
       required: true
   - type: input

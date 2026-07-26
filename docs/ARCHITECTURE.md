@@ -43,7 +43,7 @@ open-glass-ui
 The optics core has zero runtime dependencies. React and React DOM are peer
 dependencies of the React-facing packages. Each package is ESM, has declaration
 output, and is independently packable. The public release-candidate facade is
-`open-glass-ui@0.1.0-rc.0`; the `@open-glass-ui/*` packages are its
+`open-glass-ui@0.1.0`; the `@open-glass-ui/*` packages are its
 implementation dependency chain, not normal consumer entry points.
 
 ## Runtime decision policy
@@ -165,7 +165,7 @@ zoom, and real-device review before a public release.
 ## Release boundary
 
 The owner has approved the OpenGlass UI identity and the local package
-architecture. All five package manifests are prepared at `0.1.0-rc.0`, but
+architecture. All five package manifests are prepared at `0.1.0`, but
 nothing has been published and no public remote has been created. Before
 release:
 

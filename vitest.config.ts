@@ -36,6 +36,14 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["packages/**/*.test.{ts,tsx}", "tests/unit/**/*.test.{ts,tsx}"],
+    // The suite finishes in a few seconds on an idle machine, but the
+    // property-based optics and displacement-map tests do real per-pixel work.
+    // Under load (a shared CI runner, or a local box also running the browser
+    // suite) they exceed the 5s default and fail as timeouts rather than for
+    // any behavioral reason. A generous ceiling removes that false signal
+    // without weakening any assertion.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
     coverage: {
       reporter: ["text", "html"],
     },

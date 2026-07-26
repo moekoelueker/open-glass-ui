@@ -4,9 +4,8 @@ OpenGlass UI ships neutral, adaptive light and dark themes. The theme API
 produces semantic `--ogui-*` CSS custom properties; component recipes consume
 those tokens rather than hard-coded brand colors.
 
-> **Release status:** the local facade is `open-glass-ui@0.1.0-rc.0`, but it has
-> not been published to npm. The imports below document the release-candidate
-> API.
+> **Release status:** `open-glass-ui@0.1.0` is published on npm. APIs may still
+> change before `1.0.0`.
 
 ## Start with the providers
 

@@ -1,30 +1,30 @@
 # Current State
 
 Status date: 2026-07-26  
-Product feature baseline: `1d5c46c`  
+Product feature baseline: `6e63414`  
 Branch: `main`
 
 ## Release posture
 
-OpenGlass UI is a complete local `0.1.0-rc.0` release candidate prepared for
-owner review.
+OpenGlass UI is `0.1.0`. The owner authorized publication on 2026-07-26:
+a public GitHub repository at `moekoelueker/open-glass-ui`, npm publication of
+the single unscoped `open-glass-ui` package, and a marketing page at
+`moelueker.com/liquid-glass`.
 
-It is not:
+It is still not:
 
-- Published to npm.
-- Connected to a public GitHub remote.
-- Deployed.
 - Attached to a purchased/configured domain.
 - Legally cleared as a trademark.
-
-All external actions remain blocked until the owner explicitly authorizes them.
+- Verified on physical devices or with VoiceOver/NVDA.
 
 ## Product completion
 
 ### Complete
 
 - OpenGlass UI brand and package namespace applied locally.
-- Single public facade and `core`, `styles.css`, and `webgl` subpaths.
+- One published package with zero runtime dependencies, plus `core`,
+  `styles.css`, and `webgl` subpaths. The `@open-glass-ui/*` packages are
+  private and inlined at build time.
 - CSS-first hybrid architecture.
 - Three semantic materials: clear, regular, frosted.
 - Neutral adaptive themes.
@@ -77,7 +77,7 @@ Current documentation records:
 
 - 97 files passing Biome.
 - TypeScript passing across all packages, showcase, and Next fixture.
-- 88 tests across 16 unit/property/SSR/lifecycle/recipe files.
+- 93 tests across 16 unit/property/SSR/lifecycle/recipe files.
 - 155 validated browser checks across Chromium, Firefox, and WebKit.
 - Seven intentional capability/scope skips.
 - 33/33 focused product-landing checks.

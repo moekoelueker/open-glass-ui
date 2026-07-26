@@ -16,7 +16,7 @@ components, neutral adaptive themes, a CSS-first material system, explicit
 SVG/SDF enhancement, and opt-in controlled-media WebGL2.
 
 Current posture:
-- Local open-glass-ui@0.1.0-rc.0 release candidate.
+- Local open-glass-ui@0.1.0 release candidate.
 - Product feature baseline is commit 1d5c46c.
 - Not published to npm.
 - No public GitHub remote or deployment is authorized by the repository.

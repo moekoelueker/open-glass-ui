@@ -12,7 +12,7 @@ namespace is `@open-glass-ui/*`; and the runtime CSS/class/data/ID prefix is
 
 ## Publication status
 
-Local package manifests define `open-glass-ui@0.1.0-rc.0`, but it has not been
+Local package manifests define `open-glass-ui@0.1.0`, but it has not been
 published to npm. No public remote, deployment, or domain is authorized by the
 local project. Treat all installation commands and public imports below as the
 release-candidate API and verify the exact packed artifact before relying on
@@ -376,7 +376,7 @@ The target is WCAG 2.2 AA, not certification.
 
 ## Architecture
 
-The release-candidate facade is `open-glass-ui@0.1.0-rc.0`. Internally:
+The release-candidate facade is `open-glass-ui@0.1.0`. Internally:
 
 - `@open-glass-ui/core`: zero-runtime-dependency geometry, materials, quality,
   cache, and theme math; no React or browser globals.

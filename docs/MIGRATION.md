@@ -1,9 +1,9 @@
 # Migration to OpenGlass UI
 
-This guide covers migration from the local renderer prototype or direct
-workspace-package imports to the `open-glass-ui@0.1.0-rc.0` facade. The release
-candidate has not been published; use a verified packed/local artifact until an
-authorized npm release exists.
+This guide covers migration from a local renderer prototype or from direct
+workspace-package imports to the published `open-glass-ui` package. Install it
+from npm rather than referencing any `@open-glass-ui/*` path: those packages are
+private build-time boundaries and do not exist on the registry.
 
 ## 1. Use the public facade
 

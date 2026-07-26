@@ -4,7 +4,7 @@
 
 Status date: 2026-07-25
 
-`open-glass-ui@0.1.0-rc.0` is ready for local release review. The final clean
+`open-glass-ui@0.1.0` is ready for local release review. The final clean
 pass covered the neutral adaptive theme, single public facade, server-safe core
 subpath, explicit WebGL subpath, all forty component recipes, and the hardened
 interaction contracts. Nothing was published or deployed.

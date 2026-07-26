@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 test("landing presents one OpenGlass product and all forty public components", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page).toHaveTitle("OpenGlass UI — Glass UI Components for React");
+  await expect(page).toHaveTitle("OpenGlass UI — Liquid Glass UI Components for React");
   await expect(
     page.getByRole("heading", {
       level: 1,
@@ -15,16 +15,41 @@ test("landing presents one OpenGlass product and all forty public components", a
     "href",
     "/components",
   );
-  await expect(
-    page.getByRole("region", { name: "Internal weighted library evaluation" }),
-  ).toContainText("94 / 100");
   await expect(page.getByText(/Adaptive Hybrid|Native CSS|Spectral WebGL/)).toHaveCount(0);
+
+  // The hero readout must report measurable runtime state, never a
+  // self-assigned score. Guard against the invented "94 / 100" panel returning.
+  await expect(page.getByText("Internal weighted library evaluation")).toHaveCount(0);
+  await expect(page.getByText("94 / 100")).toHaveCount(0);
 
   const componentNames = await page
     .locator("[data-component-name]")
     .evaluateAll((items) => items.map((item) => item.getAttribute("data-component-name")));
   expect(componentNames).toHaveLength(40);
   expect(new Set(componentNames).size).toBe(40);
+});
+
+test("hero readout reports real runtime state and tracks the selected material", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const readout = page.getByRole("region", { name: "Live material runtime readout" });
+  const playground = page.getByRole("region", { name: "Live material playground" });
+
+  // Values must match MATERIAL_PRESETS exactly, and the resolved renderer must
+  // agree with what Glass wrote onto the element.
+  await playground.getByRole("button", { name: "Clear", exact: true }).click();
+  await expect(readout).toContainText("1.50");
+  await expect(readout).toContainText("clear material");
+  await expect(readout).toContainText("Thickness 0.78");
+
+  await playground.getByRole("button", { name: "Frosted", exact: true }).click();
+  await expect(readout).toContainText("1.40");
+  await expect(readout).toContainText("frosted material");
+  await expect(readout).toContainText("Thickness 0.44");
+
+  await expect(readout).toHaveAttribute("data-ogui-renderer", "css");
+  await expect(readout).toContainText("CSS-first default");
 });
 
 test("live material playground exposes authoritative interactive state", async ({ page }) => {
@@ -279,7 +304,9 @@ test("install and AI resources are honest, copyable, and machine-readable", asyn
   request,
 }) => {
   await page.goto("/");
-  await expect(page.getByText("pnpm add open-glass-ui react react-dom").first()).toBeVisible();
+  // The published package has a `latest` dist-tag, so the bare install command
+  // must work. A prerelease-only publish would make this line a lie.
+  await expect(page.getByText("npm install open-glass-ui react react-dom").first()).toBeVisible();
 
   await page.getByRole("button", { name: "Copy Install Command" }).first().click();
   await expect(page.locator("[data-copy-status]")).toContainText("Install command copied.");
@@ -294,12 +321,18 @@ test("install and AI resources are honest, copyable, and machine-readable", asyn
     expect(await response.text()).toContain("OpenGlass UI");
   }
 
-  const github = page.getByRole("link", { name: /GitHub/i });
-  if ((await github.count()) > 0) {
-    await expect(github).toHaveAttribute("href", /^https:\/\/github\.com\//);
-  } else {
-    await expect(page.getByText("GitHub coming soon", { exact: true })).toBeVisible();
+  // Every GitHub reference must resolve to a real repository. The placeholder
+  // "coming soon" state is gone and must not come back.
+  const githubLinks = page.getByRole("link", { name: /GitHub/i });
+  const githubCount = await githubLinks.count();
+  expect(githubCount).toBeGreaterThan(0);
+  for (let index = 0; index < githubCount; index += 1) {
+    await expect(githubLinks.nth(index)).toHaveAttribute(
+      "href",
+      /^https:\/\/github\.com\/[^/]+\/[^/]+/,
+    );
   }
+  await expect(page.getByText(/coming soon/i)).toHaveCount(0);
   await expect(
     page.locator('a[href="#"], a[href=""], a[href*="OWNER"], a[href*="TODO"]'),
   ).toHaveCount(0);

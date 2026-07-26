@@ -177,5 +177,5 @@ must not be presented as the final release-candidate result. See
 evidence.
 
 The atlas now uses the owner-approved OpenGlass UI identity and the
-`open-glass-ui@0.1.0-rc.0` facade. Remote repository creation, deployment, and
+`open-glass-ui@0.1.0` package. Deployment and
 npm publication remain intentionally unauthorized.

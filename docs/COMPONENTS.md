@@ -4,8 +4,8 @@ OpenGlass UI provides forty React recipes built from native DOM elements. They
 preserve browser semantics, forms, focus, text selection, and assistive
 technology access while sharing the `ogui` token and class namespace.
 
-> **Release status:** the local `open-glass-ui@0.1.0-rc.0` facade has not been
-> published to npm.
+> **Release status:** `open-glass-ui@0.1.0` is published on npm. APIs may still
+> change before `1.0.0`.
 
 ## Setup
 

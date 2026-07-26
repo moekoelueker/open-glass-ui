@@ -1,6 +1,7 @@
 # Release Checklist
 
-OpenGlass UI is release-candidate architecture, not a published package. No npm
+This checklist gates every release. Publication happens from the tagged GitHub
+Actions workflow with npm provenance. No npm
 publication, GitHub remote, domain purchase, or deployment is authorized by
 this checklist.
 

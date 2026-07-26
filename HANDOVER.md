@@ -1,8 +1,8 @@
 # OpenGlass UI Handover
 
 Status date: 2026-07-26  
-Product implementation baseline: `1d5c46c`  
-Release posture: local `0.1.0-rc.0`; not published or deployed
+Product implementation baseline: `6e63414`  
+Release posture: `0.1.0`, publishing to npm as a single package
 
 ## Why this document exists
 
@@ -103,19 +103,16 @@ The product landing in `apps/showcase/src/landing-page.tsx` and
 
 ### Library and packages
 
-Consumers are intended to install one public package:
+Consumers install one public package:
 
 ```bash
-pnpm add open-glass-ui react react-dom
+npm install open-glass-ui react react-dom
 ```
 
 ```tsx
 import "open-glass-ui/styles.css";
 import { Button, Glass, GlassSystemProvider } from "open-glass-ui";
 ```
-
-That command is a release-candidate contract, not a claim that npm publication
-already exists.
 
 The public entry points are:
 
@@ -124,8 +121,20 @@ The public entry points are:
 - `open-glass-ui/core`
 - `open-glass-ui/webgl`
 
-Internal `@open-glass-ui/*` packages are implementation boundaries and should
-not appear in consumer examples.
+`open-glass-ui` is the **only** published package. The four `@open-glass-ui/*`
+workspace packages are `private: true` build-time boundaries: tsup inlines both
+their runtime code and their declarations into the published artifact, so the
+tarball has zero runtime dependencies and a consumer cannot resolve an internal
+path even by accident.
+
+Two build constraints exist because of this and must not be reverted casually:
+
+- Rollup's treeshake pass is disabled in `packages/ui/tsup.config.ts`. It strips
+  module-level directives, which removes the `"use client"` boundary from
+  `index.js` and `webgl.js` and breaks React Server Components.
+- `packages/ui/tsconfig.json` maps the two WebGL subpaths explicitly.
+  rollup-plugin-dts does not follow `exports` subpath maps, so without the
+  mapping `webgl.d.ts` ships unresolvable `@open-glass-ui/*` imports.
 
 ## Research-to-product decisions
 
@@ -201,7 +210,7 @@ The release-candidate evidence currently records:
 
 - 97 files passing Biome checks.
 - All TypeScript projects and declaration builds passing.
-- 88 unit, property, SSR, lifecycle, theme, and recipe checks.
+- 93 unit, property, SSR, lifecycle, theme, and recipe checks.
 - 155 browser checks validated across Chromium, Firefox, and WebKit, with seven
   intentional capability/scope skips.
 - A focused 33/33 product-landing matrix.
