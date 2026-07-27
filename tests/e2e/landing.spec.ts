@@ -52,6 +52,31 @@ test("hero readout reports real runtime state and tracks the selected material",
   await expect(readout).toContainText("CSS-first default");
 });
 
+test("dragging frost visibly thickens the hero material", async ({ page }) => {
+  await page.goto("/");
+  const readout = page.getByRole("region", { name: "Live material runtime readout" });
+  const frost = page.getByRole("slider", { name: /Frost/i });
+
+  const blurOf = async () =>
+    Number(
+      /blur\(([\d.]+)px\)/.exec(
+        await readout.evaluate(
+          (el) => getComputedStyle(el).backdropFilter || getComputedStyle(el).webkitBackdropFilter,
+        ),
+      )?.[1] ?? "0",
+    );
+
+  // `optics` used to be inert for the CSS renderer: the number changed and
+  // nothing moved. Frost must now reach the material itself.
+  await frost.fill("0");
+  const low = await blurOf();
+  await frost.fill("100");
+  const high = await blurOf();
+
+  expect(high).toBeGreaterThan(low);
+  await expect(readout).toContainText("100%");
+});
+
 test("live material playground exposes authoritative interactive state", async ({ page }) => {
   await page.goto("/");
   const playground = page.getByRole("region", { name: "Live material playground" });

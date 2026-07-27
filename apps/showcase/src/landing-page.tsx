@@ -381,9 +381,13 @@ const RENDERER_REASON_LABEL: Record<string, string> = {
 function HeroRuntimeReadout({
   material,
   intensity,
+  frost,
+  onFrostChange,
 }: {
   material: MaterialPresetName;
   intensity: number;
+  frost: number;
+  onFrostChange: (frost: number) => void;
 }) {
   const runtime = useGlassRuntime();
   const surfaceRef = useRef<HTMLElement>(null);
@@ -418,6 +422,7 @@ function HeroRuntimeReadout({
       as="section"
       className="landing-score"
       material={material}
+      optics={{ frost }}
       tone="dark"
       interactive
       aria-label="Live material runtime readout"
@@ -439,10 +444,17 @@ function HeroRuntimeReadout({
         {resolved ? RENDERER_REASON_LABEL[resolved.reason] : "Server render"} ·{" "}
         {resolved?.material ?? material} material
       </p>
-      <Progress label="Frost" value={Math.round(optics.frost * 100)} />
+      <Slider
+        label="Frost"
+        unit="%"
+        min={0}
+        max={100}
+        value={Math.round(frost * 100)}
+        onChange={(event) => onFrostChange(Number(event.currentTarget.value) / 100)}
+      />
       <small>
-        Read from this surface's own data attributes. Thickness {optics.thickness.toFixed(2)} ·
-        dispersion {optics.dispersion.toFixed(3)} · motion {resolved?.motion ?? "pending"}
+        Drag frost to thicken the material. Thickness {optics.thickness.toFixed(2)} · dispersion{" "}
+        {optics.dispersion.toFixed(3)} · motion {resolved?.motion ?? "pending"}
       </small>
     </Glass>
   );
@@ -873,6 +885,14 @@ export function LandingPage() {
   const runtime = useGlassRuntime();
   const [scene, setScene] = useState<LandingScene>("motion");
   const [material, setMaterial] = useState<MaterialPresetName>("clear");
+  const [frost, setFrost] = useState(() => getMaterialPreset("clear").frost);
+
+  // Choosing a material re-seeds frost from that preset, so the slider always
+  // starts from the material you just picked rather than stranding an old value.
+  const selectMaterial = (next: MaterialPresetName) => {
+    setMaterial(next);
+    setFrost(getMaterialPreset(next).frost);
+  };
   const [preset, setPreset] = useState<GlassThemePreset>("neutral");
   const [customAccent, setCustomAccent] = useState("");
   const [intensity, setIntensity] = useState(78);
@@ -976,7 +996,12 @@ export function LandingPage() {
               >
                 <i aria-hidden="true" />
               </button>
-              <HeroRuntimeReadout material={material} intensity={intensity} />
+              <HeroRuntimeReadout
+                material={material}
+                intensity={intensity}
+                frost={frost}
+                onFrostChange={setFrost}
+              />
               <span className="landing-lens-readout" role="status" aria-live="polite">
                 Hover to bend · click to hold / <strong>{lensResponse}</strong>
               </span>
@@ -988,7 +1013,7 @@ export function LandingPage() {
               scene={scene}
               onSceneChange={setScene}
               material={material}
-              onMaterialChange={setMaterial}
+              onMaterialChange={selectMaterial}
               accent={preset}
               onAccentChange={setPreset}
               customAccent={customAccent}

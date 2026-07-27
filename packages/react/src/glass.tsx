@@ -78,6 +78,11 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     backdropFilter: runtime.capabilities.backdropFilter,
     reducedTransparency: runtime.capabilities.reducedTransparency,
     forcedColors: runtime.capabilities.forcedColors,
+    // Only forward an explicitly supplied frost. Passing the preset's own value
+    // unconditionally would round-trip through the interpolation for every
+    // surface, and a caller that never set `optics` should get the preset's
+    // tokens verbatim.
+    ...(optics?.frost === undefined ? {} : { frost: optics.frost }),
   });
   const materialStyle = createCssMaterialStyle(tokens);
   const mergedStyle = {

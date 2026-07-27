@@ -70,7 +70,16 @@ test("atlas recipes complete their interaction contracts", async ({ page }) => {
   await expect(page.locator(".atlas-specimen[data-component]")).toHaveCount(40);
 
   const pagination = page.locator('[data-component="Pagination"]');
-  await pagination.scrollIntoViewIfNeeded();
+  // `scrollIntoViewIfNeeded` does not scroll this page in WebKit: the specimen
+  // stays ~4,000px below the fold and the subsequent click never lands, which
+  // made this test intermittently fail there. The native call scrolls fine in
+  // all three engines, so drive it directly and assert it actually moved.
+  await pagination.evaluate((element) =>
+    element.scrollIntoView({ block: "center", behavior: "instant" }),
+  );
+  await expect
+    .poll(async () => (await pagination.boundingBox())?.y ?? Number.POSITIVE_INFINITY)
+    .toBeLessThan(page.viewportSize()?.height ?? 720);
   const pageFour = pagination.getByRole("button", { name: "Page 4" });
   await pageFour.click();
   await expect(pageFour).toHaveAttribute("aria-current", "page");

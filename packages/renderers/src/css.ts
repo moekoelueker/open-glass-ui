@@ -8,6 +8,70 @@ export interface CssMaterialOptions {
   backdropFilter?: boolean;
   reducedTransparency?: boolean;
   forcedColors?: boolean;
+  /**
+   * Overrides the material preset's own frost, in the range 0 to 1.
+   *
+   * Without this, `<Glass optics={{ frost }}>` changed the reported optics but
+   * nothing a user could see, because the CSS material was selected purely by
+   * preset name. Supplying it interpolates blur and surface opacity between the
+   * three presets, so the three named materials still render exactly as before
+   * and any value between or beyond them lands somewhere sensible.
+   */
+  frost?: number;
+}
+
+/**
+ * Blur radius and surface opacity at each preset's own frost value. These are
+ * the anchors the interpolation passes through, so `frost: 0.24` reproduces the
+ * `regular` material exactly rather than approximating it.
+ */
+const FROST_ANCHORS: readonly [number, number, number] = [0.04, 0.24, 0.66];
+const BLUR_ANCHORS: readonly [number, number, number] = [10, 22, 34];
+const ALPHA_ANCHORS: Record<MaterialTone, readonly [number, number, number]> = {
+  dark: [0.3, 0.58, 0.72],
+  light: [0.24, 0.58, 0.76],
+};
+
+function interpolateByFrost(frost: number, values: readonly [number, number, number]): number {
+  const [lowFrost, midFrost, highFrost] = FROST_ANCHORS;
+  const [low, mid, high] = values;
+
+  if (frost <= lowFrost) {
+    return low;
+  }
+  if (frost >= highFrost) {
+    return high;
+  }
+  if (frost <= midFrost) {
+    return low + (mid - low) * ((frost - lowFrost) / (midFrost - lowFrost));
+  }
+  return mid + (high - mid) * ((frost - midFrost) / (highFrost - midFrost));
+}
+
+/**
+ * Rewrites the blur radius and the surface alpha in already-built tokens.
+ * Every other channel stays as the chosen material defined it, so overriding
+ * frost changes how dense the material reads without changing its hue.
+ */
+function applyFrostOverride(
+  tokens: CssMaterialTokens,
+  frost: number,
+  tone: MaterialTone,
+): CssMaterialTokens {
+  const blur = interpolateByFrost(frost, BLUR_ANCHORS);
+  const alpha = interpolateByFrost(frost, ALPHA_ANCHORS[tone]);
+
+  return {
+    ...tokens,
+    "--ogui-material-filter": tokens["--ogui-material-filter"].replace(
+      /blur\([\d.]+px\)/,
+      `blur(${blur.toFixed(2)}px)`,
+    ),
+    "--ogui-material-background": tokens["--ogui-material-background"].replace(
+      /\/\s*[\d.]+\)/,
+      `/ ${alpha.toFixed(3)})`,
+    ),
+  };
 }
 
 export interface CssMaterialTokens {
@@ -54,6 +118,10 @@ function opaqueTokens(tone: MaterialTone): CssMaterialTokens {
 
 export function createCssMaterialTokens(options: CssMaterialOptions): CssMaterialTokens {
   const dark = options.tone === "dark";
+  const withFrost = (tokens: CssMaterialTokens) =>
+    typeof options.frost === "number" && Number.isFinite(options.frost)
+      ? applyFrostOverride(tokens, Math.min(Math.max(options.frost, 0), 1), options.tone)
+      : tokens;
 
   if (options.forcedColors) {
     return {
@@ -85,7 +153,7 @@ export function createCssMaterialTokens(options: CssMaterialOptions): CssMateria
 
   switch (options.material) {
     case "clear":
-      return {
+      return withFrost({
         "--ogui-material-background": dark ? "rgb(12 18 21 / 0.30)" : "rgb(255 252 244 / 0.24)",
         "--ogui-material-border": dark ? "rgb(255 255 255 / 0.28)" : "rgb(255 255 255 / 0.7)",
         "--ogui-material-highlight": "rgb(255 255 255 / 0.72)",
@@ -96,9 +164,9 @@ export function createCssMaterialTokens(options: CssMaterialOptions): CssMateria
         "--ogui-material-muted": muted,
         "--ogui-material-filter": "blur(10px) saturate(1.18) brightness(1.04)",
         "--ogui-material-dim": dark ? "rgb(0 0 0 / 0.18)" : "rgb(255 255 255 / 0.18)",
-      };
+      });
     case "regular":
-      return {
+      return withFrost({
         "--ogui-material-background": dark ? "rgb(18 24 28 / 0.58)" : "rgb(249 247 240 / 0.58)",
         "--ogui-material-border": dark ? "rgb(255 255 255 / 0.24)" : "rgb(255 255 255 / 0.84)",
         "--ogui-material-highlight": "rgb(255 255 255 / 0.62)",
@@ -109,9 +177,9 @@ export function createCssMaterialTokens(options: CssMaterialOptions): CssMateria
         "--ogui-material-muted": muted,
         "--ogui-material-filter": "blur(22px) saturate(1.22) brightness(1.02)",
         "--ogui-material-dim": dark ? "rgb(0 0 0 / 0.28)" : "rgb(255 255 255 / 0.34)",
-      };
+      });
     case "frosted":
-      return {
+      return withFrost({
         "--ogui-material-background": dark ? "rgb(26 31 34 / 0.72)" : "rgb(247 244 236 / 0.76)",
         "--ogui-material-border": dark ? "rgb(255 255 255 / 0.2)" : "rgb(255 255 255 / 0.9)",
         "--ogui-material-highlight": "rgb(255 255 255 / 0.48)",
@@ -122,7 +190,7 @@ export function createCssMaterialTokens(options: CssMaterialOptions): CssMateria
         "--ogui-material-muted": muted,
         "--ogui-material-filter": "blur(34px) saturate(1.08) brightness(1.05)",
         "--ogui-material-dim": dark ? "rgb(0 0 0 / 0.34)" : "rgb(255 255 255 / 0.48)",
-      };
+      });
   }
 }
 
