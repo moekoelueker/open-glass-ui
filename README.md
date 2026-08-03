@@ -23,6 +23,12 @@
   <a href="https://moelueker.com/liquid-glass"><strong>Live demo and docs →</strong></a>
 </p>
 
+<p align="center">
+  <a href="https://moelueker.gumroad.com/l/openglass">Free download</a> ·
+  <a href="https://youtu.be/KYcqUP9vJfo">Watch the build</a> ·
+  <a href="https://moelueker.com">moelueker.com</a>
+</p>
+
 ---
 
 Most "liquid glass" on the web is a blur with a border. The few that go further
@@ -245,6 +251,14 @@ Only `packages/ui` is published. The `@open-glass-ui/*` packages are private
 build-time boundaries whose code and declarations are inlined into it, which is
 why the published package has no runtime dependencies. Do not import them
 directly; they do not exist on npm.
+
+## Built by
+
+OpenGlass UI is built and maintained by [Moe Lueker](https://moelueker.com). See
+it live at [moelueker.com/liquid-glass](https://moelueker.com/liquid-glass), watch
+the [build-and-deploy walkthrough](https://youtu.be/KYcqUP9vJfo), or grab the
+[free download on Gumroad](https://moelueker.gumroad.com/l/openglass) (it includes
+a copy-paste skill so coding agents build with the library correctly).
 
 ## License
 
