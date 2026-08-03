@@ -5,19 +5,18 @@ interfaces. It combines neutral adaptive themes, forty accessible native-DOM
 recipes, CSS-first materials, explicit SVG/SDF refraction, and opt-in WebGL2 for
 controlled media.
 
-The owner-approved public brand is `OpenGlass UI`. The release-candidate npm
-facade and intended repository slug are `open-glass-ui`; the internal workspace
-namespace is `@open-glass-ui/*`; and the runtime CSS/class/data/ID prefix is
-`ogui`.
+The public brand is `OpenGlass UI`. The published npm package is
+`open-glass-ui`; the repository is https://github.com/moekoelueker/open-glass-ui;
+the internal workspace namespace is `@open-glass-ui/*`; and the runtime
+CSS/class/data/ID prefix is `ogui`.
 
 ## Publication status
 
-Local package manifests define `open-glass-ui@0.1.0`, but it has not been
-published to npm. No public remote, deployment, or domain is authorized by the
-local project. Treat all installation commands and public imports below as the
-release-candidate API and verify the exact packed artifact before relying on
-them. Never claim that a namespace is reserved or legally cleared without a
-fresh check.
+The package is published on npm as `open-glass-ui` (MIT, zero runtime
+dependencies). Source: https://github.com/moekoelueker/open-glass-ui. Live demo
+and docs: https://moelueker.com/liquid-glass. The installation commands and
+public imports below are the released API; still verify the exact installed
+version before relying on version-specific behavior.
 
 The project is MIT licensed. It is independent and is not affiliated with,
 endorsed by, or sponsored by Apple Inc. It does not promise pixel parity with a
@@ -376,7 +375,7 @@ The target is WCAG 2.2 AA, not certification.
 
 ## Architecture
 
-The release-candidate facade is `open-glass-ui@0.1.0`. Internally:
+The published facade is `open-glass-ui`. Internally:
 
 - `@open-glass-ui/core`: zero-runtime-dependency geometry, materials, quality,
   cache, and theme math; no React or browser globals.

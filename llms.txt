@@ -2,9 +2,10 @@
 
 > The open-source Liquid Glass UI system for React and the web.
 
-Status: local `open-glass-ui@0.1.0` release candidate. It has not been
-published. Do not claim registry installation or availability without a fresh
-check.
+Status: published on npm as `open-glass-ui` (MIT, zero runtime dependencies).
+Source: https://github.com/moekoelueker/open-glass-ui. Live demo and docs:
+https://moelueker.com/liquid-glass. Verify the exact installed version before
+relying on version-specific behavior.
 
 Canonical consumer surface:
 
