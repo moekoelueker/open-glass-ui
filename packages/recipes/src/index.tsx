@@ -607,12 +607,17 @@ function DisclosureSurface({
     }
 
     const focusFrame = requestAnimationFrame(() => {
+      const surface = surfaceRef.current;
+      if (!surface) {
+        return;
+      }
+      const autofocus = surface.querySelector<HTMLElement>("[data-ogui-autofocus]:not([disabled])");
       const items = [
-        ...(surfaceRef.current?.querySelectorAll<HTMLElement>(
-          '[role="menuitem"]:not([disabled]), [data-ogui-autofocus]:not([disabled])',
-        ) ?? []),
+        ...surface.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
       ];
-      const target = requestedFocusRef.current === "last" ? items.at(-1) : items[0];
+      const target = autofocus ?? (requestedFocusRef.current === "last" ? items.at(-1) : items[0]);
       target?.focus();
     });
 
@@ -882,6 +887,7 @@ export function Popover({ label, children, ...props }: PopoverProps) {
       {...props}
       triggerLabel={label}
       className={classes("ogui-popover", props.className)}
+      focusOnOpen="first"
     >
       <div className="ogui-popover__content" role="dialog" aria-label={label}>
         {children}
@@ -898,10 +904,23 @@ export interface TooltipProps {
 
 export function Tooltip({ label, children, placement = "top" }: TooltipProps) {
   const id = useId();
+  const [dismissed, setDismissed] = useState(false);
   const describedBy = [children.props["aria-describedby"], id].filter(Boolean).join(" ");
 
   return (
-    <span className="ogui-tooltip" data-placement={placement}>
+    // biome-ignore lint/a11y/noStaticElementInteractions: the handlers only observe events bubbling from the interactive child to dismiss the tooltip (WCAG 1.4.13); the wrapper itself is never operable.
+    <span
+      className="ogui-tooltip"
+      data-placement={placement}
+      data-dismissed={dismissed ? "true" : "false"}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          setDismissed(true);
+        }
+      }}
+      onMouseLeave={() => setDismissed(false)}
+      onBlurCapture={() => setDismissed(false)}
+    >
       {cloneElement(children, { "aria-describedby": describedBy })}
       <span id={id} role="tooltip" className="ogui-tooltip__bubble">
         {label}
@@ -927,6 +946,33 @@ function formatTime(seconds: number) {
   return `${minutes}:${remainder.toString().padStart(2, "0")}`;
 }
 
+// Inline vector icons keep playback glyphs crisp and identical across
+// platforms; text glyphs like "▶" can render as emoji or fall back per font.
+const MEDIA_ICON_PATHS = {
+  play: "M5 3.2 12.8 8 5 12.8Z",
+  pause: "M4.6 3.2h2.4v9.6H4.6Zm4.4 0h2.4v9.6H9Z",
+  volume:
+    "M2.4 5.6h2.3L8.2 3v10L4.7 10.4H2.4Zm7.6-.3a3.9 3.9 0 0 1 0 5.4l-1-1a2.5 2.5 0 0 0 0-3.4Z",
+  muted:
+    "M2.4 5.6h2.3L8.2 3v10L4.7 10.4H2.4Zm7.5.7 1-1 1.6 1.6 1.6-1.6 1 1L13.5 8l1.6 1.6-1 1-1.6-1.6-1.6 1.6-1-1L11.5 8Z",
+} as const;
+
+function MediaIcon({ name }: { name: keyof typeof MEDIA_ICON_PATHS }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className="ogui-media__icon"
+      fill="currentColor"
+      focusable="false"
+      height="14"
+      viewBox="0 0 16 16"
+      width="14"
+    >
+      <path d={MEDIA_ICON_PATHS[name]} />
+    </svg>
+  );
+}
+
 export function MediaControls({
   playing,
   currentTime,
@@ -948,7 +994,7 @@ export function MediaControls({
         aria-label={playing ? "Pause" : "Play"}
         onClick={() => onPlayingChange(!playing)}
       >
-        <span aria-hidden="true">{playing ? "Ⅱ" : "▶"}</span>
+        <MediaIcon name={playing ? "pause" : "play"} />
       </IconButton>
       <label className="ogui-media__seek" htmlFor={seekId}>
         <span className="ogui-sr-only">Seek media</span>
@@ -959,6 +1005,7 @@ export function MediaControls({
           max={Math.max(duration, 1)}
           step={0.01}
           value={Math.min(currentTime, Math.max(duration, 1))}
+          aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
           onChange={(event) => onSeek(Number(event.currentTarget.value))}
         />
       </label>
@@ -972,7 +1019,7 @@ export function MediaControls({
           aria-label={muted ? "Unmute" : "Mute"}
           onClick={() => onMutedChange(!muted)}
         >
-          <span aria-hidden="true">{muted ? "M" : "V"}</span>
+          <MediaIcon name={muted ? "muted" : "volume"} />
         </IconButton>
       ) : null}
     </div>

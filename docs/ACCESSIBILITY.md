@@ -61,10 +61,21 @@ the expected patterns:
 - `Tabs`: Arrow Left/Right, Home, End, roving tab stop.
 - `Menu`: Arrow Up/Down, Home, End, typeahead, Escape, Tab dismissal, focus
   restoration.
-- `Popover`: Escape and outside-pointer dismissal with focus restoration.
+- `Popover`: focus moves to the first control on open; Escape and
+  outside-pointer dismissal with focus restoration.
 - `Dialog` and `Drawer`: initial focus, Tab containment, Escape, inert
-  background, scroll lock, and trigger-focus restoration.
+  background, scroll lock, and focus restoration to the element that opened
+  the overlay.
 - `Accordion`: buttons expose `aria-expanded` and panel relationships.
+- `Tooltip`: Escape hides the bubble until the pointer leaves or focus moves
+  on (WCAG 1.4.13).
+- `Toolbar` groups its children under `role="toolbar"` but keeps one tab stop
+  per control rather than a roving tabindex; every control stays reachable
+  with Tab.
+
+The `label` on `Menu` and `Popover` overrides the trigger's accessible name.
+Keep the trigger's visible text inside that label so the spoken name matches
+what voice-control users see.
 
 Do not put interactive descendants inside another button, link, or native
 control. Test the complete workflow using only a keyboard.

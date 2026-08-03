@@ -91,6 +91,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const lensesRef = useRef(lenses);
     const drawRef = useRef<() => void>(() => undefined);
+    const scheduleRef = useRef<() => void>(() => undefined);
     const callbacksRef = useRef({ onStatusChange, onRendererError });
     const [status, setStatus] = useState<WebGLSurfaceStatus>("idle");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -112,6 +113,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
       let renderer: WebGLGlassRenderer;
       let animationFrame = 0;
       let videoFrame = 0;
+      let videoFrameSource: HTMLVideoElement | null = null;
       let stopped = false;
       let dpr = 1;
 
@@ -160,6 +162,16 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
       };
       drawRef.current = draw;
 
+      const motionEnabled = runtime.motion !== "off";
+      const cancelPending = () => {
+        cancelAnimationFrame(animationFrame);
+        if (videoFrameSource && typeof videoFrameSource.cancelVideoFrameCallback === "function") {
+          videoFrameSource.cancelVideoFrameCallback(videoFrame);
+        }
+        videoFrameSource = null;
+      };
+      // Hot per-frame path: registration only. Cancellation lives in rearm()
+      // so the steady-state loop stays as cheap as a bare rVFC/rAF chain.
       const schedule = () => {
         if (stopped) {
           return;
@@ -171,6 +183,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
           isVideoSource(source) &&
           typeof source.requestVideoFrameCallback === "function"
         ) {
+          videoFrameSource = source;
           videoFrame = source.requestVideoFrameCallback(() => {
             draw();
             schedule();
@@ -178,12 +191,18 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
           return;
         }
 
-        if (continuous) {
+        if (continuous && motionEnabled) {
           animationFrame = requestAnimationFrame(() => {
             draw();
             schedule();
           });
         }
+      };
+      // Re-arming out of band (a source appeared or was swapped via renderKey)
+      // must not stack callbacks: drop anything pending, then schedule.
+      scheduleRef.current = () => {
+        cancelPending();
+        schedule();
       };
 
       resize();
@@ -217,14 +236,8 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
       return () => {
         stopped = true;
         drawRef.current = () => undefined;
-        cancelAnimationFrame(animationFrame);
-        if (
-          source &&
-          isVideoSource(source) &&
-          typeof source.cancelVideoFrameCallback === "function"
-        ) {
-          source.cancelVideoFrameCallback(videoFrame);
-        }
+        scheduleRef.current = () => undefined;
+        cancelPending();
         if (source && "removeEventListener" in source) {
           source.removeEventListener("load", handleSourceReady);
           source.removeEventListener("loadeddata", handleSourceReady);
@@ -234,7 +247,14 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
         document.removeEventListener("visibilitychange", handleVisibility);
         renderer.dispose();
       };
-    }, [continuous, maxDevicePixelRatio, runtime.capabilities.webgl2, runtime.hydrated, sourceRef]);
+    }, [
+      continuous,
+      maxDevicePixelRatio,
+      runtime.capabilities.webgl2,
+      runtime.hydrated,
+      runtime.motion,
+      sourceRef,
+    ]);
 
     useEffect(() => {
       const canvas = canvasRef.current;
@@ -243,6 +263,10 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
       }
       canvas.dataset.oguiRenderKey = String(renderKey ?? "");
       drawRef.current();
+      // A renderKey bump is the documented signal that the source changed;
+      // re-arm the frame loop so a late or swapped video source starts playing
+      // through the glass instead of freezing on one painted frame.
+      scheduleRef.current();
     }, [renderKey, status]);
 
     return (

@@ -1,9 +1,12 @@
 import {
   applyQualityToMapInput,
+  createOpticsCacheKey,
+  type DisplacementMap,
+  type DisplacementMapInput,
   type GlassMaterial,
-  generateDisplacementMap,
   getMaterialPreset,
   type LensGeometry,
+  OpticsMapCache,
   type OpticsQuality,
 } from "@open-glass-ui/core";
 import {
@@ -14,6 +17,11 @@ import {
   type SvgDisplacementFilterSpec,
 } from "@open-glass-ui/renderers";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { useGlassRuntime } from "./provider";
+
+// One shared cache keeps identical geometry/material maps warm across
+// components and remounts instead of regenerating per hook instance.
+const sharedOpticsMapCache = /* @__PURE__ */ new OpticsMapCache();
 
 export interface SdfFilterOptions {
   id: string;
@@ -57,71 +65,71 @@ export function useSdfFilter({
 }: SdfFilterOptions): SdfFilterState {
   const { kind, width: geometryWidth, height: geometryHeight, cornerRadius, exponent } = geometry;
   const { thickness, ior, dispersion, edgeStrength, bevel, frost } = material;
-  const map = useMemo(() => {
-    const stableGeometry: LensGeometry = {
-      kind,
-      width: geometryWidth,
-      height: geometryHeight,
-      ...(cornerRadius === undefined ? {} : { cornerRadius }),
-      ...(exponent === undefined ? {} : { exponent }),
-    };
-    const stableMaterial: GlassMaterial = {
-      thickness,
-      ior,
+  const input = useMemo<DisplacementMapInput>(
+    () => ({
+      width,
+      height,
+      geometry: {
+        kind,
+        width: geometryWidth,
+        height: geometryHeight,
+        ...(cornerRadius === undefined ? {} : { cornerRadius }),
+        ...(exponent === undefined ? {} : { exponent }),
+      },
+      material: {
+        thickness,
+        ior,
+        dispersion,
+        edgeStrength,
+        bevel,
+        frost,
+      },
+    }),
+    [
+      bevel,
+      cornerRadius,
       dispersion,
       edgeStrength,
-      bevel,
+      exponent,
       frost,
-    };
-    const input = applyQualityToMapInput(
-      {
-        width,
-        height,
-        geometry: stableGeometry,
-        material: stableMaterial,
-      },
-      quality,
-    );
-
-    return generateDisplacementMap(input);
-  }, [
-    bevel,
-    cornerRadius,
-    dispersion,
-    edgeStrength,
-    exponent,
-    frost,
-    geometryHeight,
-    geometryWidth,
-    height,
-    ior,
-    kind,
-    quality,
-    thickness,
-    width,
-  ]);
-  const filterId = createStableFilterId(id, map.cacheKey);
-  const [mapUrl, setMapUrl] = useState<string | null>(null);
+      geometryHeight,
+      geometryWidth,
+      height,
+      ior,
+      kind,
+      thickness,
+      width,
+    ],
+  );
+  // The filter id only needs the cache key, so render (including SSR) stays
+  // cheap; the expensive map generation happens in the client effect below,
+  // routed through the shared cache.
+  const filterId = createStableFilterId(
+    id,
+    createOpticsCacheKey(applyQualityToMapInput(input, quality)),
+  );
+  const [encoded, setEncoded] = useState<{ map: DisplacementMap; url: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
-      setMapUrl(encodeDisplacementMap(map, canvasFactory));
+      const map = sharedOpticsMapCache.getOrCreate(input, quality);
+      setEncoded({ map, url: encodeDisplacementMap(map, canvasFactory) });
       setError(null);
     } catch (encodingError) {
-      setMapUrl(null);
+      setEncoded(null);
       setError(
         encodingError instanceof Error ? encodingError.message : "Unknown map encoding error.",
       );
     }
-  }, [canvasFactory, map]);
+  }, [canvasFactory, input, quality]);
 
   return {
     filterId,
-    ready: mapUrl !== null,
+    ready: encoded !== null,
     error,
-    spec: mapUrl
-      ? createSvgDisplacementFilterSpec(id, map, mapUrl, {
+    spec: encoded
+      ? createSvgDisplacementFilterSpec(id, encoded.map, encoded.url, {
           thickness,
           ior,
           dispersion,
@@ -232,6 +240,9 @@ export function OrganicFilterDefinition({
   animate = true,
   children,
 }: OrganicFilterDefinitionProps) {
+  // SMIL animation cannot be stopped by the stylesheet's reduced-motion
+  // rules, so the runtime motion policy has to gate it here.
+  const motion = useGlassRuntime().motion;
   const baseFrequency = Math.min(Math.max(frequency, 0.001), 0.08);
   const octaves = Math.round(Math.min(Math.max(turbulence, 1), 4));
   const displacementScale = Math.min(Math.max(scale, 0), 64);
@@ -261,7 +272,7 @@ export function OrganicFilterDefinition({
             seed={Math.round(seed)}
             type="fractalNoise"
           >
-            {animate ? (
+            {animate && motion === "on" ? (
               <animate
                 attributeName="baseFrequency"
                 dur="8s"

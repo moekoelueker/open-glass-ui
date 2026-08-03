@@ -4,7 +4,17 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { Button, Menu, MenuItem, SegmentedControl, Switch, Tabs } from "./index";
+import {
+  Button,
+  Menu,
+  MenuItem,
+  Popover,
+  SegmentedControl,
+  Switch,
+  Tabs,
+  TextField,
+  Tooltip,
+} from "./index";
 
 describe("SegmentedControl", () => {
   it("exposes a named group and changes its pressed value", async () => {
@@ -144,5 +154,40 @@ describe("Menu", () => {
     fireEvent.pointerDown(document.body);
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(screen.queryByRole("menu")).toBeNull();
+  });
+});
+
+describe("Tooltip", () => {
+  it("hides on Escape and returns after the pointer leaves", () => {
+    render(
+      <Tooltip label="Regenerate optical mesh">
+        <Button>Regenerate</Button>
+      </Tooltip>,
+    );
+
+    const target = screen.getByRole("button", { name: "Regenerate" });
+    const wrapper = target.closest(".ogui-tooltip");
+    expect(wrapper?.getAttribute("data-dismissed")).toBe("false");
+
+    fireEvent.keyDown(target, { key: "Escape" });
+    expect(wrapper?.getAttribute("data-dismissed")).toBe("true");
+
+    fireEvent.mouseLeave(wrapper as Element);
+    expect(wrapper?.getAttribute("data-dismissed")).toBe("false");
+  });
+});
+
+describe("Popover", () => {
+  it("moves focus to the first focusable control on open", async () => {
+    const user = userEvent.setup();
+    render(
+      <Popover label="Inspector" trigger={<Button>Inspect</Button>}>
+        <TextField label="Layer name" defaultValue="Hero" />
+      </Popover>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Inspector" }));
+    const field = screen.getByRole("textbox", { name: "Layer name" });
+    await waitFor(() => expect(document.activeElement).toBe(field));
   });
 });

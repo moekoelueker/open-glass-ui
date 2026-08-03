@@ -18,8 +18,8 @@ OpenGlass UI repository itself should start with
 4. Import GPU functionality only from `open-glass-ui/webgl`.
 5. Do not generate consumer imports from internal `@open-glass-ui/*` workspace
    packages.
-6. Remember that the facade is not published yet; do not claim that an npm
-   installation succeeded unless it was actually verified.
+6. The facade is published on npm as `open-glass-ui`; still verify the
+   installed version before relying on version-specific behavior.
 
 ```tsx
 import "open-glass-ui/styles.css";

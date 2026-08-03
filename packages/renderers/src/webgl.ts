@@ -326,6 +326,11 @@ export class WebGLGlassRenderer {
     this.#canvas.removeEventListener("webglcontextlost", this.#handleContextLost);
     this.#canvas.removeEventListener("webglcontextrestored", this.#handleContextRestored);
     this.#releaseResources();
+    // Do NOT force-lose the context here: the canvas belongs to the caller,
+    // and a canvas keeps one context for its lifetime. Losing it would leave
+    // any remount on the same canvas (React StrictMode, route revisits) with
+    // a permanently dead context. GPU resources are freed above; the context
+    // itself is reclaimed with the canvas.
     this.#disposed = true;
     this.#onStatusChange?.("disposed");
   }
@@ -416,8 +421,15 @@ export class WebGLGlassRenderer {
       return;
     }
 
+    try {
+      this.#createResources();
+    } catch {
+      // Shader or resource allocation can fail on a restored context; report
+      // the surface as still lost instead of throwing inside a DOM listener.
+      this.#onStatusChange?.("lost");
+      return;
+    }
     this.#lost = false;
-    this.#createResources();
     this.#onStatusChange?.("restored");
   };
 }

@@ -4,12 +4,12 @@ OpenGlass UI provides forty React recipes built from native DOM elements. They
 preserve browser semantics, forms, focus, text selection, and assistive
 technology access while sharing the `ogui` token and class namespace.
 
-> **Release status:** `open-glass-ui@0.1.0` is published on npm. APIs may still
+> **Release status:** `open-glass-ui@0.3.0` is published on npm. APIs may still
 > change before `1.0.0`.
 
 ## Setup
 
-After release, install the single facade package and import its stylesheet once:
+Install the single facade package and import its stylesheet once:
 
 ```bash
 pnpm add open-glass-ui react react-dom
@@ -146,8 +146,28 @@ export function DocumentActions() {
 
 Menus implement arrow-key navigation, Home/End, typeahead, Escape, outside
 pointer dismissal, and focus restoration. Dialog and Drawer use a portal,
-contain focus while open, close on Escape, restore trigger focus, lock document
-scroll, and make background siblings inert.
+contain focus while open, close on Escape, lock document scroll, and make
+background siblings inert. On close, focus returns to the element that opened
+the overlay.
+
+`triggerLabel` is optional. Omit it to drive a Dialog or Drawer entirely
+through `open`/`onOpenChange`, with no inline trigger rendered:
+
+```tsx
+<Dialog title="Publish material" open={publishing} onOpenChange={setPublishing}>
+  Ready to publish.
+</Dialog>
+```
+
+The `label` passed to `Menu` and `Popover` becomes the trigger's accessible
+name. Keep the trigger's visible text inside that label (for example a
+"More" button labeled "More actions") so voice-control users can speak what
+they see.
+
+Other options worth knowing: `Banner` reports dismissal through `onDismiss`;
+`Accordion` accepts `defaultOpenIds` (pass `[]` to start collapsed) and
+`headingLevel`; `Card`'s `interactive` prop opts a non-clickable card into the
+hover treatment, for example when the card sits inside a link.
 
 ## Toast queue
 

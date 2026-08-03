@@ -15,7 +15,7 @@ interaction contracts. Nothing was published or deployed.
 - TypeScript passed for core, renderers, React, recipes, the public facade, the
   Vite showcase, and the Next.js fixture after package declaration builds and
   Next route-type generation.
-- 88 unit, property, SSR, lifecycle, and recipe tests passed across 16 files.
+- 105 unit, property, SSR, lifecycle, and recipe tests passed across 17 files.
 - The optimized Vite showcase and Next.js 16 RSC/static fixture built
   successfully.
 - Five package archives were packed, compared with npm dry runs, installed
@@ -24,7 +24,7 @@ interaction contracts. Nothing was published or deployed.
 - Root, `core`, stylesheet, and `webgl` exports passed. The root import contains
   zero eager WebGL inputs; the public `signedDistance` import tree-shakes to
   1,222 bytes.
-- 155 browser checks passed across Chromium, Firefox, and WebKit. Seven checks
+- 161 browser checks passed across Chromium, Firefox, and WebKit. Seven checks
   were intentionally skipped by capability or scope: isolated performance
   mode and browser APIs Playwright cannot deterministically emulate outside
   Chromium.

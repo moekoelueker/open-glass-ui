@@ -4,7 +4,7 @@
     "platform": "darwin",
     "architecture": "arm64",
     "iterations": 30,
-    "measuredAt": "2026-07-27T00:36:34.835Z"
+    "measuredAt": "2026-08-03T19:14:45.237Z"
   },
   "results": [
     {
@@ -12,96 +12,96 @@
       "quality": "low",
       "resolution": "72x72",
       "bytes": 20736,
-      "medianMs": 1.371,
-      "p95Ms": 1.704
+      "medianMs": 1.354,
+      "p95Ms": 1.715
     },
     {
       "shape": "circle",
       "quality": "medium",
       "resolution": "132x132",
       "bytes": 69696,
-      "medianMs": 4.073,
-      "p95Ms": 4.129
+      "medianMs": 3.985,
+      "p95Ms": 4.032
     },
     {
       "shape": "circle",
       "quality": "high",
       "resolution": "240x240",
       "bytes": 230400,
-      "medianMs": 12.778,
-      "p95Ms": 13.183
+      "medianMs": 12.684,
+      "p95Ms": 12.919
     },
     {
       "shape": "capsule",
       "quality": "low",
       "resolution": "96x38",
       "bytes": 14592,
-      "medianMs": 1.2,
-      "p95Ms": 1.257
+      "medianMs": 1.204,
+      "p95Ms": 1.233
     },
     {
       "shape": "capsule",
       "quality": "medium",
       "resolution": "176x70",
       "bytes": 49280,
-      "medianMs": 3.908,
-      "p95Ms": 3.978
+      "medianMs": 3.916,
+      "p95Ms": 3.966
     },
     {
       "shape": "capsule",
       "quality": "high",
       "resolution": "320x128",
       "bytes": 163840,
-      "medianMs": 13.474,
-      "p95Ms": 13.589
+      "medianMs": 13.437,
+      "p95Ms": 13.547
     },
     {
       "shape": "rounded-rect",
       "quality": "low",
       "resolution": "96x62",
       "bytes": 23808,
-      "medianMs": 1.933,
-      "p95Ms": 1.962
+      "medianMs": 1.928,
+      "p95Ms": 1.975
     },
     {
       "shape": "rounded-rect",
       "quality": "medium",
       "resolution": "176x114",
       "bytes": 80256,
-      "medianMs": 6.39,
-      "p95Ms": 6.512
+      "medianMs": 6.247,
+      "p95Ms": 6.317
     },
     {
       "shape": "rounded-rect",
       "quality": "high",
       "resolution": "320x208",
       "bytes": 266240,
-      "medianMs": 21.173,
-      "p95Ms": 28.588
+      "medianMs": 20.456,
+      "p95Ms": 20.607
     },
     {
       "shape": "superellipse",
       "quality": "low",
       "resolution": "90x62",
       "bytes": 22320,
-      "medianMs": 2.752,
-      "p95Ms": 3.406
+      "medianMs": 2.74,
+      "p95Ms": 3.373
     },
     {
       "shape": "superellipse",
       "quality": "medium",
       "resolution": "165x114",
       "bytes": 75240,
-      "medianMs": 9.176,
-      "p95Ms": 10.551
+      "medianMs": 9.107,
+      "p95Ms": 9.193
     },
     {
       "shape": "superellipse",
       "quality": "high",
       "resolution": "300x208",
       "bytes": 249600,
-      "medianMs": 29.846,
-      "p95Ms": 30.132
+      "medianMs": 29.831,
+      "p95Ms": 29.95
     }
   ]
 }

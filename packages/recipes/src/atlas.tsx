@@ -86,7 +86,7 @@ export function Card({
   eyebrow,
   title,
   footer,
-  interactive: _interactive = false,
+  interactive = false,
   onPress,
   className,
   children,
@@ -101,7 +101,9 @@ export function Card({
   return (
     <Element
       {...props}
-      className={cx("ogui-card", actionable && "is-interactive", className)}
+      // `interactive` opts into the hover treatment (e.g. a card wrapped in a
+      // link); only real handlers make the card itself focusable/actionable.
+      className={cx("ogui-card", (actionable || interactive) && "is-interactive", className)}
       role={role ?? (actionable ? "button" : undefined)}
       tabIndex={tabIndex ?? (actionable ? 0 : undefined)}
       onClick={(event) => {
@@ -270,30 +272,47 @@ export interface BannerProps extends Omit<HTMLAttributes<HTMLElement>, "title"> 
   title: ReactNode;
   action?: ReactNode;
   dismissible?: boolean;
+  onDismiss?: () => void;
 }
 
 export function Banner({
   title,
   action,
   dismissible = false,
+  onDismiss,
   className,
   children,
   ...props
 }: BannerProps) {
   const [visible, setVisible] = useState(true);
+  const titleId = useId();
   if (!visible) {
     return null;
   }
+  // Name the landmark from its rendered title unless the consumer supplied a
+  // name; String(title) would read "[object Object]" for element titles.
+  const hasOwnName = props["aria-label"] !== undefined || props["aria-labelledby"] !== undefined;
   return (
-    <aside {...props} className={cx("ogui-banner", className)} aria-label={String(title)}>
+    <aside
+      {...props}
+      className={cx("ogui-banner", className)}
+      aria-labelledby={hasOwnName ? props["aria-labelledby"] : titleId}
+    >
       <span className="ogui-banner__flare" aria-hidden="true" />
       <div>
-        <strong>{title}</strong>
+        <strong id={titleId}>{title}</strong>
         {children ? <span>{children}</span> : null}
       </div>
       {action}
       {dismissible ? (
-        <button type="button" onClick={() => setVisible(false)} aria-label="Dismiss banner">
+        <button
+          type="button"
+          onClick={() => {
+            setVisible(false);
+            onDismiss?.();
+          }}
+          aria-label="Dismiss banner"
+        >
           ×
         </button>
       ) : null}
@@ -411,15 +430,24 @@ export interface AccordionItem {
 export function Accordion({
   items,
   multiple = false,
+  defaultOpenIds,
+  headingLevel = 3,
   className,
   ...props
 }: HTMLAttributes<HTMLDivElement> & {
   items: readonly AccordionItem[];
   multiple?: boolean;
+  /** Item ids expanded on first render. Pass `[]` to start fully collapsed. */
+  defaultOpenIds?: readonly string[];
+  /** Heading level for item titles so the accordion fits the page outline. */
+  headingLevel?: 2 | 3 | 4 | 5 | 6;
 }) {
-  const [openItems, setOpenItems] = useState<Set<string>>(
-    () => new Set(items[0] ? [items[0].id] : []),
+  const [openItems, setOpenItems] = useState<Set<string>>(() =>
+    defaultOpenIds === undefined
+      ? new Set(items[0] ? [items[0].id] : [])
+      : new Set(multiple ? defaultOpenIds : defaultOpenIds.slice(0, 1)),
   );
+  const Heading = `h${headingLevel}` as const;
   const baseId = useId();
   const toggle = (id: string) => {
     setOpenItems((current) => {
@@ -440,7 +468,7 @@ export function Accordion({
         const itemId = `${baseId}-${idPart(item.id)}`;
         return (
           <section key={item.id} data-open={open ? "true" : "false"}>
-            <h3>
+            <Heading>
               <button
                 id={`${itemId}-trigger`}
                 type="button"
@@ -451,7 +479,7 @@ export function Accordion({
                 <span>{item.title}</span>
                 <i aria-hidden="true">+</i>
               </button>
-            </h3>
+            </Heading>
             {open ? (
               <section id={`${itemId}-panel`} aria-labelledby={`${itemId}-trigger`}>
                 {item.content}
@@ -466,7 +494,8 @@ export function Accordion({
 
 export interface OverlayProps {
   title: string;
-  triggerLabel: string;
+  /** Renders a built-in trigger button. Omit to control the overlay purely through `open`. */
+  triggerLabel?: string;
   children: ReactNode;
   description?: string;
   open?: boolean;
@@ -560,6 +589,7 @@ function Overlay({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(open);
   const titleId = useId();
   const descriptionId = description ? `${titleId}-description` : undefined;
@@ -587,8 +617,21 @@ function Overlay({
   useEffect(() => {
     const wasOpen = wasOpenRef.current;
     wasOpenRef.current = open;
+    if (!wasOpen && open) {
+      // This effect runs before the overlay takes focus, so the active element
+      // is still whatever opened the overlay. Only the trigger-less
+      // programmatic case relies on it: when the built-in trigger exists it is
+      // the opener by definition, and pointer clicks do not even move focus in
+      // WebKit, so the active element would be unrelated.
+      const active = document.activeElement;
+      openerRef.current = active instanceof HTMLElement && active !== document.body ? active : null;
+    }
     if (wasOpen && !open) {
-      const focusFrame = requestAnimationFrame(() => triggerRef.current?.focus());
+      const focusFrame = requestAnimationFrame(() => {
+        const opener = openerRef.current;
+        openerRef.current = null;
+        (triggerRef.current ?? (opener?.isConnected ? opener : null))?.focus();
+      });
       return () => cancelAnimationFrame(focusFrame);
     }
   }, [open]);
@@ -684,6 +727,10 @@ function Overlay({
         </div>
       </div>
     ) : null;
+
+  if (triggerLabel === undefined) {
+    return portalHost ? createPortal(overlay, portalHost) : null;
+  }
 
   return (
     <span className={`ogui-overlay-trigger ogui-overlay-trigger--${kind}`}>
@@ -1550,7 +1597,9 @@ export function FileDropzone({
       <label htmlFor={inputId}>
         <i aria-hidden="true">↥</i>
         <strong>{label}</strong>
-        <span id={statusId} role={error ? "alert" : "status"}>
+        {/* A stable role announces more reliably than swapping status/alert
+            on the same node; rejections are also shown visually. */}
+        <span id={statusId} role="status">
           {error || (fileNames.length ? fileNames.join(", ") : "Drop files or browse")}
         </span>
       </label>

@@ -384,7 +384,7 @@ describe("FileDropzone", () => {
 
     expect(onFiles).toHaveBeenCalledWith([]);
     expect(onRejected).toHaveBeenCalledWith([file]);
-    expect(screen.getByRole("alert").textContent).toContain("1 file was rejected");
+    expect(screen.getByRole("status").textContent).toContain("1 file was rejected");
   });
 });
 
@@ -403,9 +403,11 @@ describe("Card", () => {
       </Card>,
     );
     const visualOnlyCard = screen.getByText("Still read only").closest("article");
+    // `interactive` opts into hover styling only; without a real handler the
+    // card must stay unfocusable and role-less.
     expect(visualOnlyCard?.getAttribute("role")).toBeNull();
     expect(visualOnlyCard?.getAttribute("tabindex")).toBeNull();
-    expect(visualOnlyCard?.classList.contains("is-interactive")).toBe(false);
+    expect(visualOnlyCard?.classList.contains("is-interactive")).toBe(true);
 
     rerender(
       <Card title="Actionable" onPress={onPress}>
@@ -452,5 +454,74 @@ describe("Stepper", () => {
     );
     expect(screen.getAllByRole("button")[0]).toBe(firstStep);
     consoleError.mockRestore();
+  });
+});
+
+describe("controlled Dialog without a built-in trigger", () => {
+  it("renders no trigger and restores focus to the opener on close", async () => {
+    function Fixture() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open from app chrome
+          </button>
+          <Dialog title="Programmatic dialog" open={open} onOpenChange={setOpen}>
+            Fully app-controlled.
+          </Dialog>
+        </>
+      );
+    }
+
+    const user = userEvent.setup();
+    render(<Fixture />);
+    expect(document.querySelector(".ogui-overlay-trigger")).toBeNull();
+
+    const opener = screen.getByRole("button", { name: "Open from app chrome" });
+    await user.click(opener);
+    expect(screen.getByRole("dialog", { name: "Programmatic dialog" })).toBeTruthy();
+    expect(document.querySelector(".ogui-overlay-trigger")).toBeNull();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(opener));
+  });
+});
+
+describe("Banner naming and dismissal callback", () => {
+  it("derives its accessible name from a rich title and reports dismissal", async () => {
+    const user = userEvent.setup();
+    const onDismiss = vi.fn();
+    render(
+      <Banner title={<em>Optics updated</em>} dismissible onDismiss={onDismiss}>
+        New frost interpolation is live.
+      </Banner>,
+    );
+
+    expect(screen.getByRole("complementary", { name: "Optics updated" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Dismiss banner" }));
+    expect(onDismiss).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("complementary")).toBeNull();
+  });
+});
+
+describe("Accordion initial state and headings", () => {
+  it("starts collapsed with defaultOpenIds=[] and renders the requested heading level", () => {
+    render(
+      <Accordion
+        headingLevel={2}
+        defaultOpenIds={[]}
+        items={[
+          { id: "a", title: "Anatomy", content: "Layered structure" },
+          { id: "b", title: "Optics", content: "Refraction model" },
+        ]}
+      />,
+    );
+
+    expect(screen.queryByText("Layered structure")).toBeNull();
+    expect(screen.getByRole("heading", { level: 2, name: "Anatomy" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Anatomy" }).getAttribute("aria-expanded")).toBe(
+      "false",
+    );
   });
 });

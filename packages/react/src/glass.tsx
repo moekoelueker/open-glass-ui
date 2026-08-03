@@ -65,7 +65,13 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
   const theme = useGlassTheme();
   const resolvedTone = tone === "auto" ? theme.appearance : tone;
   const pointerField = useGlassPointerField(interactive && runtime.motion === "on");
-  const resolvedMaterial = { ...getMaterialPreset(material), ...optics };
+  // An explicitly-undefined optics field must fall back to the preset value
+  // instead of clobbering it, so conditional overrides like
+  // `optics={{ thickness: focused ? 0.9 : undefined }}` stay safe.
+  const opticsOverrides = Object.fromEntries(
+    Object.entries(optics ?? {}).filter(([, value]) => value !== undefined),
+  ) as Partial<GlassMaterial>;
+  const resolvedMaterial = { ...getMaterialPreset(material), ...opticsOverrides };
   const rendererPreference = renderer ?? (filterId ? "sdf-svg" : runtime.renderer);
   const decision = selectRenderer({
     source,

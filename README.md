@@ -69,7 +69,7 @@ That is the whole setup. One package, one stylesheet, one provider.
 | **CSS-first, no surprises** | `renderer="auto"` resolves to plain CSS and never silently escalates. SVG refraction and WebGL are opt-in. |
 | **Accessible by construction** | Reduced motion, reduced transparency, and forced colors are designed states, not afterthoughts. |
 | **SSR and RSC safe** | A server-safe `open-glass-ui/core` entry never imports React. Verified against Next.js 16. |
-| **Tested where it matters** | 93 unit tests and 157 browser checks across Chromium, Firefox, and WebKit. |
+| **Tested where it matters** | 105 unit tests and 161 browser checks across Chromium, Firefox, and WebKit. |
 
 ## The forty components
 

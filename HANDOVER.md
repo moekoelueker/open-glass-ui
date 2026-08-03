@@ -1,8 +1,8 @@
 # OpenGlass UI Handover
 
-Status date: 2026-07-26  
-Product implementation baseline: `6e63414`  
-Release posture: `0.1.0`, publishing to npm as a single package
+Status date: 2026-08-03  
+Product implementation baseline: the 0.3.0 release commit  
+Release posture: `0.3.0`, publishing to npm as a single package
 
 ## Why this document exists
 
@@ -210,8 +210,8 @@ The release-candidate evidence currently records:
 
 - 97 files passing Biome checks.
 - All TypeScript projects and declaration builds passing.
-- 93 unit, property, SSR, lifecycle, theme, and recipe checks.
-- 155 browser checks validated across Chromium, Firefox, and WebKit, with seven
+- 105 unit, property, SSR, lifecycle, theme, and recipe checks.
+- 161 browser checks validated across Chromium, Firefox, and WebKit, with seven
   intentional capability/scope skips.
 - A focused 33/33 product-landing matrix.
 - Thirty-three current release-candidate screenshots.

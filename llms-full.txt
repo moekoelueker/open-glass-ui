@@ -184,7 +184,11 @@ The facade also exposes `GlassSystemProvider`, `GlassProvider`,
 `GlassThemeProvider`, `Glass`, `GlassGroup`, `GlassSource`, `SdfFilterDefinition`,
 `OrganicFilterDefinition`, `useGlassCapabilities`, `useGlassRuntime`,
 `useGlassTheme`, `useGlassGroup`, `useGlassPointerField`, and `useSdfFilter`,
-plus their public types.
+plus their public types. Since 0.3.0 it also re-exports the renderer utilities
+and types (`RendererCapabilities`, `RendererPreference`, `RendererSource`,
+`MaterialTone`, `detectRendererCapabilities`, `selectRenderer`,
+`createCssMaterialTokens`, `createCssMaterialStyle`, and the SVG filter
+helpers), so every type referenced by `Glass` props is nameable.
 
 Recipe conventions:
 
@@ -199,6 +203,14 @@ Recipe conventions:
   `open`/`defaultOpen`/`onOpenChange`, or checked/pressed equivalents.
 - Never communicate selected, invalid, loading, or destructive state with
   transparency/color alone.
+- `Dialog`/`Drawer`: `triggerLabel` is optional; omit it and drive the overlay
+  through `open`/`onOpenChange` to open it from menus or shortcuts. Focus
+  returns to the opener on close.
+- `Accordion` accepts `defaultOpenIds` (use `[]` to start collapsed) and
+  `headingLevel`; `Banner` reports dismissal via `onDismiss`; `Card`'s
+  `interactive` prop adds hover styling without making the card focusable.
+- Keep the visible text of a `Menu`/`Popover` trigger inside the `label` prop,
+  which becomes the trigger's accessible name.
 
 ## Renderer policy
 

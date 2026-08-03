@@ -13,6 +13,7 @@ import type { ReactNode } from "react";
 export * from "@open-glass-ui/core";
 export * from "@open-glass-ui/react";
 export * from "@open-glass-ui/recipes";
+export * from "@open-glass-ui/renderers";
 
 export type GlassSystemThemeProps = Omit<GlassThemeProviderProps, "children">;
 
