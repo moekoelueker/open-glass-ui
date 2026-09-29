@@ -71,4 +71,6 @@ jobs:
           npm install --global npm@^11.5.1
           npm --version
           pnpm --filter open-glass-ui pack --pack-destination ./release
-          npm publish ./release/open-glass-ui-*.tgz --access public
+          # Verbose so a failed OIDC exchange prints its reason; npm redacts
+          # credentials in its logs.
+          npm publish ./release/open-glass-ui-*.tgz --access public --loglevel verbose
