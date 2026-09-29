@@ -218,10 +218,9 @@ the WebGL-window perf budgets are only meaningful on the reference host.
 2. Measure frame cost with many glass controls on screen (`bench:browser`,
    plus a low-end Android device). Each liquid control uses `backdrop-filter`.
    If it is too costly, gate control blur on `quality`.
-3. Delete the stage-only npm token `open-glass-ui-github-release` on
-   npmjs.com (the `NPM_TOKEN` secret is already gone; publishing uses
-   trusted publishing only). The Gumroad product holds no files, only links
-   to the repository and the website, so it needs no update per release.
+3. No npm tokens or `NPM_TOKEN` secret exist (both removed 2026-09-29);
+   publishing uses trusted publishing only. The Gumroad product holds no
+   files, only links to the repository and the website.
 4. Candidates for a later pass: a container that visually merges neighbouring
    glass shapes as they approach (gooey morphing), and liquid rules for the
    remaining low-traffic recipes (Stepper connectors, Breadcrumbs).
