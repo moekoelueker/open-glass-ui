@@ -36,7 +36,9 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          registry-url: https://registry.npmjs.org
+          # No registry-url: it writes an _authToken line to .npmrc, which makes
+          # npm skip the trusted-publishing (OIDC) exchange and fail with E404.
+          # See actions/setup-node#1551.
 
       - run: pnpm install --frozen-lockfile
 
