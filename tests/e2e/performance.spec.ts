@@ -88,11 +88,13 @@ test("browser performance and resource lifecycle stay within research budgets", 
     };
   });
 
-  // The frame budget is calibrated on the reference host (a local run, where
-  // the 0.3 baseline of 34ms p95 was recorded). Shared two-core CI runners
-  // rasterize the WebGL refraction page in software at roughly 180ms a frame
-  // for every design and version, so CI records the reading without gating on
-  // it. Every other budget below is enforced everywhere.
+  // The WebGL-window budgets (frame interval and active long tasks) are
+  // calibrated on the reference host, a local run where the 0.3 baseline was
+  // recorded. Shared two-core CI runners rasterize the WebGL refraction page in
+  // software at roughly 180ms a frame, and each such frame is itself a long
+  // task, for every design and version. CI records both readings without
+  // gating on them; input latency and resource teardown are enforced
+  // everywhere.
   const glRenderer = await page.evaluate(() => {
     const gl = document.createElement("canvas").getContext("webgl2");
     if (!gl) return "unavailable";
@@ -167,12 +169,12 @@ test("browser performance and resource lifecycle stay within research budgets", 
   expect(inputUpdateMs).toBeLessThan(100);
   if (gateFrames) {
     expect(percentile(frameDurations, 0.95)).toBeLessThan(60);
+    expect(report.longTasks.maxMs).toBeLessThan(100);
   } else {
     test.info().annotations.push({
-      type: "frame-budget",
-      description: `Recorded, not gated, on CI (${glRenderer}): p95 ${percentile(frameDurations, 0.95).toFixed(1)}ms.`,
+      type: "webgl-window-budgets",
+      description: `Recorded, not gated, on CI (${glRenderer}): frame p95 ${percentile(frameDurations, 0.95).toFixed(1)}ms, longest task ${report.longTasks.maxMs}ms.`,
     });
   }
-  expect(report.longTasks.maxMs).toBeLessThan(100);
   expect(released).toEqual({ instrumentVideos: 0, webglSurfaces: 0 });
 });

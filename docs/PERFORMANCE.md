@@ -71,11 +71,12 @@ interleaved A/B of the liquid and classic designs under forced software
 rendering (SwiftShader) measured the same frame times for both, so the
 difference is host load rather than the liquid design.
 
-The frame-interval budget is enforced on the reference host only. The release
-workflow's shared two-core Linux runner rasterizes the WebGL refraction page
-in software at about 180 ms a frame for every design and version, so CI
-records that reading (`frameBudgetGated: false` in the report) and still
-enforces every other budget in the table.
+The two WebGL-window budgets (frame interval and active-window longest task)
+are enforced on the reference host only. The release workflow's shared
+two-core Linux runner rasterizes the WebGL refraction page in software at
+about 180 ms a frame, and each such frame is itself a long task, for every
+design and version. CI records both readings (`frameBudgetGated: false` in the
+report) and still enforces input latency and resource teardown.
 
 The headless software-backed result is acceptable for this research build but
 must be retested on physical integrated and discrete GPUs before a performance
