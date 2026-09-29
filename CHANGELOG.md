@@ -4,6 +4,75 @@ All notable OpenGlass UI changes will be recorded here. The project follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventions and
 semantic versioning for the published `open-glass-ui` package.
 
+## 0.4.0 — 2026-09-29
+
+The liquid design: a visual upgrade of every component. You opt in by
+upgrading. The API is unchanged, and one prop restores the 0.3 look.
+
+### Added
+
+- `design` prop on `GlassSystemProvider` and `GlassThemeProvider`:
+  `"liquid"` (the new default) or `"classic"` (the 0.3 look, exactly).
+  `useGlassTheme().design` exposes it, every `Glass` element carries
+  `data-ogui-design`, and design scopes nest (a classic island inside a
+  liquid app, or the reverse, renders correctly).
+- Liquid material for `Glass`: clearer and far more saturated than classic,
+  with an edge ring, an inner bloom on the lit side, and edge lensing.
+- `SegmentedControl` and `Tabs` share one glass thumb that springs between
+  items. The selected item still carries the selection before hydration.
+- `Switch` has a pill thumb that swells into a clear lens while held. `Slider`
+  and the `MediaControls` seek bar get an accent-filled recessed track and a
+  pill thumb that becomes a lens while dragged.
+- `Button` gets a pointer-following specular glint (no React renders), capsule
+  shape, and tinted-glass primary.
+- Menus and popovers bloom from their trigger, dialogs and drawers float as
+  thick sheets over a lighter, blurrier scrim, toasts arrive with a spring,
+  and inputs read as recessed wells.
+- Glass looks: `theme.glass` on the provider and a `look` prop on `Glass`
+  art-direct the liquid material through public `--ogui-glass-*` multipliers
+  (blur, tint and opacity, saturation, brightness, rim, highlight, light angle
+  and spread, edge lensing, shadow). Tints can differ per appearance
+  (`tint: { dark, light }`), and a spread or highlight of 0 turns the
+  directional highlight off.
+- Legibility on liquid glass: dark glass dims its backdrop and light glass
+  lifts it, and secondary text is vibrant (muted pulled towards the ink).
+  Every preset measures at WCAG AA or better for body and secondary text in
+  both appearances over bright, dark, and busy backdrops. Presets: `liquid`, `frosted`, `clear`, `smoked`,
+  `lensed`. `createGlassLookTokens`, `resolveGlassLook`, and
+  `GLASS_LOOK_PRESETS` are exported.
+- The specular rim is one ring drawn exactly on the outer edge and aimed at a
+  configurable light direction (default: from the top, a little left of
+  centre), so there is a single clean contour.
+- `--ogui-radius-capsule` theme token (`999px`, or the control radius for
+  `radius: "sharp"`), with an optional `radiusCapsule` palette field so
+  hand-built palettes stay valid.
+- `/compare` in the showcase: the same live scene rendered in both designs
+  behind a draggable, keyboard-operable divider.
+
+### Changed
+
+- In liquid, `Glass` collapses its painted border (the ring replaces it) and
+  becomes `position: relative` unless your CSS positions it. Pass
+  `style={{ borderWidth }}` to keep a border.
+- Liquid defaults the corner scale to `soft`. An explicit `theme.radius`
+  always wins, and `classic` keeps `balanced`.
+- `createCssMaterialTokens` accepts `design`. Omitting it returns the 0.3
+  output unchanged, so direct callers are unaffected.
+
+### Fixed
+
+- `Pagination` hard-coded `aria-label="Pagination"` after spreading props, so
+  two paginations on one page shared a landmark name. A caller's `aria-label`
+  now wins; the default is unchanged.
+
+### Compatibility
+
+- No component, prop, class name, token, or export was removed or renamed.
+- Every liquid rule has the same specificity as the classic rule it replaces,
+  so consumer overrides written against 0.3 class names keep winning.
+- Reduced motion, `motion="off"`, reduced transparency, missing
+  `backdrop-filter`, and forced colors each have explicit liquid states.
+
 ## 0.3.0 — 2026-08-03
 
 A second-pass quality release: independent accessibility and renderer audits

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-03T19:11:13.719Z",
+  "generatedAt": "2026-09-29T06:53:35.052Z",
   "node": "v24.12.0",
   "packages": {
     "open-glass-ui": {
-      "archive": "artifacts/packages/open-glass-ui-0.3.0.tgz",
-      "bytes": 51001,
+      "archive": "artifacts/packages/open-glass-ui-0.4.0.tgz",
+      "bytes": 64540,
       "files": 13,
       "npmDryRunFiles": 13,
       "sideEffects": [
@@ -20,10 +20,10 @@
   "react18Types": "passed",
   "coreRuntimeDependencies": 0,
   "webglIsolation": {
-    "rootFacadeBytes": 19418,
+    "rootFacadeBytes": 24061,
     "rootFacadeInputs": 4,
     "eagerWebGLInputs": 0,
-    "webglSubpathBytes": 12356,
+    "webglSubpathBytes": 12598,
     "webglSubpathInputs": 3,
     "status": "passed"
   },
@@ -35,15 +35,15 @@
     },
     "singleComponent": {
       "entry": "Button from open-glass-ui",
-      "bytes": 13476,
+      "bytes": 17815,
       "inputCount": 4
     },
     "fullBarrel": {
       "entry": "* from open-glass-ui",
-      "bytes": 57778,
+      "bytes": 63652,
       "inputCount": 4
     },
-    "singleComponentShareOfBarrel": 0.233,
+    "singleComponentShareOfBarrel": 0.28,
     "status": "passed"
   }
 }
