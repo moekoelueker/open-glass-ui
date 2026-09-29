@@ -130,8 +130,12 @@ publication:
 - [ ] Create the authorized remote and push the reviewed commit.
 - [ ] Add and verify the real repository, homepage, and issue-tracker metadata.
 - [ ] Publish the single `open-glass-ui` package with provenance from the
-      reviewed CI workflow. The `@open-glass-ui/*` workspace packages are
-      private build-time boundaries and are never published.
+      reviewed CI workflow: push a `v*` tag and `release.yml` runs the full
+      gate, then publishes through npm trusted publishing (OIDC; publisher
+      `moekoelueker/open-glass-ui`, workflow `release.yml`, environment
+      `npm-publish`). No npm token is stored. The `@open-glass-ui/*`
+      workspace packages are private build-time boundaries and are never
+      published.
 - [ ] Install the published version into a clean external fixture.
 - [ ] Verify documentation URLs, package metadata, license, types, and subpath
       imports from the public registry.

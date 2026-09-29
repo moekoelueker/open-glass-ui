@@ -58,9 +58,15 @@ jobs:
         if: inputs.dry-run
         run: pnpm --filter open-glass-ui pack --pack-destination ./artifacts/packages
 
+      # Trusted publishing (OIDC): npm verifies this exact repository,
+      # workflow, and environment, so no long-lived token exists to leak or
+      # expire, and provenance is attached automatically. The tarball is
+      # packed by pnpm (which rewrites workspace: ranges) and published by the
+      # npm CLI directly, so any registry refusal prints npm's own message.
       - name: Publish to npm
         if: ${{ !inputs.dry-run }}
-        run: pnpm changeset publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"
+        run: |
+          npm install --global npm@^11.5.1
+          npm --version
+          pnpm --filter open-glass-ui pack --pack-destination ./release
+          npm publish ./release/open-glass-ui-*.tgz --access public
