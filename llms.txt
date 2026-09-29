@@ -25,6 +25,11 @@ Core rules:
 - WebGL is opt-in and only for an owned image, canvas, or video.
 - Keep text, controls, semantics, and fallbacks in the DOM.
 - Use neutral adaptive themes and `--ogui-*` tokens.
+- `design="liquid"` is the default look since 0.4; `design="classic"` on
+  `GlassSystemProvider` restores the 0.3 look. Scopes nest; nearest wins.
+- Art-direct liquid glass with `theme.glass` or `<Glass look>`: presets
+  `frosted`, `clear`, `smoked`, `lensed`, or multipliers such as
+  `{ blur, opacity, rim, lightAngle, lensing }`.
 - Preserve reduced-motion, reduced-transparency, forced-colors, and SSR behavior.
 - In Next.js App Router, put providers and hook-using UI behind `"use client"`.
 

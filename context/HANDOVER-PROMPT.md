@@ -78,8 +78,8 @@ Important routes:
 
 Current validation reference:
 - 97 files pass Biome.
-- 105 unit/property/SSR/lifecycle/recipe tests pass.
-- 161 browser checks have been validated across Chromium, Firefox, and WebKit,
+- 137 unit/property/SSR/lifecycle/recipe/look tests pass.
+- 179 browser checks have been validated across Chromium, Firefox, and WebKit,
   with seven intentional skips.
 - The landing matrix is 33/33.
 - React 18 packed consumers and a Next.js 16 RSC/static fixture pass.

@@ -11,11 +11,12 @@ interaction contracts. Nothing was published or deployed.
 
 ### Final automated results
 
-- Biome checked 97 files with no diagnostics.
+- Biome checked 117 files with no diagnostics (0.4.0 gate, 2026-09-29).
 - TypeScript passed for core, renderers, React, recipes, the public facade, the
   Vite showcase, and the Next.js fixture after package declaration builds and
   Next route-type generation.
-- 105 unit, property, SSR, lifecycle, and recipe tests passed across 17 files.
+- 137 unit, property, SSR, lifecycle, recipe, look, and design-scope tests passed
+  across 21 files.
 - The optimized Vite showcase and Next.js 16 RSC/static fixture built
   successfully.
 - Five package archives were packed, compared with npm dry runs, installed
@@ -23,8 +24,10 @@ interaction contracts. Nothing was published or deployed.
   18 SSR and strict declaration checks.
 - Root, `core`, stylesheet, and `webgl` exports passed. The root import contains
   zero eager WebGL inputs; the public `signedDistance` import tree-shakes to
-  1,222 bytes.
-- 161 browser checks passed across Chromium, Firefox, and WebKit. Seven checks
+  1,211 bytes.
+- 179 browser checks passed across Chromium, Firefox, and WebKit, including
+  the `/compare` design split, nearest-scope nesting, and the landing liquid
+  showcase. Seven checks
   were intentionally skipped by capability or scope: isolated performance
   mode and browser APIs Playwright cannot deterministically emulate outside
   Chromium.

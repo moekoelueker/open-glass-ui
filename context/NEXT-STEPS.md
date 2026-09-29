@@ -197,3 +197,26 @@ Canonical procedure:
 - Build a documentation search index.
 - Add framework-specific recipes for Next.js, Remix, Astro, or Vite.
 - Explore WebGPU or future HTML-in-Canvas APIs only behind research adapters.
+
+## Liquid design follow-ups (added 2026-09-28)
+
+State: the liquid design (D-022) shipped as 0.4.0 on 2026-09-29, with
+refreshed README media (`pnpm capture:media`) and the moelueker.com/liquid-glass
+port updated. `pnpm run check`, `typecheck`, `test:unit` (124),
+`verify:packages`, and the full e2e suite on Chromium, Firefox, and WebKit
+pass. `/compare` shows the classic and liquid designs side by side.
+
+1. Review `/compare` on a real Mac in Safari and on an iPhone. Headless WebKit
+   does not composite `backdrop-filter`, so blur and saturation there are
+   unverified.
+2. Measure frame cost with many glass controls on screen (`bench:browser`,
+   plus a low-end Android device). Each liquid control uses `backdrop-filter`.
+   If it is too costly, gate control blur on `quality`.
+3. Upload `docs/media/social-preview.png` as the GitHub social preview
+   (repository Settings, General; GitHub has no API for it).
+4. Candidates for a later pass: a container that visually merges neighbouring
+   glass shapes as they approach (gooey morphing), and liquid rules for the
+   remaining low-traffic recipes (Stepper connectors, Breadcrumbs).
+5. Do not run the visual-capture e2e specs casually: they overwrite the
+   committed evidence under `artifacts/screenshots`. Restore with
+   `git checkout -- artifacts` if that happens.

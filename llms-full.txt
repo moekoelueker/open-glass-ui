@@ -96,7 +96,29 @@ Theme input:
 - `preset`: `neutral`, `cobalt`, `teal`, `violet`, `coral`, or `amber`;
 - `accent`, `secondary`, `tertiary`: 3- or 6-digit hex;
 - `contrast`: `standard` or `high` (default `high`);
-- `radius`: `sharp`, `balanced`, or `soft`.
+- `radius`: `sharp`, `balanced`, or `soft` (default `soft` in the liquid
+  design, `balanced` in classic).
+
+Design (0.4+): `design` on `GlassSystemProvider` or `GlassThemeProvider` is
+`liquid` (default) or `classic`. `liquid` renders clear, saturated glass with a
+directional specular rim, capsule controls, and a sliding selection thumb.
+`classic` renders the 0.3 look exactly. Scopes nest and the nearest wins, so a
+section can be migrated at a time:
+
+```tsx
+<GlassSystemProvider design="classic">
+  <LegacyApp />
+  <GlassThemeProvider design="liquid">
+    <NewFeature />
+  </GlassThemeProvider>
+</GlassSystemProvider>
+```
+
+Glass look (liquid only): `theme.glass` or `<Glass look>` takes a preset
+(`liquid`, `frosted`, `clear`, `smoked`, `lensed`) or multipliers `{ blur,
+opacity, tint, saturation, brightness, rim, highlight, lightAngle, lightSpread,
+lensing, shadow }`; `tint` may be `{ dark, light }` (1 = default; lightAngle in degrees, 0 = top). They map to
+`--ogui-glass-*` CSS variables that can also be set from plain CSS.
 
 Public theme utilities include `createGlassTheme`, `createGlassThemeTokens`,
 `contrastRatio`, `relativeLuminance`, and `readableForeground`.
@@ -129,6 +151,7 @@ Public theme tokens:
 --ogui-color-warning-ink
 --ogui-radius-control
 --ogui-radius-surface
+--ogui-radius-capsule
 ```
 
 Glass surfaces also resolve `--ogui-material-*` tokens for background, border,

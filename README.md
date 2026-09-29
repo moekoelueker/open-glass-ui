@@ -1,7 +1,7 @@
 <p align="center">
   <img
     src="./docs/media/hero.png"
-    alt="OpenGlass UI landing page. Headline reads: Glass is not a blur. It's an interface system."
+    alt="The same music app rendered twice over a colourful wallpaper: the 0.3 classic design on the left, the new liquid design on the right, split by a draggable divider."
     width="900"
   />
 </p>
@@ -60,16 +60,58 @@ export function App() {
 
 That is the whole setup. One package, one stylesheet, one provider.
 
+## The liquid design
+
+Version 0.4 is a visual rebuild. Glass is clearer and brighter, with one clean
+lit edge instead of a border. Controls are pill-shaped, a glass thumb springs
+between segments and tabs, and switch and slider thumbs swell into lenses while
+you hold them. Dark glass dims what sits behind it and light glass lifts it, so
+text stays at WCAG AA contrast over bright, dark, and busy backgrounds.
+
+<img src="./docs/media/liquid-light.png" alt="The liquid design in light appearance over a pastel wallpaper: a sidebar, a floating toolbar, an inspector with switches and sliders, a player bar, and an up-next card." width="900" />
+
+### Make it yours
+
+Every surface reads a handful of dials: frost, tint and density, saturation,
+brightness, edge highlight, edge lensing, depth, and where the light comes
+from. Pick a preset or set any dial, for the whole site, one section, or one
+element.
+
+<img src="./docs/media/looks.png" alt="The same up-next card in the five glass looks: liquid, frosted, clear, smoked, and lensed." width="900" />
+
+```tsx
+<GlassSystemProvider theme={{ theme: { glass: "frosted" } }}>   // whole site
+<GlassThemeProvider theme={{ glass: { lightAngle: 300 } }}>     // one section
+<Glass look={{ blur: 0.4, rim: 1.4, lensing: 2 }}>              // one surface
+```
+
+<img src="./docs/media/light-direction.png" alt="The same card lit from the left, from the default top-left-of-centre angle, and from the top right." width="900" />
+
+### Upgrading from 0.3
+
+Nothing changes until you upgrade: a `^0.3.0` range never resolves to 0.4.
+When you do upgrade and want the old look, it is one prop:
+
+```tsx
+<GlassSystemProvider design="classic">
+  <App />
+</GlassSystemProvider>
+```
+
+Scopes nest, so you can move one section at a time. Every class name, prop,
+token, and export from 0.3 still works. See [docs/MIGRATION.md](./docs/MIGRATION.md),
+or run `pnpm dev` and open `/compare` to see both designs live.
+
 ## Why you might pick this
 
 |  |  |
 | --- | --- |
 | **Zero runtime dependencies** | The published package depends on nothing. React and React DOM are peers, so your app owns its versions. |
-| **One import, not forty** | Importing a single component costs 23% of the full barrel. The other thirty-nine are shaken out. |
+| **One import, not forty** | Importing a single component costs 28% of the full barrel. The other thirty-nine are shaken out. |
 | **CSS-first, no surprises** | `renderer="auto"` resolves to plain CSS and never silently escalates. SVG refraction and WebGL are opt-in. |
 | **Accessible by construction** | Reduced motion, reduced transparency, and forced colors are designed states, not afterthoughts. |
 | **SSR and RSC safe** | A server-safe `open-glass-ui/core` entry never imports React. Verified against Next.js 16. |
-| **Tested where it matters** | 105 unit tests and 161 browser checks across Chromium, Firefox, and WebKit. |
+| **Tested where it matters** | 137 unit tests and 179 browser checks across Chromium, Firefox, and WebKit. |
 
 ## The forty components
 

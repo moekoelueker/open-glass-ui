@@ -235,3 +235,22 @@ release decisions.
 
 **Consequence:** Stop and request authorization before any external release
 mutation.
+
+## D-022 — Ship the liquid design as the default, keep classic one prop away
+
+**Decision:** 0.4 introduces `design="liquid"` as the default visual language
+and preserves the 0.3 look as `design="classic"`. The liquid layer is a
+separate stylesheet (`liquid.source.css`, generated to `liquid.css`) appended
+after the classic recipes, scoped to `[data-ogui-design="liquid"]` with a
+zero-specificity nearest-scope guard.
+
+**Why:** The 0.3 materials read as dark, frosted panels rather than current
+platform glass (clear, saturated, lit by a directional rim, capsule controls,
+fluid selection). Existing consumers must be able to upgrade without a forced
+redesign.
+
+**Consequence:** Liquid rules must keep the exact specificity of the classic
+rule they replace, and every liquid rule must be authored in
+`liquid.source.css` and regenerated with `pnpm generate:liquid`; a unit test
+fails when the generated file is stale. Classic output of
+`createCssMaterialTokens` must not change.

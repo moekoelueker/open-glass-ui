@@ -1,8 +1,8 @@
 # OpenGlass UI Handover
 
-Status date: 2026-08-03  
-Product implementation baseline: the 0.3.0 release commit  
-Release posture: `0.3.0`, publishing to npm as a single package
+Status date: 2026-09-29  
+Product implementation baseline: the 0.4.0 release commit  
+Release posture: `0.4.0`, publishing to npm as a single package
 
 ## Why this document exists
 
@@ -29,6 +29,8 @@ The project is deliberately more than a visual effect:
   `renderer="auto"`.
 - SVG/SDF refraction is an explicit enhancement for suitable DOM surfaces.
 - WebGL2 is an explicit opt-in for owned image, canvas, or video sources.
+- Two visual languages share one API: `design="liquid"` (default since 0.4)
+  and `design="classic"` (the 0.3 look, exactly). See decision D-022.
 - Reduced motion, reduced transparency, forced colors, SSR, hydration,
   lifecycle cleanup, and fallback behavior are part of the design contract.
 - A product landing page demonstrates the system, while separate research
@@ -71,6 +73,7 @@ as read-only inspiration. The current repository was built independently.
 | --- | --- |
 | `/` | Public OpenGlass UI product landing page |
 | `/components` | Canonical forty-component product catalog |
+| `/compare` | Live before/after of the classic (0.3) and liquid (0.4) designs |
 | `/research` | Original five-engine research home |
 | `/library` | Weighted engine ranking |
 | `/library/hybrid` | Adaptive Hybrid forty-component atlas |
@@ -210,8 +213,8 @@ The release-candidate evidence currently records:
 
 - 97 files passing Biome checks.
 - All TypeScript projects and declaration builds passing.
-- 105 unit, property, SSR, lifecycle, theme, and recipe checks.
-- 161 browser checks validated across Chromium, Firefox, and WebKit, with seven
+- 137 unit, property, SSR, lifecycle, theme, look, and recipe checks.
+- 179 browser checks validated across Chromium, Firefox, and WebKit, with seven
   intentional capability/scope skips.
 - A focused 33/33 product-landing matrix.
 - Thirty-three current release-candidate screenshots.

@@ -5,6 +5,52 @@ workspace-package imports to the published `open-glass-ui` package. Install it
 from npm rather than referencing any `@open-glass-ui/*` path: those packages are
 private build-time boundaries and do not exist on the registry.
 
+## Upgrading from 0.3 to 0.4 (liquid design)
+
+0.4 changes how components look, not how you use them. A `^0.3.0` range
+never resolves to 0.4, so nothing changes until you upgrade on purpose.
+
+**Keep the 0.3 look exactly** with one prop:
+
+```tsx
+<GlassSystemProvider design="classic">{children}</GlassSystemProvider>
+// or, when composing the providers yourself:
+<GlassThemeProvider design="classic">{children}</GlassThemeProvider>
+```
+
+**Adopt liquid gradually** by nesting scopes. The nearest scope wins:
+
+```tsx
+<GlassSystemProvider design="classic">
+  <LegacyApp />
+  <GlassThemeProvider design="liquid">
+    <NewFeature />
+  </GlassThemeProvider>
+</GlassSystemProvider>
+```
+
+What to check when you switch to liquid:
+
+- **Corners.** Liquid defaults to the `soft` radius scale and pill-shaped
+  controls. Pass `theme={{ radius: "balanced" }}` for the previous corner
+  sizes, or `radius: "sharp"` to keep controls rectangular.
+- **Tabs.** The underline becomes a capsule tab list with a sliding thumb.
+- **CSS overrides.** Liquid rules share the specificity of the classic rules
+  they replace, so your overrides still win. If you restyled a component with
+  `box-shadow` or `background`, check it: liquid uses both for the rim and
+  glint.
+- **Borders and pseudo-elements on `Glass`.** Liquid draws the lit edge as a
+  ring in `::after` and collapses the painted border, so the edge is a single
+  clean line. If your `Glass` uses `::after`, or you want a real border, pass
+  `data-ogui-rim="off"` or `style={{ borderWidth }}`.
+- **Art direction.** `theme={{ glass: "frosted" }}` (or `clear`, `smoked`,
+  `lensed`, or individual multipliers) re-tunes every surface; see THEMING.md.
+- **Custom palettes.** `GlassThemePalette.radiusCapsule` is new and optional.
+  Omit it and the capsule token falls back to `999px`.
+- **CSS-only use.** Liquid styling needs a `data-ogui-design="liquid"`
+  ancestor, which the providers render. Markup that uses the recipe class
+  names without a provider keeps the classic look.
+
 ## 1. Use the public facade
 
 Replace consumer imports from internal workspace packages with the public
