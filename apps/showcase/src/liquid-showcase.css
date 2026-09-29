@@ -195,7 +195,9 @@
 
 .lq-handle > span {
   position: absolute;
-  top: 50%;
+  /* In the gap between the panel and the player, so the grip never covers a
+     control the visitor is comparing. */
+  top: 79%;
   left: 50%;
   width: 2.5rem;
   height: 2.5rem;
