@@ -56,15 +56,26 @@ pnpm run bench:browser
 The browser probe is deliberately isolated to Chromium on the reference host;
 cross-browser functionality is tested separately.
 
-| Metric                                 |        Result |                      Research budget |
-| -------------------------------------- | ------------: | -----------------------------------: |
-| CSS material-state update p95          |       17.7 ms |                             < 100 ms |
-| WebGL2 frame interval median           |       17.8 ms |                             recorded |
-| WebGL2 frame interval p95              |       34.2 ms |                              < 60 ms |
-| Active-window longest task             | 0 ms observed |                             < 100 ms |
-| Cold development startup longest task  | 0 ms observed |                             recorded |
-| Surfaces after route teardown          |             0 |                                    0 |
-| Instrument videos after route teardown |             0 |                                    0 |
+| Metric                                 | 0.4.0 result (2026-09-29) |                      Research budget |
+| -------------------------------------- | ------------------------: | -----------------------------------: |
+| CSS material-state update p95          |                   17.7 ms |                             < 100 ms |
+| WebGL2 frame interval median           |                   16.8 ms |                             recorded |
+| WebGL2 frame interval p95              |                   48.6 ms |                              < 60 ms |
+| Active-window longest task             |                     50 ms |                             < 100 ms |
+| Surfaces after route teardown          |                         0 |                                    0 |
+| Instrument videos after route teardown |                         0 |                                    0 |
+
+0.3.0 recorded a 34.2 ms frame p95 on the same host. The 0.4.0 reading was
+taken while other headless browser sessions shared the machine; an
+interleaved A/B of the liquid and classic designs under forced software
+rendering (SwiftShader) measured the same frame times for both, so the
+difference is host load rather than the liquid design.
+
+The frame-interval budget is enforced on the reference host only. The release
+workflow's shared two-core Linux runner rasterizes the WebGL refraction page
+in software at about 180 ms a frame for every design and version, so CI
+records that reading (`frameBudgetGated: false` in the report) and still
+enforces every other budget in the table.
 
 The headless software-backed result is acceptable for this research build but
 must be retested on physical integrated and discrete GPUs before a performance
