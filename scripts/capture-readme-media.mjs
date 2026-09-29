@@ -72,27 +72,16 @@ async function main() {
   await settle(wide);
   await shoot("liquid-light", wide.locator(".compare-frame"));
 
-  // 3. Social preview: 1280x640, the split scene behind the product name.
-  const social = await browser.newPage({ viewport: { width: 1560, height: 1000 } });
-  await social.goto(`${BASE}/compare?split=50&wallpaper=aurora`);
+  // 3. Social preview: 1280x640, real components over the project's photo
+  // (the /og composition). GitHub caps social previews at 1 MB.
+  const social = await browser.newPage({
+    viewport: { width: 1280, height: 640 },
+    deviceScaleFactor: 1,
+    colorScheme: "dark",
+  });
+  await social.goto(`${BASE}/og`);
   await settle(social);
-  const frame = await social
-    .locator(".compare-frame")
-    .screenshot({ type: "png" })
-    .then((buffer) => buffer.toString("base64"));
-  await social.setViewportSize({ width: 1280, height: 640 });
-  await social.setContent(`<!doctype html><style>
-    body{margin:0;width:1280px;height:640px;overflow:hidden;background:#07090b;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
-    .bg{position:absolute;inset:0;background:url(data:image/png;base64,${frame}) center/cover}
-    .veil{position:absolute;inset:0;background:linear-gradient(90deg,rgb(7 9 11/.92) 0 34%,rgb(7 9 11/.35) 62%,transparent)}
-    .copy{position:absolute;left:72px;top:50%;transform:translateY(-50%);color:#f7f6f1;max-width:520px}
-    .kicker{font-size:20px;letter-spacing:.14em;text-transform:uppercase;color:#aeb4ba;font-weight:600}
-    h1{margin:14px 0 18px;font-size:84px;line-height:.95;letter-spacing:-.05em;font-weight:700}
-    p{margin:0;font-size:26px;line-height:1.35;color:#d4d8dc}
-  </style><div class="bg"></div><div class="veil"></div>
-  <div class="copy"><div class="kicker">Open source · React · MIT</div><h1>OpenGlass UI</h1><p>Liquid glass components that stay accessible. 40 of them, zero dependencies.</p></div>`);
-  await social.waitForTimeout(400);
-  await social.screenshot({ path: `${OUT}social-preview.png` });
+  await social.locator(".og-canvas").screenshot({ path: `${OUT}social-preview.png` });
   console.log("docs/media/social-preview.png");
   await social.close();
 

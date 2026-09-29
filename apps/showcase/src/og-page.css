@@ -1,0 +1,147 @@
+/* Fixed 1280x640 social preview composition. Class-scoped only. */
+
+.og-canvas {
+  position: relative;
+  width: 1280px;
+  height: 640px;
+  overflow: hidden;
+  color: #f4f1ea;
+  background:
+    linear-gradient(90deg, rgb(8 8 9 / 0.9) 0%, rgb(8 8 9 / 0.62) 38%, rgb(8 8 9 / 0.08) 62%),
+    url("/assets/architectural-contrast.jpg") 62% 50% / cover no-repeat,
+    #111;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  isolation: isolate;
+}
+
+.og-copy {
+  position: absolute;
+  top: 50%;
+  left: 72px;
+  display: grid;
+  width: 450px;
+  gap: 18px;
+  transform: translateY(-50%);
+}
+
+.og-kicker {
+  color: #b9b2a6;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.og-copy h1 {
+  margin: 0;
+  font-size: 62px;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.og-copy p {
+  max-width: 400px;
+  margin: 0;
+  color: #d6d0c5;
+  font-size: 21px;
+  line-height: 1.4;
+}
+
+.og-install {
+  width: fit-content;
+  margin-top: 6px;
+  padding: 11px 18px;
+  border-radius: 999px;
+}
+
+.og-install code {
+  color: #f4f1ea;
+  font:
+    500 16px / 1 ui-monospace,
+    "SF Mono",
+    Menlo,
+    monospace;
+}
+
+.og-stage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.og-toolbar {
+  position: absolute;
+  top: 52px;
+  left: 604px;
+}
+
+.og-panel {
+  position: absolute;
+  top: 124px;
+  left: 604px;
+  display: grid;
+  width: 344px;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 26px;
+}
+
+.og-panel .ogui-tabs__panel {
+  display: none;
+}
+
+.og-panel__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.og-card {
+  position: absolute;
+  top: 204px;
+  left: 972px;
+  display: grid;
+  width: 250px;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 24px;
+}
+
+.og-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.og-card .ogui-progress {
+  width: 100%;
+}
+
+.og-player {
+  position: absolute;
+  bottom: 46px;
+  left: 604px;
+  display: flex;
+  width: 618px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 8px 8px;
+  border-radius: 30px;
+}
+
+.og-player__art {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 30% 25%, rgb(255 244 222 / 0.9), transparent 45%),
+    linear-gradient(150deg, #b89a6e, #4a3a2a);
+}
+
+.og-player__controls {
+  flex: 1;
+  min-width: 0;
+}

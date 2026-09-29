@@ -6,6 +6,7 @@ import { AppLink } from "./navigation";
 const loadAtlas = () => import("./component-atlas");
 const loadPages = () => import("./pages");
 const loadCompare = () => import("./compare-page");
+const loadOg = () => import("./og-page");
 
 const ComponentAtlasHome = lazy(() =>
   loadAtlas().then((module) => ({ default: module.ComponentAtlasHome })),
@@ -17,6 +18,7 @@ const ComparisonHome = lazy(() =>
   loadPages().then((module) => ({ default: module.ComparisonHome })),
 );
 const ComparePage = lazy(() => loadCompare().then((module) => ({ default: module.ComparePage })));
+const OgPage = lazy(() => loadOg().then((module) => ({ default: module.OgPage })));
 const DocumentationView = lazy(() =>
   loadPages().then((module) => ({ default: module.DocumentationView })),
 );
@@ -107,6 +109,10 @@ function Route({ path }: { path: string }) {
   }
   if (path === "/components") {
     return <ComponentAtlasPage variant="hybrid" product />;
+  }
+  if (path === "/og") {
+    // Social preview composition for the repository; not linked or indexed.
+    return <OgPage />;
   }
   if (path === "/compare") {
     return <ComparePage />;
