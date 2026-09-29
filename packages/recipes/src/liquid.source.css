@@ -566,6 +566,11 @@
 /* Switch: a pill thumb that swells into a clear lens while it is held.     */
 /* ------------------------------------------------------------------------ */
 
+:where([data-ogui-design="liquid"]) .ogui-switch input {
+  width: 3.1rem;
+  height: 1.75rem;
+}
+
 :where([data-ogui-design="liquid"]) .ogui-switch__track {
   width: 3.1rem;
   height: 1.75rem;

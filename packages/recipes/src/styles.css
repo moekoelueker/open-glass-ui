@@ -220,11 +220,20 @@
   font-size: 0.72rem;
 }
 
+/* The native input sits invisibly over the visible track, so pointer, touch,
+   and screen-reader exploration land on the real control at its real size,
+   while the label text stays clickable exactly as before. */
 .ogui-switch input {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  z-index: 1;
+  top: 50%;
+  right: 0;
+  width: 2.7rem;
+  height: 1.55rem;
+  margin: 0;
   opacity: 0;
+  cursor: inherit;
+  transform: translateY(-50%);
 }
 
 .ogui-switch__track {

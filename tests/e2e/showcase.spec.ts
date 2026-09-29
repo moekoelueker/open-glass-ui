@@ -121,6 +121,11 @@ test("WebGL surface reaches a stable renderer state", async ({ page, browserName
   await page.goto("/experiments/webgl");
   const surface = page.locator("[data-ogui-webgl-surface]");
   await expect(surface).toBeAttached();
+  // The surface initializes asynchronously; on slower hosts the first read can
+  // still be the transient initial state, so wait for it to settle.
+  await expect
+    .poll(() => surface.getAttribute("data-ogui-webgl-status"), { timeout: 15_000 })
+    .toMatch(/^(ready|unavailable|error)$/);
   const status = await surface.getAttribute("data-ogui-webgl-status");
   const rendererError = await surface.getAttribute("data-ogui-webgl-error");
 

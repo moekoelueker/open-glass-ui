@@ -178,6 +178,10 @@ test("the WebGL finalist reaches a stable renderer state", async ({ page, browse
   await page.goto("/library/webgl");
   const surface = page.locator("[data-ogui-webgl-surface]");
   await expect(surface).toBeAttached();
+  // Initialization is asynchronous; wait for a settled state before asserting.
+  await expect
+    .poll(() => surface.getAttribute("data-ogui-webgl-status"), { timeout: 15_000 })
+    .toMatch(/^(ready|unavailable|error)$/);
   const status = await surface.getAttribute("data-ogui-webgl-status");
   if (browserName === "chromium") {
     expect(status).toBe("ready");

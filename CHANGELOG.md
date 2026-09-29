@@ -61,6 +61,10 @@ upgrading. The API is unchanged, and one prop restores the 0.3 look.
 
 ### Fixed
 
+- `Switch`: the native input was a 1px box that label text could sit on top
+  of, so some engines (Firefox on Linux) routed clicks and touch exploration
+  to the text instead of the control. It now sits invisibly over the visible
+  track at the track's size. Label clicks still toggle as before.
 - `Pagination` hard-coded `aria-label="Pagination"` after spreading props, so
   two paginations on one page shared a landmark name. A caller's `aria-label`
   now wins; the default is unchanged.
