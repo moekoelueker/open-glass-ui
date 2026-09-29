@@ -19,8 +19,11 @@ import {
   Dialog,
   Dock,
   Drawer,
+  FileDropzone,
   IconButton,
   MediaControls,
+  Menu,
+  MenuItem,
   Meter,
   NumberField,
   Pagination,
@@ -47,6 +50,7 @@ import {
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { BRAND_TAGLINE, PrimaryNavLinks, REPOSITORY_URL, RepositoryLink } from "./brand";
 import { Icon } from "./icons";
+import { LiquidShowcase } from "./liquid-showcase";
 import { AppLink } from "./navigation";
 import "./landing-page.css";
 
@@ -646,6 +650,11 @@ function CreativeStudio() {
           <Popover label="Canvas information" trigger={<Button variant="quiet">Inspect</Button>}>
             <p>960 × 540 · adaptive color profile</p>
           </Popover>
+          <Menu label="Layer actions" trigger={<Button variant="quiet">Actions</Button>}>
+            <MenuItem>Duplicate layer</MenuItem>
+            <MenuItem>Pin to library</MenuItem>
+            <MenuItem destructive>Remove source</MenuItem>
+          </Menu>
         </Toolbar>
         <Glass className="landing-scenario__selection" material="clear" tone="dark" interactive>
           <span>REFRACTION FIELD</span>
@@ -779,6 +788,11 @@ function MaterialBuilder() {
           label="Release note"
           defaultValue="Sharper text, calmer highlights, predictable fallbacks."
         />
+        <FileDropzone
+          className="landing-builder__dropzone"
+          label="Add reference photo"
+          accept="image/*"
+        />
         <Checkbox label="Use adaptive quality" defaultChecked />
       </div>
     </div>
@@ -791,7 +805,7 @@ function FeedbackSystem() {
   return (
     <div className="landing-scenario landing-scenario--feedback" data-use-case="feedback-overlays">
       <Banner title="Now on npm" dismissible>
-        open-glass-ui 0.1.0 is published. Install it and open an issue if anything breaks.
+        open-glass-ui 0.4.0 is published. Install it and open an issue if anything breaks.
       </Banner>
       <div className="landing-feedback__grid">
         <div>
@@ -1052,6 +1066,23 @@ export function LandingPage() {
             <strong>MIT</strong>
             <span>Licensed, free forever</span>
           </div>
+        </section>
+
+        <section
+          className="landing-section landing-liquid"
+          id="liquid"
+          aria-labelledby="liquid-heading"
+        >
+          <div className="landing-section__intro">
+            <span className="landing-index">New in 0.4 / Liquid</span>
+            <h2 id="liquid-heading">Liquid by default. Classic in one prop.</h2>
+            <p>
+              Clearer, brighter glass with one clean lit edge, pill-shaped controls, and selection
+              that flows. Drag the divider, try a look, move the light. Upgrading from 0.3? Pass
+              design="classic" and nothing changes.
+            </p>
+          </div>
+          <LiquidShowcase compareHref="/compare" />
         </section>
 
         <section className="landing-section landing-benefits" aria-labelledby="benefits-heading">
@@ -1360,7 +1391,7 @@ export function LandingPage() {
           </div>
           <div className="landing-validation__grid">
             <article>
-              <strong>93</strong>
+              <strong>137</strong>
               <span>Unit, SSR, and recipe checks</span>
               <p>Geometry, policy, theming, package contracts, and native interaction behavior.</p>
             </article>
@@ -1375,10 +1406,10 @@ export function LandingPage() {
               <p>The CSS-first package root keeps advanced optics behind an explicit import.</p>
             </article>
             <article>
-              <strong>23%</strong>
+              <strong>28%</strong>
               <span>Barrel cost for one component</span>
               <p>
-                Importing a single component pulls 12.8 KB of the 55.6 KB barrel, so unused
+                Importing a single component pulls 17.8 KB of the 63.7 KB barrel, so unused
                 components are shaken out rather than shipped.
               </p>
             </article>

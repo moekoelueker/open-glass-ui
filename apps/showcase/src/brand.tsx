@@ -11,7 +11,7 @@ export const BRAND_TAGLINE = "Glass UI for React";
 export const REPOSITORY_URL =
   import.meta.env.VITE_GITHUB_URL?.trim() || "https://github.com/moekoelueker/open-glass-ui";
 
-export type NavSection = "library" | "docs" | "research" | "validation";
+export type NavSection = "library" | "compare" | "docs" | "research" | "validation";
 
 export const PRIMARY_NAV: ReadonlyArray<{
   href: string;
@@ -19,6 +19,7 @@ export const PRIMARY_NAV: ReadonlyArray<{
   section: NavSection;
 }> = [
   { href: "/components", label: "Components", section: "library" },
+  { href: "/compare", label: "Compare", section: "compare" },
   { href: "/docs", label: "Docs", section: "docs" },
   { href: "/validation", label: "Validation", section: "validation" },
 ];

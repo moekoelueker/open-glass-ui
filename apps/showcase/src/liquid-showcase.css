@@ -1,0 +1,274 @@
+/* Self-contained styles for LiquidShowcase. Class-scoped only (no :root,
+   html, body, or * rules) so the component can be dropped into any page. */
+
+.lq-showcase {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+}
+
+.lq-frame {
+  position: relative;
+  height: 34rem;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.08),
+    0 40px 100px -40px rgb(0 0 0 / 0.8);
+  isolation: isolate;
+}
+
+/* Each layer paints its own wallpaper: a clipped element is a backdrop root,
+   so glass inside it can only blur what the layer itself paints. */
+.lq-layer {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  background:
+    radial-gradient(42% 60% at 12% 18%, #ff5e62 0%, transparent 70%),
+    radial-gradient(40% 55% at 88% 12%, #6c5cff 0%, transparent 70%),
+    radial-gradient(55% 60% at 70% 92%, #00c2a8 0%, transparent 70%),
+    radial-gradient(45% 50% at 30% 88%, #ffb347 0%, transparent 70%),
+    linear-gradient(135deg, #1a1033, #071a2b);
+}
+
+.lq-layer--before {
+  clip-path: inset(0 calc(100% - var(--lq-split, 50%)) 0 0);
+}
+
+.lq-layer--after {
+  clip-path: inset(0 0 0 var(--lq-split, 50%));
+}
+
+.lq-scene {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  font-family: inherit;
+}
+
+.lq-scene__art {
+  position: absolute;
+  inset: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  align-content: center;
+  gap: 1rem;
+}
+
+.lq-scene__art i {
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  box-shadow: 0 12px 30px -12px rgb(0 0 0 / 0.5);
+}
+
+.lq-scene__art i:nth-child(1) {
+  background:
+    radial-gradient(circle at 30% 30%, #ff9a8b, transparent 60%),
+    linear-gradient(135deg, #ff3cac, #2b86c5);
+}
+
+.lq-scene__art i:nth-child(2) {
+  background: conic-gradient(from 200deg at 60% 40%, #43e97b, #38f9d7, #1e3c72, #43e97b);
+}
+
+.lq-scene__art i:nth-child(3) {
+  background: radial-gradient(circle at 40% 60%, #fff200, #ff7a00 55%, #d4145a);
+}
+
+.lq-scene__art i:nth-child(4) {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3 40%, #7f7fd5);
+}
+
+.lq-scene__art i:nth-child(5) {
+  background: linear-gradient(200deg, #150734, #4b1d8f 45%, #e0419a);
+}
+
+.lq-scene__art i:nth-child(6) {
+  background:
+    radial-gradient(circle at 70% 20%, #fff6, transparent 40%),
+    linear-gradient(160deg, #0f2027, #2c5364 60%, #6dd5ed);
+}
+
+.lq-toolbar {
+  position: absolute;
+  z-index: 3;
+  top: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.lq-panel {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: min(24rem, calc(100% - 2.5rem));
+  gap: 0.9rem;
+  padding: 1.1rem;
+  border: 1px solid;
+  border-radius: var(--ogui-radius-surface);
+  transform: translate(-50%, -50%);
+}
+
+.lq-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.lq-player {
+  position: absolute;
+  z-index: 3;
+  bottom: 1.25rem;
+  left: 50%;
+  display: flex;
+  width: min(36rem, calc(100% - 2.5rem));
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.9rem 0.5rem 0.5rem;
+  border: 1px solid;
+  border-radius: calc(var(--ogui-radius-surface) + 0.4rem);
+  transform: translateX(-50%);
+}
+
+.lq-player__art {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.7rem;
+  background: linear-gradient(135deg, #ff3cac, #2b86c5);
+}
+
+.lq-player__controls {
+  flex: 1;
+  min-width: 0;
+}
+
+.lq-label {
+  position: absolute;
+  z-index: 5;
+  top: 5.25rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  color: #fff;
+  background: rgb(0 0 0 / 0.55);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+.lq-label--before {
+  right: calc(100% - var(--lq-split, 50%) + 1.75rem);
+}
+
+.lq-label--after {
+  left: calc(var(--lq-split, 50%) + 1.75rem);
+}
+
+.lq-handle {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  bottom: 0;
+  left: var(--lq-split, 50%);
+  width: 2.75rem;
+  margin-left: -1.375rem;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.lq-handle::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: rgb(255 255 255 / 0.85);
+  box-shadow: 0 0 18px rgb(0 0 0 / 0.45);
+  content: "";
+}
+
+.lq-handle > span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 38%,
+      #0b0d0f 38% 43%,
+      transparent 43% 57%,
+      #0b0d0f 57% 62%,
+      transparent 62%
+    )
+    center / 1rem 0.9rem no-repeat,
+    rgb(255 255 255 / 0.94);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.45);
+  transform: translate(-50%, -50%);
+}
+
+.lq-handle:focus-visible {
+  outline: none;
+}
+
+.lq-handle:focus-visible > span {
+  outline: 3px solid #8fb1ff;
+  outline-offset: 3px;
+}
+
+.lq-controls {
+  display: grid;
+  grid-template-columns: auto minmax(12rem, 20rem) 1fr;
+  align-items: center;
+  gap: 1rem 1.5rem;
+}
+
+.lq-link {
+  justify-self: end;
+  color: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (max-width: 760px) {
+  .lq-frame {
+    height: 38rem;
+  }
+
+  .lq-scene__art {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .lq-label {
+    top: auto;
+    bottom: 5.5rem;
+  }
+
+  .lq-panel {
+    width: calc(100% - 2rem);
+  }
+
+  .lq-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lq-controls > :first-child {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .lq-link {
+    justify-self: start;
+  }
+}

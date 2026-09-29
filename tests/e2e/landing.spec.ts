@@ -447,3 +447,37 @@ test("canonical components route keeps all recipes and removes comparison framin
     }),
   ).toBeVisible();
 });
+
+test("liquid showcase compares both designs and re-art-directs the liquid side", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const section = page.getByRole("region", { name: "Liquid by default. Classic in one prop." });
+  await section.scrollIntoViewIfNeeded();
+
+  const scenes = section.locator(".lq-scene");
+  await expect(scenes).toHaveCount(2);
+  await expect(scenes.nth(0)).toHaveAttribute("data-ogui-design", "classic");
+  await expect(scenes.nth(1)).toHaveAttribute("data-ogui-design", "liquid");
+
+  await section.getByRole("button", { name: "Smoked", exact: true }).click();
+  await expect
+    .poll(() =>
+      scenes.nth(1).evaluate((element) => element.style.getPropertyValue("--ogui-glass-tint-dark")),
+    )
+    .not.toBe("");
+  // The classic side never takes a look.
+  expect(
+    await scenes
+      .nth(0)
+      .evaluate((element) => element.style.getPropertyValue("--ogui-glass-tint-dark")),
+  ).toBe("");
+
+  const divider = section.getByRole("slider", { name: "Classic and liquid divider" });
+  await divider.focus();
+  await page.keyboard.press("End");
+  await expect(divider).toHaveAttribute("aria-valuenow", "100");
+  await expect(
+    section.getByRole("link", { name: "Open the full before and after" }),
+  ).toHaveAttribute("href", "/compare");
+});

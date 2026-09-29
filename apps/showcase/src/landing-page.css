@@ -65,11 +65,8 @@
   border: 1px solid rgb(255 255 255 / 0.2);
   border-radius: 999px;
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.07), transparent 45%), rgb(10 13 14 / 0.76);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.15),
-    inset 0 -1px 0 rgb(0 0 0 / 0.34),
-    0 18px 55px rgb(0 0 0 / 0.4);
+    linear-gradient(180deg, rgb(255 255 255 / 0.1), transparent 45%), rgb(10 13 14 / 0.76);
+  box-shadow: 0 18px 55px rgb(0 0 0 / 0.4);
   backdrop-filter: blur(24px) saturate(145%);
 }
 
@@ -306,15 +303,12 @@
   background:
     linear-gradient(
       180deg,
-      rgb(255 255 255 / 0.11),
+      rgb(255 255 255 / 0.14),
       rgb(255 255 255 / 0.035) 54%,
       rgb(0 0 0 / 0.04)
     ),
     rgb(255 255 255 / 0.025);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.2),
-    inset 0 -1px 0 rgb(0 0 0 / 0.34),
-    0 10px 28px rgb(0 0 0 / 0.2);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.2);
   backdrop-filter: blur(16px) saturate(135%);
   font-size: 0.72rem;
   isolation: isolate;
@@ -335,21 +329,17 @@ button.landing-button {
   background:
     linear-gradient(
       180deg,
-      rgb(255 255 255 / 0.16),
+      rgb(255 255 255 / 0.19),
       rgb(255 255 255 / 0.055) 54%,
       rgb(0 0 0 / 0.04)
     ),
     rgb(255 255 255 / 0.035);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.32),
-    inset 0 -1px 0 rgb(0 0 0 / 0.34),
-    0 14px 34px rgb(0 0 0 / 0.27);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.27);
   transform: translateY(-2px);
 }
 
 .landing-button:active {
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.16),
     inset 0 2px 5px rgb(0 0 0 / 0.28),
     0 5px 14px rgb(0 0 0 / 0.2);
   transform: translateY(1px) scale(0.99);
@@ -377,7 +367,6 @@ button.landing-button {
       rgb(255 255 255 / 0.025)
     );
   box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 0.09),
     inset 0 -12px 24px rgb(0 0 0 / 0.16),
     inset 12px 0 28px rgb(242 100 69 / 0.08),
     inset -12px 0 28px rgb(56 187 192 / 0.08),
@@ -441,7 +430,6 @@ button.landing-button {
       rgb(255 255 255 / 0.035)
     );
   box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 0.14),
     inset 0 -12px 24px rgb(0 0 0 / 0.13),
     inset 15px 0 32px rgb(242 100 69 / 0.12),
     inset -15px 0 32px rgb(56 187 192 / 0.12),
@@ -475,7 +463,6 @@ button.landing-button {
     radial-gradient(circle at 30% 18%, rgb(255 255 255 / 0.2), transparent 38%),
     rgb(255 255 255 / 0.07);
   box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 0.06),
     inset 0 -5px 9px rgb(0 0 0 / 0.13),
     0 7px 16px rgb(0 0 0 / 0.22);
   transition:
@@ -492,7 +479,6 @@ button.landing-button {
     radial-gradient(circle at 30% 18%, rgb(255 255 255 / 0.3), transparent 42%),
     rgb(255 255 255 / 0.11);
   box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 0.1),
     inset 0 -5px 9px rgb(0 0 0 / 0.1),
     0 9px 20px rgb(0 0 0 / 0.28);
   transform: translateX(3px) rotate(-5deg);
@@ -510,9 +496,8 @@ button.landing-button {
   border: 1px solid rgb(255 255 255 / 0.2);
   border-radius: 0.82rem 1.16rem 0.82rem 1.05rem;
   color: var(--landing-subtle);
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.08), transparent 46%), rgb(5 8 9 / 0.66);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.11), transparent 46%), rgb(5 8 9 / 0.66);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.15),
     inset 0 -2px 4px rgb(0 0 0 / 0.35),
     0 12px 30px rgb(0 0 0 / 0.22);
   backdrop-filter: blur(16px) saturate(130%);
@@ -533,7 +518,7 @@ button.landing-button {
   border-radius: 0.55rem 0.75rem 0.55rem 0.68rem;
   color: var(--ogui-color-accent);
   background: rgb(255 255 255 / 0.055);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.15);
+  box-shadow: none;
 }
 
 .landing-install code {
@@ -562,7 +547,6 @@ button.landing-button {
 .landing-install:focus-visible {
   border-color: rgb(255 255 255 / 0.38);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.22),
     inset 0 -2px 4px rgb(0 0 0 / 0.35),
     0 16px 36px rgb(0 0 0 / 0.29);
   transform: translateY(-1px);
@@ -607,9 +591,7 @@ button.landing-button {
   border: 1px solid rgb(255 255 255 / 0.2);
   border-radius: 1.5rem 5rem 1.5rem 4rem;
   background: #101416;
-  box-shadow:
-    0 40px 100px rgb(0 0 0 / 0.45),
-    inset 0 1px 0 rgb(255 255 255 / 0.12);
+  box-shadow: 0 40px 100px rgb(0 0 0 / 0.45);
 }
 
 .landing-backdrop,
@@ -925,7 +907,7 @@ button.landing-button {
   border-radius: 0.58rem 0.82rem 0.58rem 0.72rem;
   color: rgb(226 226 217 / 0.68);
   background: rgb(6 9 10 / 0.52);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.09);
+  box-shadow: none;
   backdrop-filter: blur(12px);
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 0.49rem;
@@ -951,9 +933,7 @@ button.landing-button {
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / calc(0.16 + var(--landing-intensity, 0.78) * 0.2));
   border-radius: 1.25rem 3rem 1.2rem 2.5rem;
-  box-shadow:
-    0 30px 75px rgb(0 0 0 / 0.3),
-    inset 0 1px 0 rgb(255 255 255 / 0.18);
+  box-shadow: 0 30px 75px rgb(0 0 0 / 0.3);
 }
 
 .landing-score::before {
@@ -1810,6 +1790,10 @@ button.landing-button {
   grid-column: span 2;
 }
 
+.landing-builder__dropzone {
+  grid-column: span 2;
+}
+
 .landing-scenario--feedback {
   display: grid;
   align-content: start;
@@ -1988,9 +1972,8 @@ button.landing-button {
   border: 1px solid rgb(255 255 255 / 0.19);
   border-radius: 1rem 1.55rem 1rem 1.35rem;
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.065), transparent 4rem), rgb(5 8 8 / 0.88);
+    linear-gradient(180deg, rgb(255 255 255 / 0.095), transparent 4rem), rgb(5 8 8 / 0.88);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
     inset 0 -4px 12px rgb(0 0 0 / 0.32),
     0 18px 45px rgb(0 0 0 / 0.2);
   backdrop-filter: blur(16px) saturate(125%);
@@ -2019,7 +2002,7 @@ button.landing-button {
   border: 1px solid rgb(255 255 255 / 0.18);
   border-radius: 0.58rem 0.82rem 0.58rem 0.72rem;
   background: rgb(255 255 255 / 0.055);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.13);
+  box-shadow: none;
 }
 
 .landing-code pre {
@@ -2736,6 +2719,10 @@ button.landing-button {
     grid-column: 1;
   }
 
+  .landing-builder__dropzone {
+    grid-column: 1;
+  }
+
   .landing-feedback__grid {
     grid-template-columns: 1fr;
   }
@@ -2870,9 +2857,7 @@ button.landing-button {
   .landing-button--primary:focus-visible {
     border-color: rgb(255 255 255 / 0.38);
     background: #1d2122;
-    box-shadow:
-      inset 0 0 0 1px rgb(255 255 255 / 0.12),
-      0 10px 24px rgb(0 0 0 / 0.3);
+    box-shadow: 0 10px 24px rgb(0 0 0 / 0.3);
     backdrop-filter: none;
   }
 }

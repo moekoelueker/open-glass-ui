@@ -1,4 +1,5 @@
 @import "../../../packages/recipes/src/styles.css";
+@import "../../../packages/recipes/src/liquid.css";
 
 :root {
   color: #f4f1e9;

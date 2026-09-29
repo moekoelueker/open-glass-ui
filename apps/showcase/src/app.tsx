@@ -5,6 +5,7 @@ import { AppLink } from "./navigation";
 
 const loadAtlas = () => import("./component-atlas");
 const loadPages = () => import("./pages");
+const loadCompare = () => import("./compare-page");
 
 const ComponentAtlasHome = lazy(() =>
   loadAtlas().then((module) => ({ default: module.ComponentAtlasHome })),
@@ -15,6 +16,7 @@ const ComponentAtlasPage = lazy(() =>
 const ComparisonHome = lazy(() =>
   loadPages().then((module) => ({ default: module.ComparisonHome })),
 );
+const ComparePage = lazy(() => loadCompare().then((module) => ({ default: module.ComparePage })));
 const DocumentationView = lazy(() =>
   loadPages().then((module) => ({ default: module.DocumentationView })),
 );
@@ -105,6 +107,9 @@ function Route({ path }: { path: string }) {
   }
   if (path === "/components") {
     return <ComponentAtlasPage variant="hybrid" product />;
+  }
+  if (path === "/compare") {
+    return <ComparePage />;
   }
   if (path === "/research") {
     return <ComparisonHome />;

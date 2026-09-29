@@ -1,0 +1,586 @@
+.compare-page {
+  min-height: 100vh;
+  padding: clamp(1rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.5rem) 4rem;
+  color: #f4f3ee;
+  background:
+    radial-gradient(60rem 30rem at 85% -10%, rgb(90 110 255 / 0.14), transparent 60%),
+    radial-gradient(50rem 30rem at 0% 0%, rgb(255 120 90 / 0.08), transparent 60%), #07090b;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Helvetica, Arial,
+    system-ui, sans-serif;
+}
+
+.compare-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 1.5rem 2rem;
+  max-width: 1480px;
+  margin: 0 auto 1.5rem;
+}
+
+.compare-kicker {
+  color: #9aa0a6;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.compare-header h1 {
+  margin: 0.35rem 0 0.5rem;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.compare-header p {
+  max-width: 44rem;
+  margin: 0;
+  color: #b4b8bd;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.compare-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* ---- Frame and split --------------------------------------------------- */
+
+.compare-frame {
+  position: relative;
+  max-width: 1480px;
+  height: 800px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.08),
+    0 40px 120px -30px rgb(0 0 0 / 0.8);
+  isolation: isolate;
+}
+
+.compare-frame--single {
+  height: 760px;
+}
+
+/* Each layer paints its own wallpaper. The layers are clipped, and a clipped
+   element is a backdrop root: glass inside it can only blur what the layer
+   itself paints, so the wallpaper must live inside the layer. */
+.compare-layer {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+}
+
+/* Each side is clipped to its own half. Clipping only the top layer would let
+   the classic scene show through the translucent liquid glass. */
+.compare-layer--before {
+  clip-path: inset(0 calc(100% - var(--split, 50%)) 0 0);
+}
+
+.compare-layer--after {
+  clip-path: inset(0 0 0 var(--split, 50%));
+}
+
+.compare-handle {
+  position: absolute;
+  z-index: 40;
+  top: 0;
+  bottom: 0;
+  left: var(--split, 50%);
+  width: 2.75rem;
+  margin-left: -1.375rem;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.compare-handle::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: rgb(255 255 255 / 0.85);
+  box-shadow: 0 0 18px rgb(0 0 0 / 0.45);
+  content: "";
+}
+
+.compare-handle__grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #0b0d0f;
+  background: rgb(255 255 255 / 0.92);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 6px 24px rgb(0 0 0 / 0.45);
+  transform: translate(-50%, -50%);
+}
+
+.compare-handle:focus-visible {
+  outline: none;
+}
+
+.compare-handle:focus-visible .compare-handle__grip {
+  outline: 3px solid #8fb1ff;
+  outline-offset: 3px;
+}
+
+.compare-label {
+  position: absolute;
+  z-index: 35;
+  top: 50%;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  color: #fff;
+  background: rgb(0 0 0 / 0.55);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  text-transform: uppercase;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.compare-label--before {
+  right: calc(100% - var(--split, 50%) + 2rem);
+}
+
+.compare-label--after {
+  left: calc(var(--split, 50%) + 2rem);
+}
+
+.compare-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  max-width: 2200px;
+  margin: 0 auto;
+}
+
+.compare-pair__title {
+  margin: 0 0 0.6rem;
+  color: #c7cbd0;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---- Wallpapers (pure CSS, no third-party imagery) --------------------- */
+
+.compare-wallpaper--aurora {
+  background:
+    radial-gradient(42% 60% at 12% 18%, #ff5e62 0%, transparent 70%),
+    radial-gradient(40% 55% at 88% 12%, #6c5cff 0%, transparent 70%),
+    radial-gradient(55% 60% at 70% 92%, #00c2a8 0%, transparent 70%),
+    radial-gradient(45% 50% at 30% 88%, #ffb347 0%, transparent 70%),
+    linear-gradient(135deg, #1a1033, #071a2b);
+}
+
+.compare-wallpaper--photo {
+  background:
+    url("/assets/architectural-contrast.jpg") center / cover no-repeat,
+    #1c1f22;
+}
+
+.compare-wallpaper--dawn {
+  background:
+    radial-gradient(50% 60% at 15% 20%, #ffd3a5 0%, transparent 70%),
+    radial-gradient(45% 55% at 85% 15%, #a0c4ff 0%, transparent 70%),
+    radial-gradient(55% 60% at 60% 95%, #ffadad 0%, transparent 70%),
+    radial-gradient(40% 50% at 35% 70%, #caffbf 0%, transparent 70%),
+    linear-gradient(160deg, #fdf6ec, #e8eefc);
+}
+
+.compare-frame[data-appearance="light"] .compare-layer.compare-wallpaper--aurora::before,
+.compare-frame[data-appearance="light"] .compare-layer.compare-wallpaper--photo::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: rgb(255 255 255 / 0.28);
+  content: "";
+}
+
+/* ---- Scene ------------------------------------------------------------- */
+
+.compare-scene {
+  --sidebar: 15rem;
+  --inspector: 20rem;
+  --gap: 1rem;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: transparent;
+  font-family: inherit;
+}
+
+.compare-scene__content {
+  position: absolute;
+  inset: 0 calc(var(--inspector) + var(--gap) * 2) 0 calc(var(--sidebar) + var(--gap) * 2);
+  padding: 4.25rem 0.5rem 7rem;
+  overflow: hidden;
+}
+
+.compare-scene__hero {
+  margin: 0 0 1.25rem 0.25rem;
+  color: #fff;
+  text-shadow: 0 2px 24px rgb(0 0 0 / 0.35);
+}
+
+.compare-scene[data-ogui-appearance="light"] .compare-scene__hero {
+  color: #141820;
+  text-shadow: 0 2px 24px rgb(255 255 255 / 0.5);
+}
+
+.compare-scene__hero span {
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+.compare-scene__hero h2 {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.75rem, 3vw, 2.6rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+}
+
+.compare-scene__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 1rem;
+}
+
+.compare-tile {
+  margin: 0;
+}
+
+.compare-tile > div {
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  box-shadow: 0 12px 30px -12px rgb(0 0 0 / 0.5);
+}
+
+.compare-tile figcaption {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.5rem 0.15rem 0;
+  color: #fff;
+  font-size: 0.8rem;
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.4);
+}
+
+.compare-tile figcaption span {
+  opacity: 0.75;
+  font-size: 0.72rem;
+}
+
+.compare-scene[data-ogui-appearance="light"] .compare-tile figcaption {
+  color: #141820;
+  text-shadow: none;
+}
+
+.compare-tile--a > div {
+  background:
+    radial-gradient(circle at 30% 30%, #ff9a8b, transparent 60%),
+    linear-gradient(135deg, #ff3cac, #2b86c5);
+}
+.compare-tile--b > div {
+  background: conic-gradient(from 200deg at 60% 40%, #43e97b, #38f9d7, #1e3c72, #43e97b);
+}
+.compare-tile--c > div {
+  background:
+    radial-gradient(circle at 70% 20%, #fff6, transparent 40%),
+    linear-gradient(160deg, #0f2027, #2c5364 60%, #6dd5ed);
+}
+.compare-tile--d > div {
+  background: radial-gradient(circle at 40% 60%, #fff200, #ff7a00 55%, #d4145a);
+}
+.compare-tile--e > div {
+  background: linear-gradient(200deg, #150734, #4b1d8f 45%, #e0419a);
+}
+.compare-tile--f > div {
+  background:
+    radial-gradient(circle at 50% 110%, #ffd452, transparent 55%),
+    linear-gradient(180deg, #a8c0ff, #3f2b96);
+}
+.compare-tile--g > div {
+  background: repeating-linear-gradient(45deg, #232526 0 10px, #414345 10px 20px), #333;
+}
+.compare-tile--h > div {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3 40%, #7f7fd5);
+}
+
+.compare-sidebar {
+  position: absolute;
+  top: var(--gap);
+  bottom: var(--gap);
+  left: var(--gap);
+  display: flex;
+  width: var(--sidebar);
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.85rem;
+  border: 1px solid;
+  border-radius: var(--ogui-radius-surface);
+}
+
+.compare-sidebar__nav {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.compare-sidebar__link {
+  justify-content: flex-start;
+}
+
+.compare-sidebar__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.compare-toolbar {
+  position: absolute;
+  z-index: 5;
+  top: calc(var(--gap) + 0.25rem);
+  left: calc(var(--sidebar) + var(--gap) * 2 + 0.5rem);
+}
+
+.compare-inspector {
+  position: absolute;
+  top: var(--gap);
+  right: var(--gap);
+  display: grid;
+  width: var(--inspector);
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid;
+  border-radius: var(--ogui-radius-surface);
+}
+
+.compare-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.compare-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.compare-inspector__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.compare-dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.compare-card {
+  position: absolute;
+  right: var(--gap);
+  bottom: var(--gap);
+  width: var(--inspector);
+}
+
+.compare-player {
+  position: absolute;
+  z-index: 5;
+  bottom: calc(var(--gap) + 0.25rem);
+  left: calc(var(--sidebar) + var(--gap) * 2 + 0.5rem);
+  right: calc(var(--inspector) + var(--gap) * 2 + 0.5rem);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.55rem 0.9rem 0.55rem 0.55rem;
+  border: 1px solid;
+  border-radius: calc(var(--ogui-radius-surface) + 0.4rem);
+}
+
+.compare-player__art {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.7rem;
+  background: linear-gradient(135deg, #ff3cac, #2b86c5);
+}
+
+.compare-player__meta {
+  display: grid;
+  flex: none;
+  min-width: 0;
+  color: var(--ogui-material-text);
+  font-size: 0.8rem;
+}
+
+.compare-player__meta span {
+  color: var(--ogui-material-muted);
+  font-size: 0.72rem;
+}
+
+.compare-player__controls {
+  flex: 1;
+}
+
+/* ---- Notes ------------------------------------------------------------- */
+
+.compare-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  max-width: 1480px;
+  margin: 2rem auto 0;
+}
+
+.compare-notes article {
+  padding: 1.1rem 1.2rem;
+  border-radius: 1.25rem;
+  background: rgb(255 255 255 / 0.04);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07);
+}
+
+.compare-notes h2 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.compare-notes p {
+  margin: 0;
+  color: #aab0b6;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 1100px) {
+  .compare-scene {
+    --inspector: 17.5rem;
+  }
+
+  .compare-sidebar,
+  .compare-card {
+    display: none;
+  }
+
+  .compare-scene__content,
+  .compare-toolbar,
+  .compare-player {
+    left: var(--gap);
+  }
+
+  .compare-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .compare-header {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-controls {
+    justify-content: flex-start;
+  }
+
+  .compare-frame {
+    height: 980px;
+  }
+
+  .compare-scene__content {
+    right: var(--gap);
+  }
+
+  .compare-inspector {
+    top: auto;
+    right: var(--gap);
+    bottom: 5.5rem;
+    left: var(--gap);
+    width: auto;
+  }
+
+  .compare-player {
+    right: var(--gap);
+  }
+
+  .compare-notes {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Glass look panel -------------------------------------------------- */
+
+.compare-look {
+  display: grid;
+  gap: 1rem;
+  max-width: 1480px;
+  margin: 0 auto 1.25rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 1.25rem;
+  background: rgb(255 255 255 / 0.04);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07);
+}
+
+.compare-look__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+}
+
+.compare-look__head h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.compare-look__head p {
+  margin: 0.2rem 0 0;
+  color: #aab0b6;
+  font-size: 0.85rem;
+}
+
+.compare-look__sliders {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.75rem 1.5rem;
+}
+
+.compare-look__code {
+  overflow-x: auto;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.75rem;
+  color: #d8dce0;
+  background: rgb(0 0 0 / 0.35);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+/* Page content (not glass) follows the wallpaper, not the UI appearance:
+   Dawn is a light wallpaper, so its captions stay dark even in dark mode. */
+.compare-layer.compare-wallpaper--dawn :is(.compare-scene__hero, .compare-tile figcaption) {
+  color: #141820;
+  text-shadow: none;
+}

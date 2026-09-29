@@ -58,6 +58,7 @@ function llmsTextPlugin(): Plugin {
 const SITE_ROUTES = [
   { path: "/", priority: "1.0" },
   { path: "/components", priority: "0.9" },
+  { path: "/compare", priority: "0.8" },
   { path: "/docs", priority: "0.9" },
   { path: "/validation", priority: "0.6" },
   { path: "/research", priority: "0.6" },
