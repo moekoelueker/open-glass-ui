@@ -218,15 +218,13 @@ the WebGL-window perf budgets are only meaningful on the reference host.
 2. Measure frame cost with many glass controls on screen (`bench:browser`,
    plus a low-end Android device). Each liquid control uses `backdrop-filter`.
    If it is too costly, gate control blur on `quality`.
-3. Upload `docs/media/social-preview.png` as the GitHub social preview
-   (repository Settings, General; GitHub has no API for it).
-4. Delete the unused `NPM_TOKEN` repository secret and the stage-only npm
+3. Delete the unused `NPM_TOKEN` repository secret and the stage-only npm
    token `open-glass-ui-github-release`; publishing no longer uses tokens.
-5. Replace the Gumroad download file if it bundles an older library copy
+4. Replace the Gumroad download file if it bundles an older library copy
    (the Gumroad CLI cannot upload files).
-6. Candidates for a later pass: a container that visually merges neighbouring
+5. Candidates for a later pass: a container that visually merges neighbouring
    glass shapes as they approach (gooey morphing), and liquid rules for the
    remaining low-traffic recipes (Stepper connectors, Breadcrumbs).
-7. Do not run the visual-capture e2e specs casually: they overwrite the
+6. Do not run the visual-capture e2e specs casually: they overwrite the
    committed evidence under `artifacts/screenshots`. Restore with
    `git checkout -- artifacts` if that happens.
