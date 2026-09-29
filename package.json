@@ -14,6 +14,9 @@
     "bench:optics": "pnpm --filter @open-glass-ui/core build && node scripts/benchmark-optics.mjs",
     "dev": "pnpm --filter @open-glass-ui/showcase dev",
     "generate:brand": "node scripts/generate-brand-assets.mjs",
+    "generate:liquid": "node scripts/generate-liquid-css.mjs",
+    "capture:media": "node scripts/capture-readme-media.mjs",
+    "sync:readme": "node scripts/sync-package-readme.mjs",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome lint .",
@@ -28,7 +31,7 @@
     "clean": "pnpm -r --if-present clean",
     "changeset": "changeset",
     "version:packages": "changeset version",
-    "release:check": "pnpm run check && pnpm run typecheck && pnpm run test:unit && pnpm run verify:packages && pnpm run test:e2e && pnpm run bench:optics && pnpm run bench:browser",
+    "release:check": "node scripts/generate-liquid-css.mjs --check && node scripts/sync-package-readme.mjs --check && pnpm run check && pnpm run typecheck && pnpm run test:unit && pnpm run verify:packages && pnpm run test:e2e && pnpm run bench:optics && pnpm run bench:browser",
     "release:rc": "pnpm run release:check && node scripts/assert-release-channel.mjs rc && changeset publish --tag next",
     "release": "pnpm run release:check && node scripts/assert-release-channel.mjs stable && changeset publish"
   },

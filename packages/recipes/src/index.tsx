@@ -22,6 +22,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import "./styles.css";
+import "./liquid.css";
 
 export type {
   AccordionItem,
@@ -94,6 +95,56 @@ function idPart(value: string) {
   return encodeURIComponent(value).replaceAll("%", "_");
 }
 
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/**
+ * Publishes the selected item's box as CSS variables on its container so the
+ * stylesheet can slide one shared indicator between items. Writes go straight
+ * to the element style: the indicator never causes a React render.
+ */
+function useSelectionIndicator(
+  containerRef: { current: HTMLElement | null },
+  selector: string,
+  key: unknown,
+) {
+  useIsomorphicLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+    const place = () => {
+      const selected = container.querySelector<HTMLElement>(selector);
+      if (!selected) {
+        container.removeAttribute("data-ogui-indicator");
+        return;
+      }
+      container.style.setProperty("--ogui-indicator-x", `${selected.offsetLeft}px`);
+      container.style.setProperty("--ogui-indicator-y", `${selected.offsetTop}px`);
+      container.style.setProperty("--ogui-indicator-w", `${selected.offsetWidth}px`);
+      container.style.setProperty("--ogui-indicator-h", `${selected.offsetHeight}px`);
+      container.setAttribute("data-ogui-indicator", "ready");
+    };
+    place();
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+    const observer = new ResizeObserver(place);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [containerRef, selector, key]);
+}
+
+/** Filled fraction (0 to 1) of a range input's track, for the liquid track. */
+function rangeProgress(value: unknown, min: unknown, max: unknown) {
+  const low = Number(min);
+  const high = Number(max);
+  const current = Number(value);
+  if (![low, high, current].every(Number.isFinite) || high <= low) {
+    return "0";
+  }
+  return Math.min(Math.max((current - low) / (high - low), 0), 1).toFixed(4);
+}
+
 function useControllableValue<T>(
   controlledValue: T | undefined,
   defaultValue: T,
@@ -132,12 +183,30 @@ export function Button({
   className,
   children,
   type = "button",
+  onPointerMove,
   ...props
 }: ButtonProps) {
   return (
     <button
       {...props}
       type={type}
+      onPointerMove={(event) => {
+        // Drives the pointer-following specular highlight in the liquid design
+        // without a React render; the classic stylesheet ignores the values.
+        const target = event.currentTarget;
+        const box = target.getBoundingClientRect();
+        if (box.width > 0 && box.height > 0) {
+          target.style.setProperty(
+            "--ogui-light-x",
+            `${(((event.clientX - box.left) / box.width) * 100).toFixed(1)}%`,
+          );
+          target.style.setProperty(
+            "--ogui-light-y",
+            `${(((event.clientY - box.top) / box.height) * 100).toFixed(1)}%`,
+          );
+        }
+        onPointerMove?.(event);
+      }}
       className={classes(
         "ogui-button",
         `ogui-button--${variant}`,
@@ -205,10 +274,13 @@ export function SegmentedControl<T extends string>({
     throw new Error("SegmentedControl requires at least one item or a defaultValue.");
   }
   const [value, setValue] = useControllableValue(controlledValue, defaultValue, onValueChange);
+  const segmentsRef = useRef<HTMLFieldSetElement>(null);
+  useSelectionIndicator(segmentsRef, '.ogui-segments__item[aria-pressed="true"]', value);
 
   return (
-    <fieldset {...props} className={classes("ogui-segments", className)}>
+    <fieldset ref={segmentsRef} {...props} className={classes("ogui-segments", className)}>
       <legend className="ogui-sr-only">{label}</legend>
+      <span className="ogui-segments__indicator" aria-hidden="true" />
       {items.map((item) => (
         <button
           key={item.value}
@@ -316,9 +388,14 @@ export function Slider({
   const [liveValue, setLiveValue] = useState(defaultValue ?? min);
   const shownValue = value ?? liveValue;
   const numericValue = Array.isArray(shownValue) ? shownValue[0] : shownValue;
+  const progress = rangeProgress(numericValue, min, max);
 
   return (
-    <label className={classes("ogui-slider", className)} htmlFor={id}>
+    <label
+      className={classes("ogui-slider", className)}
+      htmlFor={id}
+      style={{ "--ogui-range-progress": progress } as CSSProperties}
+    >
       <span className="ogui-slider__header">
         <span id={labelId}>{label}</span>
         <output htmlFor={id}>{valueText ?? `${numericValue}${unit}`}</output>
@@ -438,6 +515,7 @@ export function Tabs<T extends string>({
   const [value, setValue] = useControllableValue(controlledValue, defaultValue, onValueChange);
   const activeItem = items.find((item) => item.value === value && !item.disabled) ?? firstEnabled;
   const tabsRef = useRef<HTMLDivElement>(null);
+  useSelectionIndicator(tabsRef, '[role="tab"][aria-selected="true"]', activeItem?.value);
 
   const move = (currentValue: T, direction: number) => {
     const enabled = items.filter((item) => !item.disabled);
@@ -467,6 +545,7 @@ export function Tabs<T extends string>({
   return (
     <div {...props} className={classes("ogui-tabs", className)}>
       <div ref={tabsRef} className="ogui-tabs__list" role="tablist" aria-label={label}>
+        <span className="ogui-tabs__indicator" aria-hidden="true" />
         {items.map((item) => {
           const selected = item.value === activeItem?.value;
           const itemId = idPart(item.value);
@@ -986,8 +1065,19 @@ export function MediaControls({
 }: MediaControlsProps) {
   const seekId = useId();
 
+  const seekMax = Math.max(duration, 1);
+
   return (
-    <div {...props} className={classes("ogui-media", className)}>
+    <div
+      {...props}
+      className={classes("ogui-media", className)}
+      style={
+        {
+          "--ogui-range-progress": rangeProgress(Math.min(currentTime, seekMax), 0, seekMax),
+          ...props.style,
+        } as CSSProperties
+      }
+    >
       <IconButton
         size="small"
         variant="quiet"

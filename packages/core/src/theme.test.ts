@@ -61,3 +61,16 @@ describe("glass theme tokens", () => {
     );
   });
 });
+
+describe("capsule radius", () => {
+  it("is a pill for balanced and soft, and follows the control radius for sharp", () => {
+    expect(createGlassTheme("dark").radiusCapsule).toBe("999px");
+    expect(createGlassTheme("dark", { radius: "soft" }).radiusCapsule).toBe("999px");
+    expect(createGlassTheme("dark", { radius: "sharp" }).radiusCapsule).toBe("0.5rem");
+  });
+
+  it("falls back to a pill for hand-built palettes without the new field", () => {
+    const { radiusCapsule: _omitted, ...legacyPalette } = createGlassTheme("light");
+    expect(createGlassThemeTokens(legacyPalette)["--ogui-radius-capsule"]).toBe("999px");
+  });
+});

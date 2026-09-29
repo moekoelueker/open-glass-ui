@@ -1,4 +1,6 @@
 import {
+  createGlassLookTokens,
+  type GlassLookInput,
   type GlassMaterial,
   getMaterialPreset,
   type LensGeometry,
@@ -36,6 +38,12 @@ export interface GlassProps extends Omit<HTMLAttributes<HTMLElement>, "color"> {
   optics?: Partial<GlassMaterial>;
   geometry?: LensGeometry;
   filterId?: string;
+  /**
+   * Per-element art direction for the liquid design: a preset name or
+   * individual multipliers such as `{ lightAngle: 300, blur: 2 }`. Unset fields
+   * inherit from the theme's `glass` look.
+   */
+  look?: GlassLookInput;
 }
 
 export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
@@ -51,6 +59,7 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     optics,
     geometry,
     filterId,
+    look,
     onPointerMove,
     onPointerLeave,
     onPointerDown,
@@ -84,6 +93,7 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     backdropFilter: runtime.capabilities.backdropFilter,
     reducedTransparency: runtime.capabilities.reducedTransparency,
     forcedColors: runtime.capabilities.forcedColors,
+    design: theme.design,
     // Only forward an explicitly supplied frost. Passing the preset's own value
     // unconditionally would round-trip through the interpolation for every
     // surface, and a caller that never set `optics` should get the preset's
@@ -91,16 +101,24 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     ...(optics?.frost === undefined ? {} : { frost: optics.frost }),
   });
   const materialStyle = createCssMaterialStyle(tokens);
+  // In liquid the stylesheet draws one ring exactly on the outer edge. A
+  // painted border would sit beside it as a second, offset contour, so the
+  // border is collapsed. Forced colors keeps it: there the system draws edges.
+  // Pass `style={{ borderWidth }}` to keep a border anyway.
+  const edge =
+    theme.design === "liquid" && !runtime.capabilities.forcedColors ? { borderWidth: 0 } : {};
   const mergedStyle = {
     ...tokens,
     ...materialStyle,
+    ...edge,
     "--ogui-pointer-x": "0",
     "--ogui-pointer-y": "0",
     "--ogui-pointer-distance": "0",
     "--ogui-press": "0",
+    ...(look === undefined ? {} : createGlassLookTokens(look)),
     ...(filterId && decision.renderer !== "css" ? { filter: `url(#${filterId})` } : {}),
     ...style,
-  } as CSSProperties;
+  } as unknown as CSSProperties;
 
   return createElement(
     as,
@@ -130,6 +148,7 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
         onPointerCancel?.(event);
       },
       "data-ogui-glass": "",
+      "data-ogui-design": theme.design,
       "data-ogui-material": material,
       "data-ogui-tone": resolvedTone,
       "data-ogui-renderer": decision.renderer,

@@ -1,10 +1,27 @@
+import type { GlassLookInput } from "./look";
+
 export type GlassAppearance = "dark" | "light";
 export type GlassAppearancePreference = GlassAppearance | "system";
 export type GlassContrast = "standard" | "high";
 export type GlassRadius = "sharp" | "balanced" | "soft";
+/**
+ * The visual language the recipes render in.
+ *
+ * - `liquid` (default since 0.4): clear, highly saturated glass with
+ *   directional specular rims, capsule controls, and fluid selection.
+ * - `classic`: the 0.1 to 0.3 look, kept byte-for-byte so existing products can
+ *   upgrade the package without a visual change.
+ */
+export type GlassDesign = "liquid" | "classic";
 export type GlassThemePreset = "neutral" | "cobalt" | "teal" | "violet" | "coral" | "amber";
 
 export interface GlassThemeInput {
+  /**
+   * Art direction for the liquid design: a preset name or individual
+   * multipliers. Written as `--ogui-glass-*` custom properties on the theme
+   * boundary; ignored by the classic design.
+   */
+  glass?: GlassLookInput;
   preset?: GlassThemePreset;
   accent?: string;
   secondary?: string;
@@ -40,6 +57,8 @@ export interface GlassThemePalette {
   warningInk: string;
   radiusControl: string;
   radiusSurface: string;
+  /** Radius for pill-shaped controls. Optional so hand-built palettes stay valid. */
+  radiusCapsule?: string;
   accentContrast: number;
 }
 
@@ -69,6 +88,7 @@ export interface GlassThemeTokens {
   "--ogui-color-warning-ink": string;
   "--ogui-radius-control": string;
   "--ogui-radius-surface": string;
+  "--ogui-radius-capsule"?: string;
 }
 
 const HEX_COLOR = /^#(?:[\da-f]{3}|[\da-f]{6})$/i;
@@ -103,10 +123,10 @@ const PRESET_ACCENTS: Record<
   },
 };
 
-const RADII: Record<GlassRadius, { control: string; surface: string }> = {
-  sharp: { control: "0.5rem", surface: "0.75rem" },
-  balanced: { control: "0.8rem", surface: "1.2rem" },
-  soft: { control: "1.05rem", surface: "1.65rem" },
+const RADII: Record<GlassRadius, { control: string; surface: string; capsule: string }> = {
+  sharp: { control: "0.5rem", surface: "0.75rem", capsule: "0.5rem" },
+  balanced: { control: "0.8rem", surface: "1.2rem", capsule: "999px" },
+  soft: { control: "1.05rem", surface: "1.65rem", capsule: "999px" },
 };
 
 function expandHex(color: string) {
@@ -216,6 +236,7 @@ export function createGlassTheme(
     warningInk: readableForeground(warning),
     radiusControl: radius.control,
     radiusSurface: radius.surface,
+    radiusCapsule: radius.capsule,
     accentContrast: contrastRatio(accent, accentInk),
   };
 }
@@ -247,5 +268,6 @@ export function createGlassThemeTokens(palette: GlassThemePalette): GlassThemeTo
     "--ogui-color-warning-ink": palette.warningInk,
     "--ogui-radius-control": palette.radiusControl,
     "--ogui-radius-surface": palette.radiusSurface,
+    "--ogui-radius-capsule": palette.radiusCapsule ?? "999px",
   };
 }

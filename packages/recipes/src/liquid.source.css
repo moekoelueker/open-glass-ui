@@ -1,0 +1,1346 @@
+/*
+ * OpenGlass UI: liquid design.
+ *
+ * Everything in this file is scoped to `[data-ogui-design="liquid"]`, which the
+ * theme provider sets by default. A generator
+ * (scripts/generate-liquid-css.mjs) appends a zero-specificity guard to the
+ * subject of every rule so the nearest design wins when scopes nest: a classic
+ * island inside a liquid app, or a liquid island inside a classic app for
+ * incremental adoption, both render correctly.
+ *
+ * Edit liquid.source.css, then run `pnpm generate:liquid`. liquid.css is
+ * generated and must not be edited by hand. Wrapping the scope in `:where()` keeps every
+ * rule at exactly the specificity of the classic rule it replaces, so consumer
+ * overrides written against 0.3 class names keep winning, and
+ * `design="classic"` removes this layer entirely.
+ */
+
+@property --ogui-lg-glint {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Scope tokens. Dark is the default; light overrides it wherever the nearest */
+/* appearance or tone says so, so a light toolbar inside a dark page works.  */
+/* ------------------------------------------------------------------------ */
+
+/*
+ * Composite tokens are re-resolved on every liquid scope root and on every
+ * Glass element (each carries data-ogui-design), so a `look` set on a theme
+ * boundary or on one Glass re-art-directs the controls inside it too.
+ *
+ * Public knobs (all multipliers, 1 = default, unless noted):
+ *   --ogui-glass-blur, --ogui-glass-opacity, --ogui-glass-saturation,
+ *   --ogui-glass-brightness, --ogui-glass-rim, --ogui-glass-lensing,
+ *   --ogui-glass-shadow, --ogui-glass-tint (a colour),
+ *   --ogui-glass-light-angle (0deg = top, clockwise),
+ *   --ogui-glass-light-spread (degrees of lit edge).
+ */
+:where([data-ogui-design="liquid"]),
+:where([data-ogui-design="liquid"]) :where([data-ogui-tone="dark"], [data-ogui-appearance="dark"]) {
+  --ogui-lg-fill: rgb(255 255 255 / calc(0.1 * var(--ogui-glass-opacity, 1)));
+  --ogui-lg-fill-hover: rgb(255 255 255 / calc(0.16 * var(--ogui-glass-opacity, 1)));
+  --ogui-lg-fill-active: rgb(255 255 255 / calc(0.22 * var(--ogui-glass-opacity, 1)));
+  --ogui-lg-thumb: rgb(255 255 255 / 0.2);
+  --ogui-lg-well: rgb(0 0 0 / 0.22);
+  --ogui-lg-well-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 0.3), inset 0 0 0 0.5px rgb(255 255 255 / 0.07),
+    inset 0 -1px 0 rgb(255 255 255 / 0.07);
+  --ogui-lg-hairline: rgb(255 255 255 / 0.12);
+  /* Ring colours: a quiet hairline all the way round, a specular highlight
+     where the light enters, and a faint counter-reflection opposite it. */
+  --ogui-lg-edge: rgb(255 255 255 / calc(0.14 * var(--ogui-glass-rim, 1)));
+  --ogui-lg-spec: rgb(
+    255 255 255 /
+    calc(0.85 * var(--ogui-glass-rim, 1) * var(--ogui-glass-highlight, 1))
+  );
+  --ogui-lg-spec-counter: rgb(
+    255 255 255 /
+    calc(0.3 * var(--ogui-glass-rim, 1) * var(--ogui-glass-highlight, 1))
+  );
+  /* Edge lensing: the brighter inner band that reads as thickness. */
+  --ogui-lg-rim: inset 0 0 calc(14px * var(--ogui-glass-lensing, 1))
+    rgb(255 255 255 / calc(0.05 * var(--ogui-glass-lensing, 1)));
+  /* Inner bloom on the lit side, following the light angle. */
+  --ogui-lg-bloom: inset calc(sin(var(--ogui-glass-light-angle, 340deg)) * -10px)
+    calc(cos(var(--ogui-glass-light-angle, 340deg)) * 10px) 16px -12px
+    rgb(255 255 255 / calc(0.24 * var(--ogui-glass-rim, 1)));
+  --ogui-lg-lift:
+    0 1px 2px rgb(0 0 0 / calc(0.18 * var(--ogui-glass-shadow, 1))),
+    0 6px 18px -6px rgb(0 0 0 / calc(0.4 * var(--ogui-glass-shadow, 1)));
+  --ogui-lg-lift-high:
+    0 2px 4px rgb(0 0 0 / calc(0.16 * var(--ogui-glass-shadow, 1))),
+    0 24px 64px -12px rgb(0 0 0 / calc(0.58 * var(--ogui-glass-shadow, 1)));
+  --ogui-lg-blur: blur(calc(12px * var(--ogui-glass-blur, 1)))
+    saturate(calc(1.8 * var(--ogui-glass-saturation, 1)))
+    brightness(calc(0.66 * var(--ogui-glass-brightness, 1)));
+  --ogui-lg-blur-heavy: blur(calc(36px * var(--ogui-glass-blur, 1)))
+    saturate(calc(1.8 * var(--ogui-glass-saturation, 1)))
+    brightness(calc(0.6 * var(--ogui-glass-brightness, 1)));
+  --ogui-lg-blur-surface: blur(calc(24px * var(--ogui-glass-blur, 1)))
+    saturate(calc(1.8 * var(--ogui-glass-saturation, 1)))
+    brightness(calc(0.56 * var(--ogui-glass-brightness, 1)));
+  --ogui-lg-surface: color-mix(
+    in srgb,
+    var(--ogui-glass-tint-dark, var(--ogui-glass-tint, rgb(16 18 24)))
+      min(100%, calc(42% * var(--ogui-glass-opacity, 1))),
+    transparent
+  );
+  --ogui-lg-sheet: color-mix(
+    in srgb,
+    var(--ogui-glass-tint-dark, var(--ogui-glass-tint, rgb(22 24 30)))
+      min(100%, calc(62% * var(--ogui-glass-opacity, 1))),
+    transparent
+  );
+  --ogui-lg-knob: #fff;
+  /* Knob shadows stay nearly concentric so the knob sits visually centred. */
+  --ogui-lg-knob-shadow:
+    0 0 0 0.5px rgb(0 0 0 / 0.12), 0 1px 3px rgb(0 0 0 / 0.28), 0 3px 10px -3px rgb(0 0 0 / 0.26);
+  --ogui-lg-specular: rgb(255 255 255 / 0.26);
+  --ogui-lg-scrim: rgb(6 8 12 / 0.34);
+  --ogui-lg-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ogui-lg-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:where([data-ogui-design="liquid"][data-ogui-appearance="light"]),
+:where([data-ogui-design="liquid"])
+  :where([data-ogui-tone="light"], [data-ogui-appearance="light"]) {
+  --ogui-lg-fill: rgb(255 255 255 / calc(0.52 * var(--ogui-glass-opacity, 1)));
+  --ogui-lg-fill-hover: rgb(255 255 255 / calc(0.7 * var(--ogui-glass-opacity, 1)));
+  --ogui-lg-fill-active: rgb(255 255 255 / calc(0.82 * var(--ogui-glass-opacity, 1)));
+  --ogui-lg-thumb: rgb(255 255 255 / 0.94);
+  --ogui-lg-well: rgb(24 32 44 / 0.075);
+  --ogui-lg-well-shadow:
+    inset 0 1px 2px rgb(24 32 44 / 0.12), inset 0 0 0 0.5px rgb(24 32 44 / 0.06),
+    inset 0 -1px 0 rgb(255 255 255 / 0.6);
+  --ogui-lg-hairline: rgb(24 32 44 / 0.1);
+  --ogui-lg-edge: rgb(24 32 44 / calc(0.1 * var(--ogui-glass-rim, 1)));
+  --ogui-lg-spec: rgb(
+    255 255 255 /
+    calc(1 * var(--ogui-glass-rim, 1) * var(--ogui-glass-highlight, 1))
+  );
+  --ogui-lg-spec-counter: rgb(
+    255 255 255 /
+    calc(0.75 * var(--ogui-glass-rim, 1) * var(--ogui-glass-highlight, 1))
+  );
+  --ogui-lg-rim: inset 0 0 calc(14px * var(--ogui-glass-lensing, 1))
+    rgb(255 255 255 / calc(0.3 * var(--ogui-glass-lensing, 1)));
+  --ogui-lg-bloom: inset calc(sin(var(--ogui-glass-light-angle, 340deg)) * -10px)
+    calc(cos(var(--ogui-glass-light-angle, 340deg)) * 10px) 16px -12px
+    rgb(255 255 255 / calc(0.7 * var(--ogui-glass-rim, 1)));
+  --ogui-lg-lift:
+    0 1px 2px rgb(24 32 44 / calc(0.07 * var(--ogui-glass-shadow, 1))),
+    0 6px 18px -6px rgb(24 32 44 / calc(0.2 * var(--ogui-glass-shadow, 1)));
+  --ogui-lg-lift-high:
+    0 2px 4px rgb(24 32 44 / calc(0.06 * var(--ogui-glass-shadow, 1))),
+    0 24px 64px -12px rgb(24 32 44 / calc(0.3 * var(--ogui-glass-shadow, 1)));
+  --ogui-lg-blur: blur(calc(12px * var(--ogui-glass-blur, 1)))
+    saturate(calc(1.8 * var(--ogui-glass-saturation, 1)))
+    brightness(calc(1.1 * var(--ogui-glass-brightness, 1)));
+  --ogui-lg-blur-heavy: blur(calc(36px * var(--ogui-glass-blur, 1)))
+    saturate(calc(1.8 * var(--ogui-glass-saturation, 1)))
+    brightness(calc(1.06 * var(--ogui-glass-brightness, 1)));
+  --ogui-lg-blur-surface: blur(calc(24px * var(--ogui-glass-blur, 1)))
+    saturate(calc(1.8 * var(--ogui-glass-saturation, 1)))
+    brightness(calc(1.08 * var(--ogui-glass-brightness, 1)));
+  --ogui-lg-surface: color-mix(
+    in srgb,
+    var(--ogui-glass-tint-light, var(--ogui-glass-tint, rgb(255 255 255)))
+      min(100%, calc(52% * var(--ogui-glass-opacity, 1))),
+    transparent
+  );
+  --ogui-lg-sheet: color-mix(
+    in srgb,
+    var(--ogui-glass-tint-light, var(--ogui-glass-tint, rgb(250 250 252)))
+      min(100%, calc(62% * var(--ogui-glass-opacity, 1))),
+    transparent
+  );
+  --ogui-lg-knob-shadow:
+    0 0 0 0.5px rgb(24 32 44 / 0.08), 0 1px 3px rgb(24 32 44 / 0.14),
+    0 3px 10px -3px rgb(24 32 44 / 0.14);
+  --ogui-lg-specular: rgb(255 255 255 / 0.7);
+  --ogui-lg-scrim: rgb(230 234 240 / 0.3);
+}
+
+/* ------------------------------------------------------------------------ */
+/* The specular ring. One mask-cut ring sits exactly on the outer edge (the  */
+/* border is not painted in liquid), so there is a single clean contour. The */
+/* highlight is a conic sweep aimed at --ogui-glass-light-angle.             */
+/* ------------------------------------------------------------------------ */
+
+:where([data-ogui-design="liquid"])
+:where(.ogui-toolbar, .ogui-dock, .ogui-badge, .ogui-alert, .ogui-accordion, .ogui-toast),
+:where([data-ogui-glass][data-ogui-design="liquid"]) {
+  position: relative;
+}
+
+:where([data-ogui-design="liquid"])
+  :where(
+    .ogui-button,
+    .ogui-overlay-trigger > button,
+    .ogui-toast__restore,
+    .ogui-toggle-button,
+    .ogui-segments__indicator,
+    .ogui-tabs__indicator,
+    .ogui-toolbar,
+    .ogui-dock,
+    .ogui-card,
+    .ogui-toast,
+    .ogui-accordion,
+    .ogui-overlay__surface,
+    .ogui-overlay__header > button,
+    .ogui-tooltip__bubble,
+    .ogui-badge,
+    .ogui-avatar,
+    .ogui-alert,
+    .ogui-banner,
+    .ogui-pagination button[aria-current="page"]
+  )::after,
+:where([data-ogui-glass][data-ogui-design="liquid"]:not([data-ogui-rim="off"]))::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  padding: var(--ogui-glass-rim-width, 1px);
+  border-radius: inherit;
+  background:
+    conic-gradient(
+      from calc(var(--ogui-glass-light-angle, 340deg) - var(--ogui-glass-light-spread, 110deg) / 2),
+      transparent 0deg,
+      var(--ogui-lg-spec) calc(var(--ogui-glass-light-spread, 110deg) / 2),
+      transparent var(--ogui-glass-light-spread, 110deg),
+      transparent 180deg,
+      var(--ogui-lg-spec-counter) calc(180deg + var(--ogui-glass-light-spread, 110deg) / 2),
+      transparent calc(180deg + var(--ogui-glass-light-spread, 110deg))
+    ),
+    linear-gradient(var(--ogui-lg-edge), var(--ogui-lg-edge));
+  content: "";
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+/* The ring is the edge, so the border keeps its box but is never painted. */
+:where([data-ogui-design="liquid"]) .ogui-button,
+:where([data-ogui-design="liquid"]) .ogui-overlay-trigger > button,
+:where([data-ogui-design="liquid"]) .ogui-toast__restore,
+:where([data-ogui-design="liquid"]) .ogui-toggle-button,
+:where([data-ogui-design="liquid"]) .ogui-toolbar,
+:where([data-ogui-design="liquid"]) .ogui-dock,
+:where([data-ogui-design="liquid"]) .ogui-card,
+:where([data-ogui-design="liquid"]) .ogui-toast,
+:where([data-ogui-design="liquid"]) .ogui-overlay__surface,
+:where([data-ogui-design="liquid"]) .ogui-tooltip__bubble,
+:where([data-ogui-design="liquid"]) .ogui-badge,
+:where([data-ogui-design="liquid"]) .ogui-avatar,
+:where([data-ogui-design="liquid"]) .ogui-alert,
+:where([data-ogui-design="liquid"]) .ogui-banner,
+.ogui-disclosure__surface:where([data-ogui-design="liquid"]) {
+  border-color: transparent;
+  border-width: 0;
+}
+
+/* Every recipe reads its surfaces from these semantic variables, so remapping
+   them once gives the whole atlas the liquid palette. */
+:where([data-ogui-design="liquid"])
+:where(
+  .ogui-button,
+  .ogui-segments,
+  .ogui-switch,
+  .ogui-slider,
+  .ogui-toolbar,
+  .ogui-dock,
+  .ogui-tabs,
+  .ogui-disclosure,
+  .ogui-tooltip,
+  .ogui-media,
+  .ogui-badge,
+  .ogui-avatar,
+  .ogui-avatar-group,
+  .ogui-card,
+  .ogui-stat,
+  .ogui-progress,
+  .ogui-meter,
+  .ogui-spinner,
+  .ogui-skeleton,
+  .ogui-alert,
+  .ogui-banner,
+  .ogui-breadcrumbs,
+  .ogui-pagination,
+  .ogui-accordion,
+  .ogui-overlay-trigger,
+  .ogui-toast,
+  .ogui-check,
+  .ogui-radio-group,
+  .ogui-field,
+  .ogui-search,
+  .ogui-stepper,
+  .ogui-toggle-button,
+  .ogui-dropzone
+) {
+  --ogui-hairline: var(--ogui-lg-hairline);
+  /* Vibrant secondary text: muted pulled towards the ink for legibility. */
+  --ogui-muted: color-mix(
+    in srgb,
+    var(--ogui-material-muted, var(--ogui-color-muted, #c9cbc7)) 55%,
+    var(--ogui-material-text, var(--ogui-color-text, #f7f6f0))
+  );
+  --ogui-control: var(--ogui-lg-fill);
+  --ogui-control-hover: var(--ogui-lg-fill-hover);
+  --ogui-control-active: var(--ogui-lg-fill-active);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Glass controls                                                           */
+/* ------------------------------------------------------------------------ */
+
+:where([data-ogui-design="liquid"]) .ogui-button,
+:where([data-ogui-design="liquid"]) .ogui-overlay-trigger > button,
+:where([data-ogui-design="liquid"]) .ogui-toast__restore,
+:where([data-ogui-design="liquid"]) .ogui-toggle-button {
+  border-color: transparent;
+  border-radius: var(--ogui-radius-capsule, 999px);
+  background:
+    radial-gradient(
+      circle at var(--ogui-light-x, 50%) var(--ogui-light-y, 0%),
+      rgb(255 255 255 / calc(var(--ogui-lg-glint) * 0.34)),
+      transparent 62%
+    )
+    no-repeat,
+    var(--ogui-control);
+  box-shadow: var(--ogui-lg-rim), var(--ogui-lg-bloom), var(--ogui-lg-lift);
+  -webkit-backdrop-filter: var(--ogui-lg-blur);
+  backdrop-filter: var(--ogui-lg-blur);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition:
+    background-color 220ms var(--ogui-lg-ease),
+    box-shadow 260ms var(--ogui-lg-ease),
+    color 180ms ease,
+    filter 220ms ease,
+    transform 420ms var(--ogui-lg-spring),
+    --ogui-lg-glint 320ms var(--ogui-lg-ease);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-button:hover:not(:disabled),
+:where([data-ogui-design="liquid"]) .ogui-overlay-trigger > button:hover:not(:disabled),
+:where([data-ogui-design="liquid"]) .ogui-toast__restore:hover:not(:disabled),
+:where([data-ogui-design="liquid"]) .ogui-toggle-button:hover:not(:disabled) {
+  --ogui-lg-glint: 1;
+  background-color: var(--ogui-control-hover);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-button:active:not(:disabled),
+:where([data-ogui-design="liquid"]) .ogui-overlay-trigger > button:active,
+:where([data-ogui-design="liquid"]) .ogui-toggle-button:active {
+  --ogui-lg-glint: 1.4;
+  background-color: var(--ogui-control-active);
+  transform: scale(0.965);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-control--small {
+  min-height: 2.25rem;
+  padding-inline: 0.9rem;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-control--medium {
+  min-height: 2.75rem;
+  padding-inline: 1.2rem;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-control--large {
+  min-height: 3.25rem;
+  padding-inline: 1.55rem;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-icon-button {
+  padding-inline: 0;
+}
+
+/* Tinted glass: the accent is the fill, but it stays lit like glass. */
+:where([data-ogui-design="liquid"]) .ogui-button--primary {
+  color: var(--ogui-accent-ink);
+  background:
+    radial-gradient(
+      circle at var(--ogui-light-x, 50%) var(--ogui-light-y, 0%),
+      rgb(255 255 255 / calc(var(--ogui-lg-glint) * 0.4)),
+      transparent 60%
+    )
+    no-repeat,
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--ogui-accent), white 16%),
+      color-mix(in srgb, var(--ogui-accent), transparent 6%)
+    );
+  box-shadow:
+    inset calc(sin(var(--ogui-glass-light-angle, 340deg)) * -10px)
+    calc(cos(var(--ogui-glass-light-angle, 340deg)) * 10px) 14px -10px rgb(255 255 255 / 0.5),
+    0 1px 2px rgb(0 0 0 / 0.16),
+    0 10px 28px -8px color-mix(in srgb, var(--ogui-accent), transparent 42%);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-button--primary:hover:not(:disabled) {
+  filter: brightness(1.05) saturate(1.05);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-button--quiet {
+  background-color: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-button--quiet:hover:not(:disabled) {
+  background-color: var(--ogui-control);
+  box-shadow: var(--ogui-lg-rim);
+}
+
+/* Quiet buttons only become glass, ring included, on hover. */
+:where([data-ogui-design="liquid"]) .ogui-button--quiet::after {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-button--quiet:hover:not(:disabled)::after {
+  opacity: 1;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-button--danger {
+  color: var(--ogui-color-danger, #ff8176);
+  background-color: color-mix(in srgb, var(--ogui-accent), transparent 82%);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-button--danger:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--ogui-accent), transparent 72%);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-button:disabled {
+  opacity: 0.42;
+  box-shadow: var(--ogui-lg-rim);
+}
+
+:where([data-ogui-design="liquid"])
+  :is(
+    .ogui-button,
+    .ogui-segments button,
+    .ogui-tabs button,
+    .ogui-menu__item,
+    .ogui-pagination button,
+    .ogui-toggle-button,
+    .ogui-overlay-trigger > button,
+    .ogui-overlay__header button,
+    .ogui-search button,
+    .ogui-number__control button,
+    .ogui-accordion button,
+    .ogui-stepper button
+  ):focus-visible {
+  outline: 2px solid var(--ogui-focus);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Selection that flows: segmented control and tabs share one glass thumb   */
+/* that springs between items.                                              */
+/* ------------------------------------------------------------------------ */
+
+:where([data-ogui-design="liquid"]) :is(.ogui-segments, .ogui-tabs__list, .ogui-pagination) {
+  position: relative;
+  isolation: isolate;
+  gap: 0.125rem;
+  padding: 0.1875rem;
+  border-color: transparent;
+  border-radius: var(--ogui-radius-capsule, 999px);
+  background: var(--ogui-lg-well);
+  box-shadow: var(--ogui-lg-well-shadow);
+  -webkit-backdrop-filter: var(--ogui-lg-blur);
+  backdrop-filter: var(--ogui-lg-blur);
+}
+
+:where([data-ogui-design="liquid"]) :is(.ogui-segments__indicator, .ogui-tabs__indicator) {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  display: block;
+  width: var(--ogui-indicator-w, 0);
+  height: var(--ogui-indicator-h, 0);
+  border-radius: var(--ogui-radius-capsule, 999px);
+  background: var(--ogui-lg-thumb);
+  box-shadow: var(--ogui-lg-rim), var(--ogui-lg-bloom), var(--ogui-lg-lift);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(var(--ogui-indicator-x, 0), var(--ogui-indicator-y, 0));
+  transition:
+    transform 520ms var(--ogui-lg-spring),
+    width 520ms var(--ogui-lg-spring),
+    height 520ms var(--ogui-lg-spring),
+    opacity 200ms ease;
+}
+
+:where([data-ogui-design="liquid"])
+  :is(.ogui-segments, .ogui-tabs__list)[data-ogui-indicator="ready"]
+  :is(.ogui-segments__indicator, .ogui-tabs__indicator) {
+  opacity: 1;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-segments__item {
+  min-height: 2.125rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: var(--ogui-radius-capsule, 999px);
+  font-weight: 560;
+  transition:
+    color 200ms ease,
+    background-color 200ms ease;
+}
+
+/* Before hydration measures the thumb, the selected item carries it itself. */
+:where([data-ogui-design="liquid"]) .ogui-segments__item[aria-pressed="true"] {
+  color: var(--ogui-ink);
+  background: var(--ogui-lg-thumb);
+  box-shadow: var(--ogui-lg-rim), var(--ogui-lg-lift);
+}
+
+:where([data-ogui-design="liquid"])
+  .ogui-segments[data-ogui-indicator="ready"]
+  .ogui-segments__item[aria-pressed="true"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+:where([data-ogui-design="liquid"])
+  .ogui-segments__item:hover:not(:disabled):not([aria-pressed="true"]) {
+  color: var(--ogui-ink);
+  background-color: transparent;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-tabs__list {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border-bottom: 0;
+  scrollbar-width: none;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-tabs__list button {
+  min-height: 2.125rem;
+  padding: 0 1rem;
+  border-radius: var(--ogui-radius-capsule, 999px);
+  font-weight: 560;
+  white-space: nowrap;
+  transition: color 200ms ease;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-tabs__list button:hover:not(:disabled) {
+  color: var(--ogui-ink);
+  background-color: transparent;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-tabs__list button[aria-selected="true"] {
+  background: var(--ogui-lg-thumb);
+  box-shadow: var(--ogui-lg-rim);
+}
+
+:where([data-ogui-design="liquid"])
+  .ogui-tabs__list[data-ogui-indicator="ready"]
+  button[aria-selected="true"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-tabs__list button[aria-selected="true"]::after {
+  content: none;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-tabs__panel {
+  padding-block: 1.1rem 0.25rem;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Switch: a pill thumb that swells into a clear lens while it is held.     */
+/* ------------------------------------------------------------------------ */
+
+:where([data-ogui-design="liquid"]) .ogui-switch__track {
+  width: 3.1rem;
+  height: 1.75rem;
+  border: 0;
+  background: var(--ogui-lg-well);
+  /* Symmetric inner shading. A top-heavy well makes a perfectly centred
+     thumb read as sitting high and to the left. */
+  box-shadow:
+    inset 0 0 0 0.5px var(--ogui-lg-hairline),
+    inset 0 0 3px rgb(0 0 0 / 0.12);
+  transition: background-color 260ms var(--ogui-lg-ease);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-switch__thumb {
+  top: 0.1875rem;
+  left: 0.1875rem;
+  width: 1.9rem;
+  height: 1.375rem;
+  border-radius: 999px;
+  background: var(--ogui-lg-knob);
+  box-shadow: var(--ogui-lg-knob-shadow);
+  transition:
+    transform 460ms var(--ogui-lg-spring),
+    background-color 200ms ease,
+    box-shadow 200ms ease,
+    scale 320ms var(--ogui-lg-spring);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-switch input:checked ~ .ogui-switch__track {
+  background: var(--ogui-accent);
+  box-shadow:
+    inset 0 0 0 0.5px rgb(0 0 0 / 0.08),
+    inset 0 0 3px rgb(0 0 0 / 0.12);
+}
+
+:where([data-ogui-design="liquid"])
+  .ogui-switch
+  input:checked
+  ~ .ogui-switch__track
+  .ogui-switch__thumb {
+  transform: translateX(0.825rem);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-switch:active .ogui-switch__thumb {
+  background: rgb(255 255 255 / 0.4);
+  box-shadow:
+    inset 1px 1px 0 -0.25px rgb(255 255 255 / 0.9),
+    inset -1px -1px 0 -0.25px rgb(255 255 255 / 0.4),
+    0 0 0 0.5px rgb(0 0 0 / 0.08),
+    0 4px 14px rgb(0 0 0 / 0.22);
+  -webkit-backdrop-filter: blur(1px) saturate(2.2) brightness(1.12);
+  backdrop-filter: blur(1px) saturate(2.2) brightness(1.12);
+  scale: 1.22 1.3;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Range: accent fill in a recessed channel, pill thumb that becomes a lens. */
+/* ------------------------------------------------------------------------ */
+
+:where([data-ogui-design="liquid"]) :is(.ogui-slider input, .ogui-media input) {
+  --ogui-lg-track: 0.375rem;
+  --ogui-lg-knob-w: 1.75rem;
+  --ogui-lg-knob-h: 1.125rem;
+  height: 1.75rem;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+:where([data-ogui-design="liquid"])
+  :is(.ogui-slider input, .ogui-media input)::-webkit-slider-runnable-track {
+  height: var(--ogui-lg-track);
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--ogui-accent) 0
+      calc(
+        var(--ogui-lg-knob-w) /
+        2 +
+        (100% - var(--ogui-lg-knob-w)) *
+        var(--ogui-range-progress, 0)
+      ),
+    var(--ogui-lg-well) 0
+  );
+  box-shadow: var(--ogui-lg-well-shadow);
+}
+
+:where([data-ogui-design="liquid"])
+  :is(.ogui-slider input, .ogui-media input)::-webkit-slider-thumb {
+  width: var(--ogui-lg-knob-w);
+  height: var(--ogui-lg-knob-h);
+  margin-top: calc((var(--ogui-lg-track) - var(--ogui-lg-knob-h)) / 2);
+  border: 0;
+  border-radius: 999px;
+  background: var(--ogui-lg-knob);
+  box-shadow: var(--ogui-lg-knob-shadow);
+  transition:
+    transform 360ms var(--ogui-lg-spring),
+    background-color 200ms ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+:where([data-ogui-design="liquid"])
+  :is(.ogui-slider input, .ogui-media input):active::-webkit-slider-thumb {
+  background: rgb(255 255 255 / 0.45);
+  box-shadow:
+    inset 1px 1px 0 -0.25px rgb(255 255 255 / 0.95),
+    inset -1px -1px 0 -0.25px rgb(255 255 255 / 0.45),
+    0 0 0 0.5px rgb(0 0 0 / 0.1),
+    0 6px 16px rgb(0 0 0 / 0.24);
+  transform: scale(1.3, 1.45);
+}
+
+:where([data-ogui-design="liquid"]) :is(.ogui-slider input, .ogui-media input)::-moz-range-track {
+  height: var(--ogui-lg-track);
+  border-radius: 999px;
+  background: var(--ogui-lg-well);
+  box-shadow: var(--ogui-lg-well-shadow);
+}
+
+:where([data-ogui-design="liquid"])
+  :is(.ogui-slider input, .ogui-media input)::-moz-range-progress {
+  height: var(--ogui-lg-track);
+  border-radius: 999px;
+  background: var(--ogui-accent);
+}
+
+:where([data-ogui-design="liquid"]) :is(.ogui-slider input, .ogui-media input)::-moz-range-thumb {
+  width: var(--ogui-lg-knob-w);
+  height: var(--ogui-lg-knob-h);
+  border: 0;
+  border-radius: 999px;
+  background: var(--ogui-lg-knob);
+  box-shadow: var(--ogui-lg-knob-shadow);
+  transition: transform 360ms var(--ogui-lg-spring);
+}
+
+:where([data-ogui-design="liquid"])
+  :is(.ogui-slider input, .ogui-media input):active::-moz-range-thumb {
+  background: rgb(255 255 255 / 0.45);
+  transform: scale(1.3, 1.45);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-slider {
+  gap: 0.35rem;
+  font-weight: 560;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-media {
+  --ogui-lg-knob-w: 1.1rem;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Floating glass groups                                                    */
+/* ------------------------------------------------------------------------ */
+
+:where([data-ogui-design="liquid"]) :is(.ogui-toolbar, .ogui-dock) {
+  gap: 0.2rem;
+  padding: 0.3rem;
+  border-radius: var(--ogui-radius-capsule, 999px);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-toolbar[data-orientation="vertical"] {
+  border-radius: calc(var(--ogui-radius-surface, 1.2rem) + 0.3rem);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-dock {
+  padding: 0.4rem;
+}
+
+:where([data-ogui-design="liquid"])
+  :is(.ogui-toolbar, .ogui-dock)
+  .ogui-button--quiet:hover:not(:disabled) {
+  background-color: var(--ogui-lg-fill);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-dock .ogui-button:hover:not(:disabled) {
+  transform: translateY(-0.2rem) scale(1.12);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-dock .ogui-button:active:not(:disabled) {
+  transform: translateY(-0.1rem) scale(1.02);
+}
+
+/* Menus and popovers: glass that blooms out of its trigger. */
+.ogui-disclosure__surface:where([data-ogui-design="liquid"]) {
+  border-radius: calc(var(--ogui-radius-surface, 1.2rem) + 0.1rem);
+  animation: ogui-lg-bloom-in 360ms var(--ogui-lg-spring) both;
+  transform-origin: top center;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-menu__items {
+  gap: 0.0625rem;
+  padding: 0.375rem;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-menu__item {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: calc(var(--ogui-radius-surface, 1.2rem) - 0.375rem);
+  font-weight: 500;
+  transition: background-color 140ms ease;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-menu__item:hover:not(:disabled) {
+  background-color: var(--ogui-lg-fill-hover);
+}
+
+@keyframes ogui-lg-bloom-in {
+  from {
+    opacity: 0;
+    scale: 0.92;
+    translate: 0 -0.35rem;
+  }
+}
+
+:where([data-ogui-design="liquid"]) .ogui-tooltip__bubble {
+  padding: 0.4rem 0.7rem;
+  border-color: transparent;
+  border-radius: var(--ogui-radius-capsule, 999px);
+  color: var(--ogui-color-text, #f8f6ef);
+  background: var(--ogui-lg-sheet);
+  box-shadow: var(--ogui-lg-rim), var(--ogui-lg-lift);
+  -webkit-backdrop-filter: var(--ogui-lg-blur-heavy);
+  backdrop-filter: var(--ogui-lg-blur-heavy);
+  font-weight: 560;
+  transition:
+    opacity 160ms ease,
+    transform 320ms var(--ogui-lg-spring);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Surfaces                                                                 */
+/* ------------------------------------------------------------------------ */
+
+:where([data-ogui-design="liquid"]) :is(.ogui-card, .ogui-toast, .ogui-accordion) {
+  border-color: transparent;
+  background:
+    linear-gradient(
+      calc(var(--ogui-glass-light-angle, 340deg) + 180deg),
+      rgb(255 255 255 / calc(0.07 * var(--ogui-glass-rim, 1))),
+      transparent 42%
+    ),
+    var(--ogui-lg-surface);
+  box-shadow: var(--ogui-lg-rim), var(--ogui-lg-bloom), var(--ogui-lg-lift);
+  -webkit-backdrop-filter: var(--ogui-lg-blur-surface);
+  backdrop-filter: var(--ogui-lg-blur-surface);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-card {
+  border-radius: var(--ogui-radius-surface, 1.2rem);
+  padding: 1.1rem;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-card::before {
+  content: none;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-card.is-interactive {
+  transition:
+    box-shadow 260ms var(--ogui-lg-ease),
+    transform 460ms var(--ogui-lg-spring),
+    background-color 200ms ease;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-card.is-interactive:hover,
+:where([data-ogui-design="liquid"]) .ogui-card.is-interactive:focus-visible {
+  border-color: transparent;
+  background-color: var(--ogui-control-hover);
+  box-shadow: var(--ogui-lg-rim), var(--ogui-lg-bloom), var(--ogui-lg-lift-high);
+  transform: translateY(-0.2rem) scale(1.01);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-card__eyebrow {
+  letter-spacing: 0.08em;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-card__title {
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-accordion {
+  padding-inline: 1rem;
+  border-block: 0;
+  border-radius: var(--ogui-radius-surface, 1.2rem);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-accordion :is(h2, h3, h4, h5, h6) button {
+  padding-block: 0.9rem;
+  font-weight: 600;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-accordion :is(h2, h3, h4, h5, h6) i {
+  transition: transform 420ms var(--ogui-lg-spring);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-toast {
+  border-radius: calc(var(--ogui-radius-surface, 1.2rem) + 0.2rem);
+  padding: 0.75rem 0.8rem;
+  background: var(--ogui-lg-sheet);
+  box-shadow: var(--ogui-lg-rim), var(--ogui-lg-bloom), var(--ogui-lg-lift-high);
+  -webkit-backdrop-filter: var(--ogui-lg-blur-heavy);
+  backdrop-filter: var(--ogui-lg-blur-heavy);
+  animation: ogui-lg-toast-in 520ms var(--ogui-lg-spring) both;
+}
+
+@keyframes ogui-lg-toast-in {
+  from {
+    opacity: 0;
+    scale: 0.9;
+    translate: 0 0.9rem;
+  }
+}
+
+:where([data-ogui-design="liquid"]) .ogui-toast__mark {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    0 0 14px color-mix(in srgb, var(--ogui-color-success, #58d79e), transparent 50%);
+}
+
+:where([data-ogui-design="liquid"]) :is(.ogui-alert, .ogui-banner) {
+  border-color: transparent;
+  box-shadow:
+    inset 0 0 0 0.5px color-mix(in srgb, var(--ogui-tone, var(--ogui-accent)), transparent 55%),
+    var(--ogui-lg-rim),
+    var(--ogui-lg-lift);
+  -webkit-backdrop-filter: var(--ogui-lg-blur);
+  backdrop-filter: var(--ogui-lg-blur);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-alert {
+  padding: 0.85rem 0.9rem;
+  background: color-mix(in srgb, var(--ogui-tone, var(--ogui-ink)), transparent 88%);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-banner {
+  border-radius: var(--ogui-radius-surface, 1.2rem);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-stat > strong {
+  letter-spacing: -0.035em;
+}
+
+/* Dialog and drawer: a thick sheet over a scrim that dims less and blurs
+   more, so the context stays legible behind the task. */
+:where([data-ogui-design="liquid"]) .ogui-overlay__scrim {
+  background: var(--ogui-lg-scrim);
+  -webkit-backdrop-filter: blur(10px) saturate(1.3);
+  backdrop-filter: blur(10px) saturate(1.3);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-overlay__surface {
+  border-color: transparent;
+  border-radius: calc(var(--ogui-radius-surface, 1.2rem) + 0.5rem);
+  background: var(--ogui-lg-sheet);
+  box-shadow: var(--ogui-lg-rim), var(--ogui-lg-bloom), var(--ogui-lg-lift-high);
+  -webkit-backdrop-filter: var(--ogui-lg-blur-heavy);
+  backdrop-filter: var(--ogui-lg-blur-heavy);
+  animation: ogui-lg-sheet-in 480ms var(--ogui-lg-spring) both;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-overlay[data-kind="drawer"] .ogui-overlay__surface {
+  height: calc(100% - 1rem);
+  margin: 0.5rem;
+  border-width: 0;
+  border-radius: calc(var(--ogui-radius-surface, 1.2rem) + 0.5rem);
+  animation: ogui-lg-drawer-in 520ms var(--ogui-lg-ease) both;
+}
+
+@keyframes ogui-lg-sheet-in {
+  from {
+    opacity: 0;
+    scale: 0.94;
+    translate: 0 1rem;
+  }
+}
+
+@keyframes ogui-lg-drawer-in {
+  from {
+    translate: calc(100% + 1rem) 0;
+  }
+}
+
+:where([data-ogui-design="liquid"]) .ogui-overlay__header {
+  border-bottom-color: transparent;
+  padding: 1.1rem 1.2rem 0.4rem;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-overlay__header > button {
+  background: var(--ogui-lg-fill);
+  box-shadow: var(--ogui-lg-rim);
+  transition: background-color 160ms ease;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-overlay__header > button:hover {
+  background: var(--ogui-lg-fill-hover);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Chips, identity, and status                                              */
+/* ------------------------------------------------------------------------ */
+
+:where([data-ogui-design="liquid"]) .ogui-badge {
+  min-height: 1.5rem;
+  padding: 0.25rem 0.6rem;
+  border-color: transparent;
+  box-shadow: var(--ogui-lg-rim);
+  -webkit-backdrop-filter: var(--ogui-lg-blur);
+  backdrop-filter: var(--ogui-lg-blur);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-badge:not([data-tone="neutral"]) {
+  border-color: transparent;
+  box-shadow:
+    inset 0 0 0 0.5px color-mix(in srgb, var(--ogui-tone), transparent 50%),
+    var(--ogui-lg-rim);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-avatar {
+  border-color: transparent;
+  box-shadow: var(--ogui-lg-rim), var(--ogui-lg-lift);
+  font-weight: 650;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-avatar-group .ogui-avatar {
+  outline: 2px solid color-mix(in srgb, var(--ogui-color-canvas, #15181c), transparent 30%);
+  transition: transform 420ms var(--ogui-lg-spring);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-avatar-group .ogui-avatar:hover {
+  transform: translateY(-0.25rem) scale(1.08);
+}
+
+:where([data-ogui-design="liquid"]) :is(.ogui-progress progress, .ogui-meter meter) {
+  height: 0.5rem;
+  background: var(--ogui-lg-well);
+  box-shadow: var(--ogui-lg-well-shadow);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-progress progress::-webkit-progress-bar {
+  background: var(--ogui-lg-well);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-progress progress::-webkit-progress-value {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.45), transparent 60%), var(--ogui-accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--ogui-accent), transparent 50%);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-progress progress::-moz-progress-bar {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.45), transparent 60%), var(--ogui-accent);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-skeleton {
+  background: var(--ogui-lg-well);
+}
+
+/* biome-ignore lint/style/noDescendingSpecificity: every liquid rule shares the specificity of the classic rule it replaces; order within this file is intentional */
+:where([data-ogui-design="liquid"]) .ogui-spinner > i {
+  border-color: var(--ogui-lg-well);
+  border-top-color: var(--ogui-accent);
+  border-width: 2.5px;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-pagination button {
+  min-width: 2.125rem;
+  min-height: 2.125rem;
+  border-radius: var(--ogui-radius-capsule, 999px);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-pagination button[aria-current="page"] {
+  color: var(--ogui-ink);
+  background: var(--ogui-lg-thumb);
+  box-shadow: var(--ogui-lg-rim), var(--ogui-lg-lift);
+  font-weight: 650;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-toggle-button[aria-pressed="true"] {
+  color: var(--ogui-accent-ink);
+  background-color: var(--ogui-accent);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Inputs: recessed wells, so the eye reads "type here" against raised glass */
+/* ------------------------------------------------------------------------ */
+
+:where([data-ogui-design="liquid"]) .ogui-field > input,
+:where([data-ogui-design="liquid"]) .ogui-field > textarea,
+:where([data-ogui-design="liquid"]) .ogui-select__control,
+:where([data-ogui-design="liquid"]) .ogui-search,
+:where([data-ogui-design="liquid"]) .ogui-number__control {
+  border-color: transparent;
+  background: var(--ogui-lg-well);
+  box-shadow: var(--ogui-lg-well-shadow);
+  transition:
+    box-shadow 200ms var(--ogui-lg-ease),
+    background-color 200ms ease;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-search {
+  border-radius: var(--ogui-radius-capsule, 999px);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-field > input:focus,
+:where([data-ogui-design="liquid"]) .ogui-field > textarea:focus,
+:where([data-ogui-design="liquid"])
+  :is(.ogui-select__control, .ogui-search, .ogui-number__control):focus-within {
+  border-color: transparent;
+  background: var(--ogui-lg-fill);
+  box-shadow:
+    0 0 0 1.5px var(--ogui-focus),
+    0 0 0 5px color-mix(in srgb, var(--ogui-focus), transparent 80%);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-field.has-error > :where(input, textarea) {
+  box-shadow:
+    0 0 0 1px var(--ogui-color-danger, #ff8176),
+    var(--ogui-lg-well-shadow);
+}
+
+/* biome-ignore lint/style/noDescendingSpecificity: every liquid rule shares the specificity of the classic rule it replaces; order within this file is intentional */
+:where([data-ogui-design="liquid"]) .ogui-check > i,
+:where([data-ogui-design="liquid"]) .ogui-radio-group label > i {
+  width: 1.25rem;
+  border-color: transparent;
+  background: var(--ogui-lg-well);
+  box-shadow: var(--ogui-lg-well-shadow);
+  transition:
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 380ms var(--ogui-lg-spring);
+}
+
+/* biome-ignore lint/style/noDescendingSpecificity: every liquid rule shares the specificity of the classic rule it replaces; order within this file is intentional */
+:where([data-ogui-design="liquid"]) .ogui-check > i {
+  border-radius: 0.4rem;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-check input:checked + i {
+  border-color: transparent;
+  box-shadow:
+    inset 1px 1px 0 -0.25px rgb(255 255 255 / 0.55),
+    inset 0 6px 8px -6px rgb(255 255 255 / 0.45),
+    0 2px 8px -2px color-mix(in srgb, var(--ogui-accent), transparent 40%);
+  transform: scale(1.06);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-radio-group input:checked + i {
+  border-width: 0.36rem;
+  box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--ogui-accent), transparent 40%);
+}
+
+:where([data-ogui-design="liquid"])
+  :is(.ogui-radio-group legend, .ogui-field > :where(span, label):first-child) {
+  letter-spacing: 0.02em;
+}
+
+:where([data-ogui-design="liquid"]) .ogui-dropzone {
+  border-radius: var(--ogui-radius-surface, 1.2rem);
+  background: var(--ogui-lg-well);
+  box-shadow: var(--ogui-lg-well-shadow);
+}
+
+:where([data-ogui-design="liquid"]) .ogui-dropzone[data-dragging="true"],
+:where([data-ogui-design="liquid"]) .ogui-dropzone:focus-within {
+  background: color-mix(in srgb, var(--ogui-accent), transparent 88%);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Designed fallback states                                                 */
+/* ------------------------------------------------------------------------ */
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :where([data-ogui-design="liquid"]) {
+    --ogui-lg-fill: rgb(52 56 64 / 0.92);
+    --ogui-lg-fill-hover: rgb(64 68 76 / 0.94);
+    --ogui-lg-surface: rgb(52 56 64 / 0.92);
+    --ogui-lg-sheet: rgb(30 33 40 / 0.96);
+  }
+
+  :where([data-ogui-design="liquid"][data-ogui-appearance="light"]),
+  :where([data-ogui-design="liquid"])
+    :where([data-ogui-tone="light"], [data-ogui-appearance="light"]) {
+    --ogui-lg-fill: rgb(250 250 252 / 0.94);
+    --ogui-lg-fill-hover: rgb(255 255 255 / 0.98);
+    --ogui-lg-surface: rgb(250 250 252 / 0.94);
+    --ogui-lg-sheet: rgb(248 248 250 / 0.97);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :where([data-ogui-design="liquid"]) {
+    --ogui-lg-fill: #30343b;
+    --ogui-lg-fill-hover: #3a3f47;
+    --ogui-lg-fill-active: #454a53;
+    --ogui-lg-thumb: #4a4f58;
+    --ogui-lg-well: #1b1e23;
+    --ogui-lg-sheet: #22262c;
+    --ogui-lg-surface: #2a2e35;
+    --ogui-lg-blur: none;
+    --ogui-lg-blur-heavy: none;
+    --ogui-lg-blur-surface: none;
+    --ogui-lg-scrim: rgb(6 8 12 / 0.7);
+  }
+
+  :where([data-ogui-design="liquid"][data-ogui-appearance="light"]),
+  :where([data-ogui-design="liquid"])
+    :where([data-ogui-tone="light"], [data-ogui-appearance="light"]) {
+    --ogui-lg-fill: #f4f5f7;
+    --ogui-lg-fill-hover: #fff;
+    --ogui-lg-fill-active: #e9ebef;
+    --ogui-lg-thumb: #fff;
+    --ogui-lg-well: #e4e7ec;
+    --ogui-lg-surface: #f4f5f7;
+    --ogui-lg-sheet: #f6f7f9;
+    --ogui-lg-scrim: rgb(40 46 56 / 0.4);
+  }
+
+  :where([data-ogui-design="liquid"]) :is(.ogui-card, .ogui-toast, .ogui-accordion) {
+    background-image: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where([data-ogui-design="liquid"])
+    :is(
+      .ogui-button,
+      .ogui-overlay-trigger > button,
+      .ogui-toggle-button,
+      .ogui-segments__indicator,
+      .ogui-tabs__indicator,
+      .ogui-switch__thumb,
+      .ogui-card,
+      .ogui-avatar,
+      .ogui-tooltip__bubble,
+      .ogui-check > i,
+      .ogui-radio-group label > i,
+      .ogui-accordion i
+    ) {
+    /* biome-ignore lint/complexity/noImportantStyles: user motion preference must beat every animated state */
+    transition-duration: 0.01ms !important;
+  }
+
+  :where([data-ogui-design="liquid"])
+    :is(.ogui-disclosure__surface, .ogui-toast, .ogui-overlay__surface) {
+    /* biome-ignore lint/complexity/noImportantStyles: user motion preference must beat every animated state */
+    animation: none !important;
+  }
+
+  :where([data-ogui-design="liquid"]) :is(.ogui-switch:active .ogui-switch__thumb) {
+    scale: none;
+  }
+}
+
+[data-ogui-design="liquid"][data-ogui-motion="off"]
+  :is(
+    .ogui-button,
+    .ogui-overlay-trigger > button,
+    .ogui-toggle-button,
+    .ogui-segments__indicator,
+    .ogui-tabs__indicator,
+    .ogui-switch__thumb,
+    .ogui-card,
+    .ogui-avatar,
+    .ogui-tooltip__bubble,
+    .ogui-check > i,
+    .ogui-radio-group label > i,
+    .ogui-accordion i
+  ),
+[data-ogui-design="liquid"][data-ogui-motion="off"]
+  :is(.ogui-disclosure__surface, .ogui-toast, .ogui-overlay__surface) {
+  /* biome-ignore lint/complexity/noImportantStyles: explicit motion="off" must beat every animated state */
+  animation: none !important;
+  /* biome-ignore lint/complexity/noImportantStyles: explicit motion="off" must beat every animated state */
+  transition-duration: 0.01ms !important;
+}
+
+[data-ogui-design="liquid"][data-ogui-motion="off"] :is(.ogui-switch:active .ogui-switch__thumb) {
+  scale: none;
+}
+
+[data-ogui-design="liquid"][data-ogui-motion="off"] .ogui-dock .ogui-button:hover:not(:disabled) {
+  transform: none;
+}
+
+@media (forced-colors: active) {
+  /* System colours draw the edge; the decorative ring is removed. */
+  :where([data-ogui-design="liquid"])
+  :where(
+    .ogui-button,
+    .ogui-overlay-trigger > button,
+    .ogui-toast__restore,
+    .ogui-toggle-button,
+    .ogui-segments__indicator,
+    .ogui-tabs__indicator,
+    .ogui-toolbar,
+    .ogui-dock,
+    .ogui-card,
+    .ogui-toast,
+    .ogui-accordion,
+    .ogui-overlay__surface,
+    .ogui-overlay__header > button,
+    .ogui-tooltip__bubble,
+    .ogui-badge,
+    .ogui-avatar,
+    .ogui-alert,
+    .ogui-banner,
+    .ogui-pagination button[aria-current="page"]
+  )::after,
+  :where([data-ogui-glass][data-ogui-design="liquid"])::after {
+    content: none;
+  }
+
+  :where([data-ogui-design="liquid"])
+    :is(
+      .ogui-button,
+      .ogui-overlay-trigger > button,
+      .ogui-toggle-button,
+      .ogui-segments,
+      .ogui-tabs__list,
+      .ogui-pagination,
+      .ogui-card,
+      .ogui-toast,
+      .ogui-accordion,
+      .ogui-alert,
+      .ogui-banner,
+      .ogui-badge,
+      .ogui-overlay__surface,
+      .ogui-tooltip__bubble,
+      .ogui-field > input,
+      .ogui-field > textarea,
+      .ogui-select__control,
+      .ogui-search,
+      .ogui-number__control,
+      .ogui-switch__track,
+      .ogui-check > i,
+      .ogui-radio-group label > i
+    ) {
+    border: 1px solid CanvasText;
+    background-image: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  :where([data-ogui-design="liquid"])
+    :is(
+      .ogui-button--primary,
+      .ogui-segments__indicator,
+      .ogui-tabs__indicator,
+      .ogui-segments__item[aria-pressed="true"],
+      .ogui-tabs__list button[aria-selected="true"],
+      .ogui-pagination button[aria-current="page"],
+      .ogui-toggle-button[aria-pressed="true"],
+      .ogui-switch input:checked ~ .ogui-switch__track,
+      .ogui-check input:checked + i
+    ) {
+    color: HighlightText;
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+
+  /* The thumb carries the selection, so the item text above it must switch
+     to the highlight ink once the thumb is visible. */
+  :where([data-ogui-design="liquid"])
+  :is(.ogui-segments__item[aria-pressed="true"], .ogui-tabs__list button[aria-selected="true"]) {
+    color: HighlightText;
+  }
+}

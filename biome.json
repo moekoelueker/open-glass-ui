@@ -9,7 +9,8 @@
       "!artifacts",
       "!docs/naming/naming-signal-ledger.json",
       "!**/playwright-report",
-      "!**/test-results"
+      "!**/test-results",
+      "!packages/recipes/src/liquid.css"
     ]
   },
   "formatter": {

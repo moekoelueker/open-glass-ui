@@ -1,8 +1,11 @@
 import {
+  createGlassLookTokens,
   createGlassTheme,
   createGlassThemeTokens,
   type GlassAppearance,
   type GlassAppearancePreference,
+  type GlassDesign,
+  type GlassLookTokens,
   type GlassThemeInput,
   type GlassThemePalette,
   type GlassThemeTokens,
@@ -22,8 +25,11 @@ export interface GlassThemeRuntime {
   appearance: GlassAppearance;
   preference: GlassAppearancePreference;
   palette: GlassThemePalette;
-  tokens: GlassThemeTokens;
+  /** Theme tokens plus any `--ogui-glass-*` look tokens set on this boundary. */
+  tokens: GlassThemeTokens & GlassLookTokens;
   hydrated: boolean;
+  /** Visual language every descendant recipe and `<Glass>` renders in. */
+  design: GlassDesign;
 }
 
 export interface GlassThemeProviderProps
@@ -32,6 +38,11 @@ export interface GlassThemeProviderProps
   appearance?: GlassAppearancePreference;
   defaultAppearance?: GlassAppearance;
   theme?: GlassThemeInput;
+  /**
+   * `liquid` (default) renders the current OpenGlass look. `classic` restores
+   * the 0.3 look exactly, including its default `balanced` corner radius.
+   */
+  design?: GlassDesign;
 }
 
 const DEFAULT_PALETTE = createGlassTheme("dark");
@@ -41,6 +52,7 @@ const DEFAULT_THEME: GlassThemeRuntime = {
   palette: DEFAULT_PALETTE,
   tokens: createGlassThemeTokens(DEFAULT_PALETTE),
   hydrated: false,
+  design: "liquid",
 };
 
 const GlassThemeContext = /* @__PURE__ */ createContext<GlassThemeRuntime>(DEFAULT_THEME);
@@ -57,6 +69,7 @@ export function GlassThemeProvider({
   appearance: preference = "system",
   defaultAppearance = "dark",
   theme,
+  design = "liquid",
   className,
   style,
   ...props
@@ -81,8 +94,28 @@ export function GlassThemeProvider({
   }, [preference]);
 
   const appearance = preference === "system" ? systemAppearance : preference;
-  const palette = useMemo(() => createGlassTheme(appearance, theme), [appearance, theme]);
-  const tokens = useMemo(() => createGlassThemeTokens(palette), [palette]);
+  // Liquid reads best with larger, concentric corners, so it defaults to the
+  // `soft` scale. An explicit `theme.radius` always wins, and `classic` keeps
+  // the 0.3 default of `balanced`.
+  const palette = useMemo(
+    () =>
+      createGlassTheme(
+        appearance,
+        design === "liquid" && theme?.radius === undefined ? { ...theme, radius: "soft" } : theme,
+      ),
+    [appearance, theme, design],
+  );
+  const glass = theme?.glass;
+  const lookKey = typeof glass === "string" ? glass : JSON.stringify(glass ?? null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: lookKey is a stable serialization of glass, so inline look objects do not re-create tokens every render.
+  const lookTokens = useMemo(
+    () => (glass === undefined ? {} : createGlassLookTokens(glass)),
+    [lookKey],
+  );
+  const tokens = useMemo(
+    () => ({ ...createGlassThemeTokens(palette), ...lookTokens }),
+    [palette, lookTokens],
+  );
   const effectiveTokens = useMemo(() => {
     const styleValues = (style ?? {}) as Record<string, string | number | undefined>;
     return Object.fromEntries(
@@ -90,11 +123,11 @@ export function GlassThemeProvider({
         name,
         styleValues[name] === undefined ? value : String(styleValues[name]),
       ]),
-    ) as unknown as GlassThemeTokens;
+    ) as unknown as GlassThemeTokens & GlassLookTokens;
   }, [style, tokens]);
   const runtime = useMemo<GlassThemeRuntime>(
-    () => ({ appearance, preference, palette, tokens: effectiveTokens, hydrated }),
-    [appearance, preference, palette, effectiveTokens, hydrated],
+    () => ({ appearance, preference, palette, tokens: effectiveTokens, hydrated, design }),
+    [appearance, preference, palette, effectiveTokens, hydrated, design],
   );
   const mergedStyle = {
     ...effectiveTokens,
@@ -110,6 +143,7 @@ export function GlassThemeProvider({
         className={["ogui-theme", className].filter(Boolean).join(" ")}
         data-ogui-theme=""
         data-ogui-appearance={appearance}
+        data-ogui-design={design}
         data-ogui-theme-hydrated={hydrated ? "true" : "false"}
         style={mergedStyle}
       >

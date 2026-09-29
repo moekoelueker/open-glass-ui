@@ -167,6 +167,12 @@
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.16);
 }
 
+/* Selection indicators are drawn only by the liquid design. */
+.ogui-segments__indicator,
+.ogui-tabs__indicator {
+  display: none;
+}
+
 .ogui-segments__item {
   display: inline-flex;
   min-height: 2.1rem;

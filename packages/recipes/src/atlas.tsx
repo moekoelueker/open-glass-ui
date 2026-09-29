@@ -383,7 +383,9 @@ export function Pagination({ page, count, onPageChange, className, ...props }: P
   const safePage = Math.min(safePageInteger(page), safeCount);
   const items = paginationItems(safePage, safeCount);
   return (
-    <nav {...props} className={cx("ogui-pagination", className)} aria-label="Pagination">
+    // The default name comes first so a caller's aria-label wins; two
+    // paginations on one page otherwise share a landmark name.
+    <nav aria-label="Pagination" {...props} className={cx("ogui-pagination", className)}>
       <button
         type="button"
         aria-label="Previous page"
@@ -583,7 +585,7 @@ function Overlay({
 }: OverlayProps & { kind: "dialog" | "drawer" }) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
-  const { appearance, tokens } = useGlassTheme();
+  const { appearance, tokens, design } = useGlassTheme();
   const runtime = useGlassRuntime();
   const open = controlledOpen ?? internalOpen;
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -686,6 +688,7 @@ function Overlay({
         className="ogui-overlay"
         data-kind={kind}
         data-ogui-appearance={appearance}
+        data-ogui-design={design}
         data-ogui-motion={runtime.motion}
         style={{ ...tokens, colorScheme: appearance } as CSSProperties}
       >
@@ -922,7 +925,7 @@ export function ToastProvider({
   const nextId = useRef(0);
   const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
   const [notices, setNotices] = useState<ToastNotice[]>([]);
-  const { appearance, tokens } = useGlassTheme();
+  const { appearance, tokens, design } = useGlassTheme();
   const runtime = useGlassRuntime();
 
   useEffect(() => {
@@ -950,6 +953,7 @@ export function ToastProvider({
       className="ogui-toast-viewport"
       aria-label={label}
       data-ogui-appearance={appearance}
+      data-ogui-design={design}
       data-ogui-motion={runtime.motion}
       style={{ ...tokens, colorScheme: appearance } as CSSProperties}
     >

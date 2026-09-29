@@ -1,5 +1,6 @@
 "use client";
 
+import type { GlassDesign } from "@open-glass-ui/core";
 import {
   GlassProvider,
   type GlassProviderProps,
@@ -23,6 +24,11 @@ export interface GlassSystemProviderProps extends Omit<GlassProviderProps, "chil
   theme?: GlassSystemThemeProps;
   /** Global toast queue options. Set to false when the application supplies its own provider. */
   toasts?: Omit<ToastProviderProps, "children"> | false;
+  /**
+   * Visual language. `liquid` is the default; pass `classic` to keep the 0.3
+   * look exactly. Shorthand for `theme={{ design }}`; `theme.design` wins.
+   */
+  design?: GlassDesign;
 }
 
 interface GlassSystemThemeBoundaryProps {
@@ -51,11 +57,15 @@ export function GlassSystemProvider({
   children,
   theme = {},
   toasts,
+  design,
   ...runtime
 }: GlassSystemProviderProps) {
   return (
     <GlassProvider {...runtime}>
-      <GlassSystemThemeBoundary theme={theme} toasts={toasts}>
+      <GlassSystemThemeBoundary
+        theme={design === undefined || theme.design !== undefined ? theme : { ...theme, design }}
+        toasts={toasts}
+      >
         {children}
       </GlassSystemThemeBoundary>
     </GlassProvider>
