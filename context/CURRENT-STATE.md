@@ -6,7 +6,8 @@ Branch: `main`
 
 ## Release posture
 
-OpenGlass UI is `0.4.0` (the liquid design, D-022). The owner authorized the
+OpenGlass UI is `0.4.0` (the liquid design, D-022), published on npm on
+2026-09-29 through trusted publishing with signed provenance. The owner authorized the
 0.4.0 release, the README media refresh, and the moelueker.com/liquid-glass
 update on 2026-09-29. Publication was first authorized on 2026-07-26:
 a public GitHub repository at `moekoelueker/open-glass-ui`, npm publication of

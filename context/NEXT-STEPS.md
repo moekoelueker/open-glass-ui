@@ -200,11 +200,17 @@ Canonical procedure:
 
 ## Liquid design follow-ups (added 2026-09-28)
 
-State: the liquid design (D-022) shipped as 0.4.0 on 2026-09-29, with
-refreshed README media (`pnpm capture:media`) and the moelueker.com/liquid-glass
-port updated. `pnpm run check`, `typecheck`, `test:unit` (124),
-`verify:packages`, and the full e2e suite on Chromium, Firefox, and WebKit
-pass. `/compare` shows the classic and liquid designs side by side.
+State (2026-09-29): `open-glass-ui@0.4.0` is published on npm through
+trusted publishing (OIDC, signed provenance, verified attestations), with the
+GitHub release at `v0.4.0`. README media were regenerated (`pnpm
+capture:media`) and moelueker.com/liquid-glass runs 0.4.0 (website PR #79).
+
+Release path now: push a `v*` tag; `release.yml` runs the full gate and
+publishes via the npm trusted publisher `moekoelueker/open-glass-ui`,
+`release.yml`, environment `npm-publish`. Lessons from the first CI release:
+setup-node `registry-url` silently disables OIDC (actions/setup-node#1551);
+a stage-only token or a publisher without "Allow npm publish" cannot publish;
+the WebGL-window perf budgets are only meaningful on the reference host.
 
 1. Review `/compare` on a real Mac in Safari and on an iPhone. Headless WebKit
    does not composite `backdrop-filter`, so blur and saturation there are
@@ -214,9 +220,13 @@ pass. `/compare` shows the classic and liquid designs side by side.
    If it is too costly, gate control blur on `quality`.
 3. Upload `docs/media/social-preview.png` as the GitHub social preview
    (repository Settings, General; GitHub has no API for it).
-4. Candidates for a later pass: a container that visually merges neighbouring
+4. Delete the unused `NPM_TOKEN` repository secret and the stage-only npm
+   token `open-glass-ui-github-release`; publishing no longer uses tokens.
+5. Replace the Gumroad download file if it bundles an older library copy
+   (the Gumroad CLI cannot upload files).
+6. Candidates for a later pass: a container that visually merges neighbouring
    glass shapes as they approach (gooey morphing), and liquid rules for the
    remaining low-traffic recipes (Stepper connectors, Breadcrumbs).
-5. Do not run the visual-capture e2e specs casually: they overwrite the
+7. Do not run the visual-capture e2e specs casually: they overwrite the
    committed evidence under `artifacts/screenshots`. Restore with
    `git checkout -- artifacts` if that happens.
