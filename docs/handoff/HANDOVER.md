@@ -10,7 +10,7 @@ This is the primary handover for OpenGlass UI. It gives a future maintainer or
 AI agent enough product, design, research, architectural, and operational
 context to continue without reconstructing the project from its full history.
 
-Read this file first, then use [context/README.md](./context/README.md) to choose
+Read this file first, then use [context/README.md](../../context/README.md) to choose
 only the deeper context needed for the task.
 
 ## Executive summary
@@ -177,10 +177,10 @@ Important consequences:
 - The material is a hierarchy tool, not decoration applied everywhere.
 
 The detailed evidence is summarized in
-[context/RESEARCH-SUMMARY.md](./context/RESEARCH-SUMMARY.md) and preserved in
-[docs/RESEARCH.md](./docs/RESEARCH.md),
-[docs/EXPERIMENT-REPORT.md](./docs/EXPERIMENT-REPORT.md), and
-[docs/COMPONENT-ATLAS.md](./docs/COMPONENT-ATLAS.md).
+[context/RESEARCH-SUMMARY.md](../../context/RESEARCH-SUMMARY.md) and preserved in
+[docs/RESEARCH.md](../RESEARCH.md),
+[docs/EXPERIMENT-REPORT.md](../EXPERIMENT-REPORT.md), and
+[docs/COMPONENT-ATLAS.md](../COMPONENT-ATLAS.md).
 
 ## Brand and legal posture
 
@@ -224,8 +224,8 @@ The release-candidate evidence currently records:
 - No observed resource leak after media/WebGL teardown in the reference run.
 
 The authoritative details and caveats are in
-[docs/VALIDATION.md](./docs/VALIDATION.md) and
-[docs/PERFORMANCE.md](./docs/PERFORMANCE.md).
+[docs/VALIDATION.md](../VALIDATION.md) and
+[docs/PERFORMANCE.md](../PERFORMANCE.md).
 
 ## What is intentionally not done
 
@@ -248,7 +248,7 @@ post-publication installation tests.
 
 1. Read `AGENTS.md`.
 2. Read this document.
-3. Read [context/README.md](./context/README.md).
+3. Read [context/README.md](../../context/README.md).
 4. Read only the context file relevant to the requested work.
 5. Run `git status --short` and preserve unrelated changes.
 6. Confirm whether the task is local implementation, launch preparation, or an
@@ -280,15 +280,15 @@ WebGL/backdrop pages run simultaneously.
 
 ## Context pack
 
-- [Context index](./context/README.md)
-- [Product brief](./context/PRODUCT-BRIEF.md)
-- [Research summary](./context/RESEARCH-SUMMARY.md)
-- [Decision log](./context/DECISIONS.md)
-- [Architecture map](./context/ARCHITECTURE-MAP.md)
-- [File and ownership map](./context/FILE-MAP.md)
-- [Current state](./context/CURRENT-STATE.md)
-- [Next steps](./context/NEXT-STEPS.md)
-- [Copy-paste handover prompt](./context/HANDOVER-PROMPT.md)
+- [Context index](../../context/README.md)
+- [Product brief](../../context/PRODUCT-BRIEF.md)
+- [Research summary](../../context/RESEARCH-SUMMARY.md)
+- [Decision log](../DECISIONS.md)
+- [Architecture map](../../context/ARCHITECTURE-MAP.md)
+- [File and ownership map](../../context/FILE-MAP.md)
+- [Current state](../../context/CURRENT-STATE.md)
+- [Next steps](../../context/NEXT-STEPS.md)
+- [Copy-paste handover prompt](./HANDOVER-PROMPT.md)
 
 ## Canonical-reference rule
 
