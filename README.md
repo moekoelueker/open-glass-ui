@@ -272,7 +272,7 @@ pnpm run test:e2e   # browser suite, serialized
 
 `pnpm run release:check` runs the complete publish-blocking gate.
 
-Maintainers picking up in-flight work should start with [HANDOVER.md](./HANDOVER.md)
+Maintainers picking up in-flight work should start with [docs/handoff/HANDOVER.md](./docs/handoff/HANDOVER.md)
 and the [context pack](./context/README.md).
 
 ## Repository layout

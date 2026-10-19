@@ -23,10 +23,6 @@ Push a `v*` tag; `release.yml` runs the full gate (`pnpm run release:check`) and
 - Physical-device GPU, zoom, orientation, touch and screen-reader review (VoiceOver, NVDA).
 - Trademark clearance and a dedicated domain.
 
-## Working tree
-
-Visual-capture end-to-end runs overwrite `artifacts/screenshots`; at the time of writing four WebKit screenshots under `artifacts/screenshots/atlas-pass-02/` were modified and uncommitted. Treat unexpected changes as someone else's work.
-
 ## Where to look
 
 - `docs/handoff/HANDOVER.md`: the full handover. `context/CURRENT-STATE.md`: the detailed state, routes and validation totals. `context/NEXT-STEPS.md`: the longer roadmap.

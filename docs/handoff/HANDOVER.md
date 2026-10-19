@@ -61,9 +61,8 @@ The desired result needed to:
    verification.
 9. Support a future launch video and a high-quality article on moluker.com.
 
-The historical example at
-`/Users/moe/personal/Personal/Liquid-Glass/old-liquid-glass-example` was treated
-as read-only inspiration. The current repository was built independently.
+The historical example (the sibling `old-liquid-glass-example` folder) was
+treated as read-only inspiration. The current repository was built independently.
 
 ## What exists now
 

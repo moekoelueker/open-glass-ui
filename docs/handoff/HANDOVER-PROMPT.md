@@ -25,10 +25,10 @@ Current posture:
 
 Before doing any work:
 1. Read AGENTS.md completely.
-2. Read HANDOVER.md completely.
+2. Read docs/handoff/HANDOVER.md completely.
 3. Read context/README.md and context/CURRENT-STATE.md.
 4. Read only the additional context files relevant to the task:
-   - product/design: context/PRODUCT-BRIEF.md and context/DECISIONS.md
+   - product/design: context/PRODUCT-BRIEF.md and docs/DECISIONS.md
    - research/positioning: context/RESEARCH-SUMMARY.md
    - architecture/packages: context/ARCHITECTURE-MAP.md
    - file ownership: context/FILE-MAP.md
@@ -93,7 +93,7 @@ Required behavior:
   inspect user-facing work, and make one focused commit.
 - Use apply_patch for source edits.
 - Preserve historical evidence directories.
-- Update HANDOVER.md/context files when product, architecture, route, public API,
+- Update docs/handoff/HANDOVER.md/context files when product, architecture, route, public API,
   validation, brand, release posture, or roadmap decisions change.
 
 Checks:
@@ -126,7 +126,7 @@ Then proceed autonomously within the authorized scope.
 Use this only when the repository and full context pack are already present:
 
 ```text
-Take over the OpenGlass UI repository. Read AGENTS.md, HANDOVER.md,
+Take over the OpenGlass UI repository. Read AGENTS.md, docs/handoff/HANDOVER.md,
 context/README.md, and context/CURRENT-STATE.md before acting. Preserve the
 settled CSS-first public contract: open-glass-ui facade, semantic DOM, explicit
 SVG/SDF, opt-in owned-media WebGL, neutral adaptive themes, forty accessible
