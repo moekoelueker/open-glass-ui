@@ -7,7 +7,7 @@ Use this map to locate a change without scanning the whole repository.
 | File | Purpose |
 | --- | --- |
 | `AGENTS.md` | Repository rules and required checks |
-| `HANDOVER.md` | Product, research, architecture, and operational handover |
+| `docs/handoff/HANDOVER.md` | Product, research, architecture, and operational handover |
 | `context/README.md` | Task-specific reading routes |
 | `README.md` | Public-facing repository introduction |
 | `llms.txt` | Compact consumer-agent integration rules |

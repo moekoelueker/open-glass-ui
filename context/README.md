@@ -8,19 +8,19 @@ It is intentionally smaller than the full repository documentation.
 ### Any new session
 
 1. [`../AGENTS.md`](../AGENTS.md)
-2. [`../HANDOVER.md`](../HANDOVER.md)
+2. [`../docs/handoff/HANDOVER.md`](../docs/handoff/HANDOVER.md)
 3. [`CURRENT-STATE.md`](./CURRENT-STATE.md)
 
 ### Product or design work
 
 1. [`PRODUCT-BRIEF.md`](./PRODUCT-BRIEF.md)
-2. [`DECISIONS.md`](./DECISIONS.md)
+2. [`../docs/DECISIONS.md`](../docs/DECISIONS.md)
 3. [`FILE-MAP.md`](./FILE-MAP.md)
 
 ### Architecture or package work
 
 1. [`ARCHITECTURE-MAP.md`](./ARCHITECTURE-MAP.md)
-2. [`DECISIONS.md`](./DECISIONS.md)
+2. [`../docs/DECISIONS.md`](../docs/DECISIONS.md)
 3. [`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md)
 4. [`../docs/COMPONENTS.md`](../docs/COMPONENTS.md)
 
@@ -44,12 +44,12 @@ It is intentionally smaller than the full repository documentation.
 | --- | --- |
 | `PRODUCT-BRIEF.md` | Why does this exist, who is it for, and what should it feel like? |
 | `RESEARCH-SUMMARY.md` | What was studied and what evidence shaped the system? |
-| `DECISIONS.md` | Which decisions are settled, why, and what are their consequences? |
+| `../docs/DECISIONS.md` | Which decisions are settled, why, and what are their consequences? |
 | `ARCHITECTURE-MAP.md` | How does the runtime and package system fit together? |
 | `FILE-MAP.md` | Where should a specific kind of change be made? |
 | `CURRENT-STATE.md` | What is complete, validated, blocked, or unpublished right now? |
 | `NEXT-STEPS.md` | What should happen next, in what order? |
-| `HANDOVER-PROMPT.md` | What prompt can be pasted into another AI session? |
+| `../docs/handoff/HANDOVER-PROMPT.md` | What prompt can be pasted into another AI session? |
 
 ## Truth hierarchy
 
@@ -58,7 +58,7 @@ Use this order when information appears inconsistent:
 1. Current source and tests.
 2. Package manifests and generated declarations.
 3. Topic documentation under `docs/`.
-4. `HANDOVER.md` and this context pack.
+4. `docs/handoff/HANDOVER.md` and this context pack.
 5. Historical planning and screenshot evidence.
 
 Historical research is valuable for rationale but must not override the current

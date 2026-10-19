@@ -5,7 +5,7 @@ loading unnecessary renderers, or weakening accessibility.
 
 This document is for agents consuming the library. Agents maintaining the
 OpenGlass UI repository itself should start with
-[`../HANDOVER.md`](../HANDOVER.md) and
+[`handoff/HANDOVER.md`](handoff/HANDOVER.md) and
 [`../context/README.md`](../context/README.md).
 
 ## Canonical package rules
