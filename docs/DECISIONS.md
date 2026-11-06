@@ -254,3 +254,63 @@ rule they replace, and every liquid rule must be authored in
 `liquid.source.css` and regenerated with `pnpm generate:liquid`; a unit test
 fails when the generated file is stale. Classic output of
 `createCssMaterialTokens` must not change.
+
+## D-023 — A forced tone scopes the palette, and accent ink is chosen against the rendered fill
+
+**Decision:** `<Glass tone>` that differs from the surrounding appearance writes
+that tone's `--ogui-color-*` tokens, `data-ogui-appearance` and `color-scheme`
+on its element and provides a nested theme context, so its text, nested
+`Glass` surfaces and recipes all resolve against the nearest tone. Menus and
+popovers with a forced `tone` use the same palette (`resolveToneTheme`). The
+theme chooses accent ink and the liquid highlight mix together: the first of
+`#101214`, `#f9f8f3`, `#000000`, `#ffffff` that keeps the full 16% highlight,
+otherwise the ink that keeps the most, so text reaches 4.5:1 on every stop of
+the liquid accent fill. The liquid primary fill is opaque, and the pointer
+glint on accent fills stays inside a 0.4rem band at the top edge.
+
+**Why:** A dark surface over a photo in a light app (the documented use of
+`tone`) rendered dark text on dark glass. Light presets (cobalt, teal, violet,
+coral, amber) and mid-tone custom accents fell below 4.5:1 on the lightened
+highlight; with a translucent bottom stop no ink could pass for mid-tones.
+
+**Consequence:** Same-tone and `tone="auto"` output is byte-identical. Some
+light presets render `#ffffff` ink instead of `#f9f8f3`, and their highlight is
+lighter than 16%. Classic receives only the corrected ink; its 0.3 rendering is
+otherwise unchanged (D-022). Theme tokens must be read where they are used:
+a variable that copies `--ogui-color-*` on an ancestor freezes that ancestor's
+palette (the showcase had to change for this).
+
+## D-024 — The Glass material stays inline
+
+**Decision:** `Glass` keeps writing `background`, `border-color`, `box-shadow`,
+`color` and `backdrop-filter` as inline style. Consumers restyle the material
+with `look`, the `--ogui-glass-*` tokens or the `style` prop; utilities restyle
+shape and spacing.
+
+**Why:** Painting the material from a zero-specificity stylesheet rule was
+implemented and measured. A computed-style diff of the showcase showed CSS that
+inline styles had silently overridden (for example `border: 1px solid`, extra
+shadows) taking effect and visibly changing surfaces. Consumer apps very likely
+contain the same dormant rules, so the change cannot ship in a minor release.
+
+**Consequence:** Tailwind `bg-*` utilities do not change a `Glass` background;
+the README, THEMING and llms references say so. Revisit only with a major
+version and a migration note.
+
+## D-025 — One layer stack for overlays and disclosures
+
+**Decision:** Dialogs, drawers, menus, popovers and tooltips register in one
+stack (`packages/recipes/src/layers.ts`). Each portal host is positioned with a
+stack-derived `z-index`, so the most recently opened layer paints on top.
+Layers record the layer that owns their trigger; with a modal active, every
+layer outside its owner tree is inert and capped below it. Document Escape
+handlers act only for the top reachable layer and only on unconsumed events.
+The toast viewport sits outside the stack, above it, and is never made inert.
+
+**Why:** Fixed z-indexes put a menu opened inside a dialog under the dialog,
+one Escape closed several layers, and a dialog opened from a popover left the
+popover interactive above it.
+
+**Consequence:** New layered recipes must register with the stack instead of
+choosing a `z-index`. Paint order and hit testing are verified in a real
+browser; jsdom covers the stack logic only.

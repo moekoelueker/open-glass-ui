@@ -227,3 +227,12 @@ the WebGL-window perf budgets are only meaningful on the reference host.
 5. Do not run the visual-capture e2e specs casually: they overwrite the
    committed evidence under `artifacts/screenshots`. Restore with
    `git checkout -- artifacts` if that happens.
+
+## Review-fix branch follow-ups (added 2026-11-06)
+
+1. Merge `fix/2026-11-05-review-fixes` after review, then release 0.5.0 from its changeset
+   (`pnpm version:packages`, then a `v*` tag) when the owner approves publishing.
+2. Real Safari and iPhone pass on dialogs over popovers (positioned layer hosts with
+   `backdrop-filter`), liquid accent fills, and forced tone over imagery.
+3. One more independent pass over the overlay layer model (`packages/recipes/src/layers.ts`);
+   it carried most late review findings. See `docs/handoff/2026-11-06.md`.

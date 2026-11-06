@@ -210,10 +210,10 @@ or unqualified pixel-parity claims.
 
 The release-candidate evidence currently records:
 
-- 97 files passing Biome checks.
+- 130 files passing Biome checks (2026-11-06, review-fix branch).
 - All TypeScript projects and declaration builds passing.
-- 137 unit, property, SSR, lifecycle, theme, look, and recipe checks.
-- 179 browser checks validated across Chromium, Firefox, and WebKit, with seven
+- 380 unit, property, SSR, lifecycle, theme, look, recipe, and docs checks.
+- 182 browser checks validated across Chromium, Firefox, and WebKit, with seven
   intentional capability/scope skips.
 - A focused 33/33 product-landing matrix.
 - Thirty-three current release-candidate screenshots.
