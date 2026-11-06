@@ -26,6 +26,8 @@ interface Layer {
    * open (a tooltip in a toast still answers Escape before the dialog).
    */
   readonly inToast: boolean;
+  /** The trigger or focused opener the layer opened from, if any. */
+  readonly anchor: Element | null;
 }
 
 const TOAST_HOST_SELECTOR = '[data-ogui-portal="toast"]';
@@ -75,7 +77,15 @@ function activeLayers() {
   if (!modal) {
     return stack;
   }
-  return stack.filter((layer) => layer === modal || isDescendant(layer, modal) || fromToast(layer));
+  const modalIndex = stack.indexOf(modal);
+  // A layer from the toast viewport stays reachable only when it opened after
+  // the modal (a tooltip hovered in a toast). One that opened before it, such
+  // as a toast popover that opened this very dialog, sits under the modal like
+  // any other ancestor and stays inert.
+  return stack.filter(
+    (layer, index) =>
+      layer === modal || isDescendant(layer, modal) || (index > modalIndex && fromToast(layer)),
+  );
 }
 
 /** Whether the layer, or a layer it opened from, sits in the toast viewport. */
@@ -179,7 +189,7 @@ export function openLayer(id: string, kind: LayerKind, host: HTMLElement, anchor
   const inToast = Boolean(
     (anchor ?? host).closest(TOAST_HOST_SELECTOR) ?? host.closest(TOAST_HOST_SELECTOR),
   );
-  const layer: Layer = { id, kind, host, owner: ownerOf(anchor), inToast };
+  const layer: Layer = { id, kind, host, owner: ownerOf(anchor), inToast, anchor };
   stack.push(layer);
   syncLayers();
   return () => {
@@ -213,6 +223,18 @@ export function isTopLayer(id: string) {
  */
 export function isReachableLayer(id: string) {
   return activeLayers().some((layer) => layer.id === id);
+}
+
+/**
+ * Whether a reachable layer opened from inside `element` (a tooltip in a
+ * toast, or a popover whose trigger is in it). Such a layer gets Escape
+ * before the element that contains it.
+ */
+export function hasReachableLayerWithin(element: Element) {
+  return activeLayers().some(
+    (layer) =>
+      element.contains(layer.host) || (layer.anchor !== null && element.contains(layer.anchor)),
+  );
 }
 
 /** Whether the layer is the most recently opened modal: only it traps Tab. */

@@ -22,6 +22,7 @@ import {
 import { createPortal } from "react-dom";
 import {
   descendantHosts,
+  hasReachableLayerWithin,
   isTopLayer,
   isTopModal,
   openLayer,
@@ -928,7 +929,12 @@ export function Toast({
       }}
       onKeyDown={(event) => {
         onKeyDown?.(event);
-        if (!event.defaultPrevented && event.key === "Escape") {
+        if (
+          !event.defaultPrevented &&
+          event.key === "Escape" &&
+          // A tooltip or popover opened from inside the toast closes first.
+          !hasReachableLayerWithin(event.currentTarget)
+        ) {
           event.preventDefault();
           setOpen(false);
         }

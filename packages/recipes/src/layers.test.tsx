@@ -558,6 +558,106 @@ describe("Tooltip visibility", () => {
     expect(screen.queryByRole("dialog", { name: "Editor" })).toBeNull();
   });
 
+  it("keeps a toast popover that opened a dialog inert under it", async () => {
+    const user = userEvent.setup();
+    const onUndo = vi.fn();
+
+    function PopoverWithDialog() {
+      const [confirming, setConfirming] = useState(false);
+      return (
+        <Popover label="Share options" trigger={<Button>Share</Button>}>
+          <button type="button" onClick={() => setConfirming(true)}>
+            Publish
+          </button>
+          {confirming ? (
+            <Dialog title="Confirm share" open onOpenChange={setConfirming} closeOnBackdrop={false}>
+              Body
+            </Dialog>
+          ) : null}
+        </Popover>
+      );
+    }
+
+    function Notify() {
+      const { toast } = useToast();
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            toast({ title: <PopoverWithDialog /> });
+            toast({ title: "Draft saved", actionLabel: "Undo", onAction: onUndo });
+          }}
+        >
+          Notify
+        </button>
+      );
+    }
+
+    render(
+      <ToastProvider defaultDuration={0}>
+        <Notify />
+      </ToastProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "Notify" }));
+    const trigger = screen.getByRole("button", { name: "Share options" });
+    await user.click(trigger);
+    await user.click(await screen.findByRole("button", { name: "Publish" }));
+    const dialog = await screen.findByRole("dialog", { name: "Confirm share" });
+    const [popoverLayer] = getOpenLayers();
+    expect(hostOf(screen.getByRole("button", { name: "Publish" })).inert).toBe(true);
+
+    // The other toast stays usable, but pressing it does not close the inert
+    // popover underneath, which would unmount its dialog.
+    await user.click(screen.getByRole("button", { name: "Undo" }));
+    expect(onUndo).toHaveBeenCalledOnce();
+    expect(screen.getByRole("dialog", { name: "Confirm share" })).toBe(dialog);
+    expect(getOpenLayers()[0]?.id).toBe(popoverLayer?.id);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("closes a focused tooltip inside a toast before the toast", async () => {
+    const user = userEvent.setup();
+
+    function Notify() {
+      const { toast } = useToast();
+      return (
+        <button
+          type="button"
+          onClick={() =>
+            toast({
+              title: (
+                <Tooltip label="Stored in the shared library">
+                  <button type="button">Details</button>
+                </Tooltip>
+              ),
+            })
+          }
+        >
+          Notify
+        </button>
+      );
+    }
+
+    render(
+      <ToastProvider defaultDuration={0}>
+        <Notify />
+      </ToastProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "Notify" }));
+    const details = screen.getByRole("button", { name: "Details" });
+    const wrapper = details.closest(".ogui-tooltip");
+    act(() => details.focus());
+    fireEvent.focus(details);
+    expect(getOpenLayers().map((layer) => layer.kind)).toEqual(["tooltip"]);
+
+    fireEvent.keyDown(details, { key: "Escape" });
+    expect(wrapper?.getAttribute("data-dismissed")).toBe("true");
+    expect(screen.getByRole("button", { name: "Details" })).toBe(details);
+
+    fireEvent.keyDown(details, { key: "Escape" });
+    expect(screen.queryByRole("button", { name: "Details" })).toBeNull();
+  });
+
   it("dismisses a hovered tooltip on Escape while focus is elsewhere", () => {
     render(
       <>
