@@ -154,7 +154,9 @@ text, so give it only to the dark appearance: `tint: { dark: "#0b0d10" }`.
 ```
 
 The same variables can be set from plain CSS on any theme boundary or `Glass`
-element, e.g. `.hero-panel { --ogui-glass-light-angle: 20deg; }`. The rim is
+element, e.g. `.hero-panel { --ogui-glass-light-angle: 20deg; }`, as long as
+that element does not write them itself: a provider with `theme.glass` and a
+`Glass` with `look` set them inline, which a class cannot beat. The rim is
 drawn as one ring exactly on the outer edge, which is why liquid `Glass`
 collapses its painted border; pass `style={{ borderWidth }}` to keep one, or
 `data-ogui-rim="off"` to remove the ring from a single element.
@@ -165,37 +167,62 @@ behind the glass. For real refraction on suitable surfaces, combine a look with
 
 ### Liquid control tokens
 
-In the liquid design, controls and fields do not read `--ogui-color-control*`,
-`--ogui-color-border` or `--ogui-radius-control`. They read these public tokens
-instead:
+In the liquid design, raised controls and recessed fields do not read
+`--ogui-color-control*` or `--ogui-color-border`. They read these public tokens
+instead.
 
-| Token                   | Effect                                                               |
-| ----------------------- | -------------------------------------------------------------------- |
-| `--ogui-lg-fill`        | Control and field fill at rest.                                      |
-| `--ogui-lg-fill-hover`  | Control fill on hover.                                               |
-| `--ogui-lg-fill-active` | Control fill while pressed.                                          |
-| `--ogui-lg-hairline`    | Hairline around controls, fields and inset wells.                    |
-| `--ogui-radius-capsule` | Corner radius of capsule controls: buttons, toggles, segments, tabs. |
-| `--ogui-radius-surface` | Corner radius of cards, overlays and panels (shared with classic).   |
+Raised controls are secondary buttons (the default `Button` variant),
+`ToggleButton`, the built-in `Dialog` and `Drawer` trigger and the toast restore
+button. Quiet buttons, `IconButton` included, take the fill only on hover;
+primary buttons are filled with the accent and danger buttons with a tint of the
+danger colour.
+
+| Token                   | Effect                                                             |
+| ----------------------- | ------------------------------------------------------------------ |
+| `--ogui-lg-fill`        | Fill at rest.                                                      |
+| `--ogui-lg-fill-hover`  | Fill on hover.                                                     |
+| `--ogui-lg-fill-active` | Fill while pressed.                                                |
+| `--ogui-radius-capsule` | Corner radius. Segmented controls, tabs and pagination use it too. |
+
+Recessed fields are `TextField`, `Textarea`, `Select`, `NumberField` and
+`SearchField`. They are wells cut into the glass, not raised fills.
+
+| Token                   | Effect                                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `--ogui-lg-well`        | Fill at rest. Checkboxes, radios, the switch, slider, progress and meter tracks, the segmented and tab tracks and `FileDropzone` use it too. |
+| `--ogui-lg-well-shadow` | Inset shading of the well.                                                                                     |
+| `--ogui-lg-fill`        | Fill while the field has focus.                                                                                |
+| `--ogui-radius-control` | Corner radius of `TextField`, `Textarea`, `Select` and `NumberField`, as in classic. `SearchField` is a capsule and uses `--ogui-radius-capsule`. |
+
+Both kinds share these:
+
+| Token                   | Effect                                                                                                                             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `--ogui-lg-hairline`    | The thin lines liquid keeps: dividers between accordion sections, above a card footer and between a `NumberField` input and its steppers, `Stepper` connectors and the switch track's edge. Controls and fields draw no border at rest. |
+| `--ogui-radius-surface` | Corner radius of cards, overlays and panels (shared with classic).                                                                 |
 
 So in liquid, setting `--ogui-radius-control` does not change a button (use
-`--ogui-radius-capsule`), and setting `--ogui-color-control` or
-`--ogui-color-border` does not recolour a control (use `--ogui-lg-fill*` and
-`--ogui-lg-hairline`). The `--ogui-glass-*` multipliers above scale the same
-fills, so reach for them first and for the fill tokens when you need an exact
-value. The classic design still reads `--ogui-color-control*`,
-`--ogui-color-border` and `--ogui-radius-control`. `--ogui-color-text`,
-`--ogui-color-muted`, `--ogui-color-accent`, `--ogui-color-accent-ink`,
-`--ogui-color-focus`, `--ogui-color-danger` and `--ogui-color-success` apply in
-both designs.
+`--ogui-radius-capsule`), though it still rounds text fields, selects and number
+fields. Setting `--ogui-color-control` or `--ogui-color-border` recolours
+neither controls nor fields: use `--ogui-lg-fill*` for raised controls,
+`--ogui-lg-well` and `--ogui-lg-well-shadow` for fields, and
+`--ogui-lg-hairline` for the dividers. The `--ogui-glass-*` multipliers above
+scale the raised fills, so reach for them first and for the fill tokens when you
+need an exact value. The classic design still reads `--ogui-color-control*`,
+`--ogui-color-border` and `--ogui-radius-control` everywhere.
+`--ogui-color-text`, `--ogui-color-muted`, `--ogui-color-accent`,
+`--ogui-color-accent-ink`, `--ogui-color-focus`, `--ogui-color-danger` and
+`--ogui-color-success` apply in both designs.
 
-Liquid re-resolves `--ogui-lg-fill*` and `--ogui-lg-hairline` on every liquid
-scope root and on every `Glass` element, so each of those elements overrides the
-value it inherits. Set the tokens on the element closest to the controls: on the
-provider (through its `className` or `style`) for controls that are not inside a
-`Glass`, and on the `Glass` itself (through its `className`) for controls inside
-it. A rule on a plain wrapper element does not reach controls inside a `Glass`.
-A selector that names both covers a whole region:
+These `--ogui-lg-*` tokens are declared by the stylesheet, not written inline:
+liquid re-resolves them at zero specificity on every liquid scope root and on
+every `Glass` element, so each of those elements overrides the value it
+inherits, and any class rule on the same element overrides it in turn. Set the
+tokens on the element closest to the controls: on the provider (through its
+`className` or `style`) for controls that are not inside a `Glass`, and on the
+`Glass` itself (through its `className`) for controls inside it. A rule on a
+plain wrapper element does not reach controls inside a `Glass`. A selector that
+names both covers a whole region:
 
 ```css
 .hero,
@@ -205,8 +232,8 @@ A selector that names both covers a whole region:
 }
 ```
 
-The remaining `--ogui-lg-*` variables (ring, bloom, lift, blur, thumb, well,
-easing and others) are implementation details and may change.
+The remaining `--ogui-lg-*` variables (ring, bloom, lift, blur, thumb, easing
+and others) are implementation details and may change.
 
 ## Semantic tokens
 
@@ -237,9 +264,11 @@ Not every token is read by a recipe. `--ogui-color-background`,
 `--ogui-color-border-strong`, `--ogui-color-secondary`, `--ogui-color-tertiary`
 and `--ogui-color-accent-soft` are for your own CSS and no recipe consumes them.
 `--ogui-radius-capsule` sets the corners of capsule controls (999px, or 0.5rem
-with `radius: "sharp"`). In the liquid design, controls take fills, hairlines
-and corner radius from the tokens in "Liquid control tokens" rather than from
-`--ogui-color-control*`, `--ogui-color-border` and `--ogui-radius-control`.
+with `radius: "sharp"`). In the liquid design, controls and fields take their
+fills and hairlines from the tokens in "Liquid control tokens" rather than from
+`--ogui-color-control*` and `--ogui-color-border`, and buttons take their
+corners from `--ogui-radius-capsule`; text fields, selects and number fields
+keep `--ogui-radius-control`.
 
 Use semantic tokens in application CSS:
 
@@ -258,9 +287,10 @@ Use semantic tokens in application CSS:
 
 ## Where to override tokens
 
-The provider writes every `--ogui-*` token inline on its `.ogui-theme` element.
-An inline declaration on that element beats any stylesheet rule on an ancestor,
-so overrides on `:root`, `html` or `body` have no effect:
+The provider writes the semantic tokens above inline on its `.ogui-theme`
+element, together with the `--ogui-glass-*` look tokens when `theme.glass` is
+set. An inline declaration on that element beats any stylesheet rule on an
+ancestor, so overrides on `:root`, `html` or `body` have no effect:
 
 ```css
 /* Does nothing: the provider's inline value is closer to the components. */
@@ -277,8 +307,8 @@ Use one of these instead.
    <GlassSystemProvider theme={{ theme: { preset: "teal", accent: "#22705c" } }}>
    ```
 
-2. The provider's `style` (or `className`), which is merged after the generated
-   tokens. Pass only the tokens you want to change; the rest keep their
+2. The provider's `style`, whose values replace the generated tokens of the
+   same name. Pass only the tokens you want to change; the rest keep their
    generated values:
 
    ```tsx
@@ -291,6 +321,12 @@ Use one of these instead.
 
    The `as CSSProperties` cast is needed because TypeScript's style type does
    not list custom properties.
+
+   A class on the provider does not work for these tokens: it is a stylesheet
+   rule on the same element, and the inline token wins. The liquid
+   `--ogui-lg-*` tokens are a different case. The provider does not write them;
+   the stylesheet declares them at zero specificity, so a provider class does
+   override them (see "Liquid control tokens").
 
 3. A descendant class, which scopes the override to one region:
 

@@ -112,9 +112,11 @@ When generating code:
 - Customize through `GlassThemeProvider` and semantic `--ogui-*` tokens. The
   provider writes them inline, so never override them on `:root`; use the
   `theme` prop, the provider `style`, or a descendant class. In the liquid
-  design, controls read `--ogui-lg-fill*`, `--ogui-lg-hairline`, and
-  `--ogui-radius-capsule` instead of `--ogui-color-control*`,
-  `--ogui-color-border`, and `--ogui-radius-control`.
+  design, controls read `--ogui-lg-fill*` and `--ogui-radius-capsule` instead
+  of `--ogui-color-control*` and `--ogui-radius-control`, and fields read
+  `--ogui-lg-well` and `--ogui-lg-well-shadow` but keep `--ogui-radius-control`
+  (`SearchField` is a capsule). Liquid dividers use `--ogui-lg-hairline`, not
+  `--ogui-color-border`.
 - With Tailwind CSS v4, import the stylesheet into a layer:
   `@layer theme, base, ogui, components, utilities;` then
   `@import "open-glass-ui/styles.css" layer(ogui);`.

@@ -635,7 +635,8 @@ Exports: `GlassSystemProvider`, `GlassProvider`, `GlassThemeProvider`, `Glass`,
 ## 8. Tokens and scoping
 
 The theme provider writes semantic `--ogui-*` custom properties inline on its
-`.ogui-theme` element:
+`.ogui-theme` element (plus the `--ogui-glass-*` look tokens when `theme.glass`
+is set):
 
 ```text
 --ogui-color-background  --ogui-color-canvas
@@ -659,9 +660,15 @@ Where to override them:
   closer element always wins. Do not override tokens on `:root`, `html` or
   `body`.
 - Preferred: the typed `theme` input (`theme={{ theme: { preset, accent } }}`).
-- Or pass the token through the provider's `style` (or `className`), for
-  example `theme={{ style: { "--ogui-color-accent": "#185fd1" } as CSSProperties }}`
+- Or pass the token through the provider's `style`, whose values replace the
+  generated tokens of the same name, for example
+  `theme={{ style: { "--ogui-color-accent": "#185fd1" } as CSSProperties }}`
   (the cast is needed because TypeScript's style type omits custom properties).
+- A class on the provider does not work for these tokens: it is a stylesheet
+  rule on the same element, and the inline token wins. (The liquid
+  `--ogui-lg-*` tokens below are a different case: the provider does not write
+  them, the stylesheet declares them at zero specificity, so a provider class
+  does override them.)
 - Or set it on a descendant class, which affects everything inside it:
 
 ```css
@@ -691,38 +698,63 @@ Which tokens recipes actually read:
 - `--ogui-color-surface`, `-surface-strong`, `-border-strong`, `-secondary`,
   `-tertiary`, `-accent-soft` and `-background` are for your own CSS. No recipe
   reads them.
-- In the classic design, controls read `--ogui-color-control`, `-hover`,
-  `-active` for fills, `--ogui-color-border` for hairlines and
+- In the classic design, controls and fields read `--ogui-color-control`,
+  `-hover`, `-active` for fills, `--ogui-color-border` for hairlines and
   `--ogui-radius-control` for corners.
-- In the liquid design those three groups do not apply to controls. Liquid reads
-  its own public control tokens instead:
+- In the liquid design the fill and hairline groups do not apply to controls or
+  fields. Liquid reads its own public tokens instead. Raised controls
+  (secondary `Button`, `ToggleButton`, the built-in `Dialog`/`Drawer` trigger,
+  the toast restore button; quiet buttons such as `IconButton` on hover only):
 
 ```text
---ogui-lg-fill          control fill (rest)
---ogui-lg-fill-hover    control fill on hover
---ogui-lg-fill-active   control fill while pressed
---ogui-lg-hairline      control and field hairline
---ogui-radius-capsule   corner radius of capsule controls (buttons, toggles,
-                        segments, tabs); 999px by default, 0.5rem with
-                        radius "sharp"
+--ogui-lg-fill          fill at rest
+--ogui-lg-fill-hover    fill on hover
+--ogui-lg-fill-active   fill while pressed
+--ogui-radius-capsule   corner radius (also segments, tabs, pagination);
+                        999px by default, 0.5rem with radius "sharp"
+```
+
+  Recessed fields (`TextField`, `Textarea`, `Select`, `NumberField`,
+  `SearchField`) are wells, not raised fills:
+
+```text
+--ogui-lg-well          fill at rest (also checkbox, radio, switch, slider,
+                        progress and meter tracks, FileDropzone)
+--ogui-lg-well-shadow   inset shading of the well
+--ogui-lg-fill          fill while the field has focus
+--ogui-radius-control   corner radius of TextField, Textarea, Select and
+                        NumberField, as in classic; SearchField is a capsule
+                        and uses --ogui-radius-capsule
+```
+
+  Shared:
+
+```text
+--ogui-lg-hairline      the dividers liquid keeps (accordion sections, card
+                        footer, NumberField steppers, Stepper connectors) and
+                        the switch track's edge; controls and fields draw no
+                        border at rest
 --ogui-radius-surface   corner radius of cards, overlays and panels
 ```
 
-  In liquid, setting `--ogui-radius-control` does not change buttons; use
-  `--ogui-radius-capsule`. Setting `--ogui-color-control` or
-  `--ogui-color-border` does not recolour liquid controls; use the `--ogui-lg-*`
-  tokens. `--ogui-color-text`, `-muted`, `-accent`, `-accent-ink`, `-focus`,
-  `-danger` and `-success` still apply in both designs.
-- Liquid re-resolves its fills on every liquid scope root and on every `Glass`
-  element, and each of those overrides the value it inherits. Set
-  `--ogui-lg-fill*` on the provider (`className` or `style`) for controls outside
-  any `Glass`, and on the `Glass` (`className`) for controls inside it. One
-  selector covers a region: `.scope, .scope [data-ogui-glass] { --ogui-lg-fill:
-  ...; }`. A rule on a plain wrapper `div` does not reach controls inside a
-  `Glass`.
+  In liquid, setting `--ogui-radius-control` does not change buttons (use
+  `--ogui-radius-capsule`) but still rounds text fields, selects and number
+  fields. Setting `--ogui-color-control` or `--ogui-color-border` recolours
+  neither liquid controls nor fields; use the `--ogui-lg-*` tokens above.
+  `--ogui-color-text`, `-muted`, `-accent`, `-accent-ink`, `-focus`, `-danger`
+  and `-success` still apply in both designs.
+- The stylesheet declares the `--ogui-lg-*` tokens at zero specificity on every
+  liquid scope root and on every `Glass` element; nothing writes them inline.
+  Each of those elements overrides the value it inherits, and a class on the
+  same element overrides it in turn. Set them on the provider (`className` or
+  `style`) for controls outside any `Glass`, and on the `Glass` (`className`)
+  for controls inside it. One selector covers a region: `.scope, .scope
+  [data-ogui-glass] { --ogui-lg-fill: ...; }`. A rule on a plain wrapper `div`
+  does not reach controls inside a `Glass`.
 - The overall glass look is set with the `--ogui-glass-*` multipliers
   (section 11), which are public and work from plain CSS on any theme boundary
-  or `Glass`.
+  or `Glass` that does not write them itself (a provider with `theme.glass` and
+  a `Glass` with `look` set them inline).
 - `--ogui-material-*` (background, border, highlight, shadow, text, muted, filter,
   dim) are written by each `Glass`. They are an advanced surface; prefer the
   theme tokens.
