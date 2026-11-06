@@ -1,6 +1,6 @@
 "use client";
 
-import { Glass, type GlassProps, useGlassTheme } from "@open-glass-ui/react";
+import { Glass, type GlassProps, resolveToneTheme, useGlassTheme } from "@open-glass-ui/react";
 import {
   type ButtonHTMLAttributes,
   type CSSProperties,
@@ -718,7 +718,10 @@ function DisclosureSurface({
     left: -10_000,
   });
   const [open, setOpen] = useControllableValue(controlledOpen, defaultOpen, onOpenChange);
-  const { appearance, tokens } = useGlassTheme();
+  // The surface is portaled out of the theme element, so it carries the theme
+  // tokens itself. A forced `tone` gets that tone's palette, not the
+  // surrounding one, so its text and nested recipes stay readable.
+  const { appearance, tokens } = resolveToneTheme(useGlassTheme(), tone);
   const focusTrigger = useCallback(() => {
     wrapperRef.current?.querySelector<HTMLButtonElement>("button[aria-controls]")?.focus();
   }, []);

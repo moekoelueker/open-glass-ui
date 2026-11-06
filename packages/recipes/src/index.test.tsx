@@ -194,3 +194,42 @@ describe("Popover", () => {
     await waitFor(() => expect(document.activeElement).toBe(field));
   });
 });
+
+describe("Menu tone", () => {
+  it("gives a forced-tone menu surface that tone's ink instead of the app's", async () => {
+    const { GlassThemeProvider } = await import("@open-glass-ui/react");
+    const user = userEvent.setup();
+    render(
+      <GlassThemeProvider appearance="dark">
+        <Menu label="Tone actions" tone="light" trigger={<Button>More</Button>}>
+          <MenuItem>Duplicate</MenuItem>
+        </Menu>
+      </GlassThemeProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "Tone actions" }));
+    const surface = screen
+      .getByRole("menu", { name: "Tone actions" })
+      .closest<HTMLElement>("[data-ogui-disclosure-surface]");
+    expect(surface?.getAttribute("data-ogui-appearance")).toBe("light");
+    expect(surface?.style.getPropertyValue("--ogui-color-text")).toBe("#111315");
+    expect(surface?.style.colorScheme).toBe("light");
+  });
+
+  it("keeps the app's palette for an automatic tone", async () => {
+    const { GlassThemeProvider } = await import("@open-glass-ui/react");
+    const user = userEvent.setup();
+    render(
+      <GlassThemeProvider appearance="dark">
+        <Menu label="Auto actions" trigger={<Button>More</Button>}>
+          <MenuItem>Duplicate</MenuItem>
+        </Menu>
+      </GlassThemeProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "Auto actions" }));
+    const surface = screen
+      .getByRole("menu", { name: "Auto actions" })
+      .closest<HTMLElement>("[data-ogui-disclosure-surface]");
+    expect(surface?.getAttribute("data-ogui-appearance")).toBe("dark");
+    expect(surface?.style.getPropertyValue("--ogui-color-text")).toBe("#f7f6f1");
+  });
+});
