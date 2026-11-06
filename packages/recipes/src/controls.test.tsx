@@ -403,6 +403,25 @@ describe("Slider value normalization", () => {
     expect(calls.at(-1)).toBeNull();
   });
 
+  it("resyncs after a reset of the form it moved to", async () => {
+    const tree = (form: string) => (
+      <>
+        <form id="first" />
+        <form id="second" />
+        <Slider label="Grain" form={form} defaultValue={30} unit="%" />
+      </>
+    );
+    const { container, rerender } = render(tree("first"));
+    const slider = screen.getByRole("slider") as HTMLInputElement;
+    fireEvent.input(slider, { target: { value: "70" } });
+    rerender(tree("second"));
+    expect(slider.form?.id).toBe("second");
+
+    act(() => (container.querySelector("#second") as HTMLFormElement).reset());
+    await waitFor(() => expect(output(container)).toBe("30%"));
+    expect(slider.value).toBe("30");
+  });
+
   it("follows the native value when the bounds change under an uncontrolled slider", () => {
     const tree = (max: number) => (
       <form>

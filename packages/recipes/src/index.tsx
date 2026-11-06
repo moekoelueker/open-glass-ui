@@ -485,25 +485,34 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
   }, [minValue, maxValue, stepSize, uncontrolled, defaultNumber]);
 
   // A form reset restores the native default after the reset event, so read
-  // the restored value back once it has happened.
+  // the restored value back once it has happened. Listening on the document
+  // and comparing with the input's current form keeps working when the input
+  // moves to another form (a changed `form` attribute) without remounting.
   useEffect(() => {
-    const form = inputRef.current?.form;
-    if (!form) {
+    const input = inputRef.current;
+    if (!input) {
       return;
     }
+    const doc = input.ownerDocument;
     let timeout = 0;
-    const handleReset = () => {
+    const handleReset = (event: Event) => {
+      const current = inputRef.current;
+      if (!current || event.target !== current.form) {
+        return;
+      }
+      window.clearTimeout(timeout);
       timeout = window.setTimeout(() => {
-        const input = inputRef.current;
-        if (input) {
-          setLiveValue(Number(input.value));
+        const restored = inputRef.current;
+        if (restored) {
+          setLiveValue(Number(restored.value));
         }
       }, 0);
     };
-    form.addEventListener("reset", handleReset);
+    // Capture phase, so a handler that stops the event on the form cannot hide it.
+    doc.addEventListener("reset", handleReset, true);
     return () => {
       window.clearTimeout(timeout);
-      form.removeEventListener("reset", handleReset);
+      doc.removeEventListener("reset", handleReset, true);
     };
   }, []);
 
