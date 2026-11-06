@@ -670,6 +670,47 @@ describe("Tooltip visibility", () => {
     expect(screen.queryByRole("button", { name: "Details" })).toBeNull();
   });
 
+  it("keeps a menu and the dialog it opened when keys are pressed in the dialog", async () => {
+    const user = userEvent.setup();
+
+    function Fixture() {
+      const [renaming, setRenaming] = useState(false);
+      return (
+        <Menu label="Layer actions" trigger={<Button>Actions</Button>}>
+          <MenuItem
+            onClick={(event) => {
+              event.preventDefault();
+              setRenaming(true);
+            }}
+          >
+            Rename
+          </MenuItem>
+          {renaming ? (
+            <Dialog title="Rename layer" open onOpenChange={setRenaming}>
+              <TextField label="Layer name" defaultValue="Glass" />
+            </Dialog>
+          ) : null}
+        </Menu>
+      );
+    }
+
+    render(<Fixture />);
+    const trigger = screen.getByRole("button", { name: "Layer actions" });
+    await user.click(trigger);
+    await user.click(await screen.findByRole("menuitem", { name: "Rename" }));
+    const dialog = await screen.findByRole("dialog", { name: "Rename layer" });
+    const field = screen.getByRole("textbox", { name: "Layer name" });
+    act(() => field.focus());
+
+    for (const key of ["Home", "End", "ArrowDown", "ArrowUp"]) {
+      // Not taken by the menu: the field keeps its native caret movement.
+      expect(fireEvent.keyDown(field, { key })).toBe(true);
+    }
+    fireEvent.keyDown(field, { key: "Tab" });
+    expect(screen.getByRole("dialog", { name: "Rename layer" })).toBe(dialog);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+  });
+
   it("dismisses a hovered tooltip on Escape while focus is elsewhere", () => {
     render(
       <>

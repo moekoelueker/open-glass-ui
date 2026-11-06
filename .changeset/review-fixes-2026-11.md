@@ -34,5 +34,6 @@ Fixed
 - Liquid styles no longer leak into a classic scope nested inside liquid inside classic, and descendant rules respect the nearest scope.
 - The Dialog and Drawer description is padded like the title and body.
 - A pressed liquid `ToggleButton` keeps its accent fill on hover.
+- An actionable `Card` (`onPress`) activates only when the card itself has focus: Enter or Space typed in a field inside it, or in a dialog opened from it, no longer presses the card.
 - A `Dialog` or `Drawer` returns focus to the element that opened it when it closes, also when it mounted already open or is removed by its parent instead of being closed.
 - An uncontrolled `Slider` follows the native value when `min`, `max` or `step` change, so its text and track match what the form submits.

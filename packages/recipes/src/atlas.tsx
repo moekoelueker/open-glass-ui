@@ -177,13 +177,27 @@ export function Card({
       tabIndex={tabIndex ?? (actionable ? 0 : undefined)}
       onClick={(event) => {
         onClick?.(event);
-        if (!event.defaultPrevented) {
+        // A click in a dialog or menu portaled from inside the card reaches
+        // here through React's tree, but it is not a press on the card.
+        if (
+          !event.defaultPrevented &&
+          event.target instanceof Node &&
+          event.currentTarget.contains(event.target)
+        ) {
           onPress?.();
         }
       }}
       onKeyDown={(event) => {
         onKeyDown?.(event);
-        if (actionable && !event.defaultPrevented && (event.key === "Enter" || event.key === " ")) {
+        // Only the focused card itself activates: Enter or Space typed in a
+        // field inside it, or in a dialog portaled from it, stays with that
+        // field.
+        if (
+          actionable &&
+          !event.defaultPrevented &&
+          event.target === event.currentTarget &&
+          (event.key === "Enter" || event.key === " ")
+        ) {
           event.preventDefault();
           event.currentTarget.click();
         }

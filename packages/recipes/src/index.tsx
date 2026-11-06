@@ -1005,6 +1005,16 @@ function MenuItems({ label, children }: { label: string; children: ReactNode }) 
       aria-label={label}
       className="ogui-menu__items"
       onKeyDown={(event) => {
+        // React bubbles keys from portals through the component tree: a dialog
+        // or nested menu opened from an item would otherwise lose Tab, Home,
+        // End and the arrows to this menu. Only keys pressed in the menu count.
+        if (
+          event.defaultPrevented ||
+          !(event.target instanceof Node) ||
+          !event.currentTarget.contains(event.target)
+        ) {
+          return;
+        }
         const current = event.target instanceof HTMLElement ? event.target : undefined;
         if (event.key === "ArrowDown") {
           event.preventDefault();

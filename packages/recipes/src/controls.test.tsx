@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { normalizeToStep } from "./atlas";
 import {
   Button,
+  Card,
   Checkbox,
   Dialog,
   IconButton,
@@ -713,5 +714,39 @@ describe("Overlay description", () => {
     expect(body).toContain("padding: 1.1rem;");
     expect(rule).toContain("color: var(--ogui-color-muted");
     expect(rule).toContain("font-size: 0.82rem;");
+  });
+});
+
+describe("Card with a portaled dialog", () => {
+  it("is not pressed by clicks or keys inside a dialog opened from it", () => {
+    const onPress = vi.fn();
+    render(
+      <Card title="Project" onPress={onPress}>
+        <Dialog title="Project settings" defaultOpen>
+          <TextField label="Project name" />
+          <button type="button">Save settings</button>
+        </Dialog>
+      </Card>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Save settings" }));
+    const field = screen.getByRole("textbox", { name: "Project name" });
+    // Space must reach the field, not activate the card.
+    expect(fireEvent.keyDown(field, { key: " " })).toBe(true);
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it("still activates when the card itself is focused", () => {
+    const onPress = vi.fn();
+    render(
+      <Card title="Open project" onPress={onPress}>
+        Body
+      </Card>,
+    );
+    const card = screen.getByRole("button", { name: /Open project/ });
+    fireEvent.keyDown(card, { key: "Enter" });
+    fireEvent.keyDown(card, { key: " " });
+    fireEvent.click(card);
+    expect(onPress).toHaveBeenCalledTimes(3);
   });
 });
