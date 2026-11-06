@@ -403,9 +403,9 @@ application customization.
 
 A surface can force its own tone, whatever the app appearance is:
 `<Glass tone="dark">` or `<Glass tone="light">`. This is the way to place glass
-over a photo or video. In releases after 0.4.0 the surface's text, muted text,
-borders and control tokens switch to that tone as well, and nested recipes and
-nested `Glass` follow it. In 0.4.0 only the material changes and the text inside
+over a photo or video. Since 0.5.0 the surface's text, muted text, borders and
+control tokens switch to that tone as well, and nested recipes and nested
+`Glass` follow it. In 0.4 only the material changes and the text inside
 inherits the app theme. Keep a legible backdrop and check contrast over the real
 image. `Toolbar`, `Dock`, `Menu` and `Popover` accept the same `tone` prop.
 

@@ -251,8 +251,8 @@ material. Reach for `Glass` for custom regions (a hero panel, a floating bar)
 and put plain recipes inside it.
 
 To place glass over photos or video, force the tone of the surface:
-`<Glass tone="dark">`. In releases after 0.4.0 its text and nested recipes
-follow that tone; in 0.4.0 only the material changes. Details are in
+`<Glass tone="dark">`. Since 0.5.0 its text and nested recipes follow that
+tone; in 0.4 only the material changes. Details are in
 [Theming](./THEMING.md#glass-over-imagery-forcing-a-tone).
 
 `Glass` also accepts `optics`, but only its `frost` field changes the material on

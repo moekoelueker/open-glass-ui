@@ -42,8 +42,8 @@ refract page pixels.
 
 To place a surface over photos or video, force its tone with
 `<Glass tone="dark">` (or `"light"`) so the material matches the image whatever
-the app appearance is. In releases after 0.4.0 the surface's text and nested
-recipes follow that tone too; in 0.4.0 only the material changes. `Toolbar`,
+the app appearance is. Since 0.5.0 the surface's text and nested recipes
+follow that tone too; in 0.4 only the material changes. `Toolbar`,
 `Dock`, `Menu`, and `Popover` already render glass themselves, so they take
 `tone` and `material` directly and should not be wrapped in another `Glass`.
 

@@ -843,10 +843,10 @@ material and text match the image, whatever the app theme is.
 </Glass>
 ```
 
-In releases after 0.4.0, a `Glass` whose `tone` differs from the surrounding
-appearance also switches its text, muted text, borders and control tokens to
-that tone, and nested recipes and nested `Glass` follow it. In 0.4.0 only the
-material changes, so text inside inherits the app theme colours. Keep a
+Since 0.5.0, a `Glass` whose `tone` differs from the surrounding appearance
+also switches its text, muted text, borders and control tokens to that tone,
+and nested recipes and nested `Glass` follow it. In 0.4 only the material
+changes, so text inside inherits the app theme colours. Keep a
 legible background behind it and check contrast over the real image.
 `Menu`, `Popover` and `Toolbar` accept the same `tone` prop.
 
