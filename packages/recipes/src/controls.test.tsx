@@ -271,6 +271,68 @@ describe("Slider value normalization", () => {
     expect(slider.value).toBe("30");
   });
 
+  it("resets to the latest default and keeps an edited value when the default changes", async () => {
+    const tree = (defaultValue: number) => (
+      <form>
+        <Slider label="Grain" name="grain" defaultValue={defaultValue} unit="%" />
+      </form>
+    );
+    const { container, rerender } = render(tree(30));
+    const slider = screen.getByRole("slider") as HTMLInputElement;
+    const form = container.querySelector("form") as HTMLFormElement;
+    fireEvent.input(slider, { target: { value: "70" } });
+
+    rerender(tree(60));
+    // A new default does not overwrite what the user chose.
+    expect(slider.value).toBe("70");
+    expect(output(container)).toBe("70%");
+
+    act(() => form.reset());
+    await waitFor(() => expect(output(container)).toBe("60%"));
+    expect(slider.value).toBe("60");
+    expect(new FormData(form).get("grain")).toBe("60");
+  });
+
+  it("shows the native value after the default changes on an untouched slider", () => {
+    const tree = (defaultValue: number) => (
+      <Slider label="Grain" defaultValue={defaultValue} unit="%" />
+    );
+    const { container, rerender } = render(tree(30));
+    const slider = screen.getByRole("slider") as HTMLInputElement;
+    rerender(tree(60));
+    // Like any uncontrolled input, a later default only affects reset; the
+    // text must agree with whatever the native input now holds.
+    expect(output(container)).toBe(`${slider.value}%`);
+  });
+
+  it("runs a callback ref's cleanup instead of calling it with null", () => {
+    const cleanupRef = vi.fn();
+    const calls: (HTMLInputElement | null)[] = [];
+    const callbackRef = (node: HTMLInputElement | null) => {
+      calls.push(node);
+      return cleanupRef;
+    };
+    const { unmount } = render(<Slider label="Grain" ref={callbackRef} />);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toBeInstanceOf(HTMLInputElement);
+    unmount();
+    expect(cleanupRef).toHaveBeenCalledOnce();
+    expect(calls).toHaveLength(1);
+  });
+
+  it("still clears object refs and plain callback refs on unmount", () => {
+    const objectRef = createRef<HTMLInputElement>();
+    const first = render(<Slider label="Grain" ref={objectRef} />);
+    expect(objectRef.current).toBeInstanceOf(HTMLInputElement);
+    first.unmount();
+    expect(objectRef.current).toBeNull();
+
+    const calls: (HTMLInputElement | null)[] = [];
+    const second = render(<Slider label="Grain" ref={(node) => void calls.push(node)} />);
+    second.unmount();
+    expect(calls.at(-1)).toBeNull();
+  });
+
   it("follows the native value when the bounds change under an uncontrolled slider", () => {
     const tree = (max: number) => (
       <form>

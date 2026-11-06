@@ -420,30 +420,41 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
   const stepSize = step === "any" ? null : stepValue !== undefined && stepValue > 0 ? stepValue : 1;
   const rule: StepRule = { min: minValue, max: maxValue, base: minValue, step: stepSize };
   const uncontrolled = value === undefined;
-  const [initialValue] = useState(() =>
-    normalizeToStep(firstNumber(defaultValue) ?? minValue, rule),
-  );
-  const [liveValue, setLiveValue] = useState(initialValue);
+  // The current default, normalized like the native input would. It reaches
+  // the native `defaultValue` on every render, so a form reset restores the
+  // latest default; React updates it without touching an edited value.
+  const defaultNumber = normalizeToStep(firstNumber(defaultValue) ?? minValue, rule);
+  const [liveValue, setLiveValue] = useState(defaultNumber);
   const numericValue = normalizeToStep(
     (value === undefined ? undefined : firstNumber(value)) ?? liveValue,
     rule,
   );
   const progress = rangeProgress(numericValue, rule.min, rule.max);
+  // Keeps the internal ref and forwards to the caller's. A React 19 callback
+  // ref may return a cleanup function: pass it back, so React runs it (and
+  // does not call the ref with null) on unmount or when the ref changes.
   const setRefs = useCallback(
     (node: HTMLInputElement | null) => {
       inputRef.current = node;
       if (typeof ref === "function") {
-        ref(node);
+        const cleanup: unknown = ref(node);
+        if (typeof cleanup === "function") {
+          return () => {
+            inputRef.current = null;
+            cleanup();
+          };
+        }
       } else if (ref) {
         ref.current = node;
       }
+      return undefined;
     },
     [ref],
   );
 
   // New bounds or a new step make the browser re-sanitize the native value
-  // without an input event, and widening them again does not restore the old
-  // value. An uncontrolled slider reads the native value back so the text and
+  // without an input event, and widening the bounds again does not restore the
+  // old value. An uncontrolled slider reads the native value back so the text and
   // the track keep showing what the form submits. The normalized value is
   // written back only where the native one is not on the grid yet (WebKit
   // skips re-aligning to a new step, jsdom does not sanitize at all); after a
@@ -463,7 +474,9 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
       input.value = String(native);
     }
     setLiveValue(native);
-  }, [minValue, maxValue, stepSize, uncontrolled]);
+    // `defaultNumber` too, so the text keeps matching the native value
+    // whatever the browser does with a new default.
+  }, [minValue, maxValue, stepSize, uncontrolled, defaultNumber]);
 
   // A form reset restores the native default after the reset event, so read
   // the restored value back once it has happened.
@@ -509,7 +522,7 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
         max={max}
         step={step}
         value={value === undefined ? undefined : numericValue}
-        defaultValue={value === undefined ? initialValue : undefined}
+        defaultValue={value === undefined ? defaultNumber : undefined}
         onInput={(event) => {
           setLiveValue(Number(event.currentTarget.value));
           onInput?.(event);
