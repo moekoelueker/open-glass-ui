@@ -90,7 +90,23 @@ describe("readable foreground", () => {
   });
 });
 
-describe("accent ink and highlight", () => {
+/** Reference CSS `color-mix(in srgb, color, <white|black> percent%)`, rounded to 8 bits. */
+function mix(color: string, target: "white" | "black", percent: number) {
+  const value = target === "white" ? 255 : 0;
+  return `#${[1, 3, 5]
+    .map((offset) => Number.parseInt(color.slice(offset, offset + 2), 16))
+    .map((channel) => Math.round((channel * (100 - percent) + value * percent) / 100))
+    .map((channel) => channel.toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
+const DARK_INKS = ["#101214", "#000000"];
+const INK_CANDIDATES = ["#101214", "#f9f8f3", "#000000", "#ffffff"];
+/** The 6% translucent bottom stop over the worst backdrop for that ink. */
+const translucentStop = (accent: string, ink: string) =>
+  mix(accent, DARK_INKS.includes(ink) ? "black" : "white", 6);
+
+describe("accent ink and highlight mix", () => {
   const themes = [
     ...PRESETS.flatMap((preset) =>
       APPEARANCES.map((appearance) => ({
@@ -105,64 +121,124 @@ describe("accent ink and highlight", () => {
       })),
     ),
   ];
+  /**
+   * Mid-tone accents for which no ink, at any highlight mix, also reaches
+   * 4.5:1 on the 6% translucent stop over a white or black page. For these the
+   * translucency check is dropped and only the opaque stops are guaranteed.
+   */
+  const MID_TONES = new Set(["teal/light", "coral/light", "#777777", "#c94735"]);
+  const isMidTone = (name: string) =>
+    MID_TONES.has(name) || MID_TONES.has(name.slice(0, name.indexOf("/")));
 
-  it.each(themes)("reaches 4.5:1 over the whole liquid fill for $name", ({ palette }) => {
-    expect(palette.accentHighlight).toMatch(/^#[\da-f]{6}$/);
+  it.each(themes)("reaches 4.5:1 on the accent and its highlight for $name", ({ palette }) => {
+    const highlightMix = palette.accentHighlightMix as number;
+    expect(Number.isInteger(highlightMix)).toBe(true);
+    expect(highlightMix).toBeGreaterThanOrEqual(0);
+    expect(highlightMix).toBeLessThanOrEqual(16);
     expect(contrastRatio(palette.accent, palette.accentInk)).toBeGreaterThanOrEqual(4.5);
     expect(
-      contrastRatio(palette.accentHighlight as string, palette.accentInk),
+      contrastRatio(mix(palette.accent, "white", highlightMix), palette.accentInk),
     ).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("keeps every preset ink the classic design shipped, except where it failed 4.5:1", () => {
-    const inks = Object.fromEntries(
+  it.each(themes)(
+    "covers the translucent stop wherever any ink can for $name",
+    ({ name, palette }) => {
+      const stop = translucentStop(palette.accent, palette.accentInk);
+      if (isMidTone(name)) {
+        for (const ink of INK_CANDIDATES) {
+          expect(
+            Math.min(
+              contrastRatio(palette.accent, ink),
+              contrastRatio(translucentStop(palette.accent, ink), ink),
+            ),
+          ).toBeLessThan(4.5);
+        }
+      } else {
+        expect(contrastRatio(stop, palette.accentInk)).toBeGreaterThanOrEqual(4.5);
+      }
+    },
+  );
+
+  it("chooses the ink and the highlight mix together for every preset", () => {
+    const choices = Object.fromEntries(
       themes
         .slice(0, PRESETS.length * APPEARANCES.length)
-        .map(({ name, palette }) => [name, palette.accentInk]),
+        .map(({ name, palette }) => [name, `${palette.accentInk} ${palette.accentHighlightMix}%`]),
     );
-    expect(inks).toEqual({
-      "neutral/dark": "#101214",
-      "neutral/light": "#f9f8f3",
-      "cobalt/dark": "#101214",
-      "cobalt/light": "#f9f8f3",
-      "teal/dark": "#101214",
-      "teal/light": "#f9f8f3",
-      "violet/dark": "#101214",
-      "violet/light": "#f9f8f3",
-      "coral/dark": "#101214",
-      // #f9f8f3 reached only 4.45:1 on #c94735.
-      "coral/light": "#ffffff",
-      "amber/dark": "#101214",
-      "amber/light": "#f9f8f3",
+    expect(choices).toEqual({
+      "neutral/dark": "#101214 16%",
+      "neutral/light": "#f9f8f3 16%",
+      "cobalt/dark": "#101214 16%",
+      "cobalt/light": "#ffffff 9%",
+      "teal/dark": "#101214 16%",
+      "teal/light": "#ffffff 5%",
+      "violet/dark": "#101214 16%",
+      "violet/light": "#ffffff 14%",
+      "coral/dark": "#101214 16%",
+      "coral/light": "#ffffff 3%",
+      "amber/dark": "#101214 16%",
+      "amber/light": "#ffffff 6%",
     });
   });
 
-  it("matches CSS color-mix(in srgb, accent, white 16%) when the ink allows it", () => {
-    // 0xf4 * 0.84 + 255 * 0.16 = 245.76, and so on per channel.
-    expect(createGlassTheme("dark").accentHighlight).toBe("#f6f5f1");
-    expect(createGlassTheme("dark", { accent: "#ffd400" }).accentHighlight).toBe("#ffdb29");
-    expect(createGlassTheme("dark", { accent: "#777777" }).accentHighlight).toBe("#8d8d8d");
+  it("keeps the full 16% highlight whenever an ink allows it", () => {
+    // Dark ink only gains contrast as white is mixed in, so nothing changes.
+    expect(createGlassTheme("dark").accentHighlightMix).toBe(16);
+    expect(createGlassTheme("dark", { accent: "#ffd400" })).toMatchObject({
+      accentInk: "#101214",
+      accentHighlightMix: 16,
+    });
+    // Mid grey: neither soft ink reaches 4.5:1, pure black does at 16%.
+    expect(createGlassTheme("dark", { accent: "#777777" })).toMatchObject({
+      accentInk: "#000000",
+      accentHighlightMix: 16,
+    });
   });
 
-  it("reduces the white share one step at a time until light ink still reads", () => {
-    // Light coral keeps 3% white: #c94735 mixed 3% is #cb4d3b, 4% would drop below 4.5:1.
-    const coral = createGlassTheme("light", { preset: "coral" });
-    expect(coral.accentHighlight).toBe("#cb4d3b");
-    expect(contrastRatio("#cb4e3d", coral.accentInk)).toBeLessThan(4.5);
+  it("gives the light coral accent light ink with a reduced highlight, never black", () => {
+    // Black reaches only 4.44:1 on #c94735 itself.
+    const coral = createGlassTheme("light", { accent: "#c94735" });
+    expect(coral.accentInk).toBe("#ffffff");
+    expect(coral.accentHighlightMix).toBe(3);
+    expect(contrastRatio("#c94735", "#000000")).toBeLessThan(4.5);
+    // One more step of white would drop below 4.5:1.
+    expect(contrastRatio(mix("#c94735", "white", 4), coral.accentInk)).toBeLessThan(4.5);
   });
 
-  it("writes the highlight as a theme token", () => {
-    const palette = createGlassTheme("light", { preset: "teal" });
-    expect(createGlassThemeTokens(palette)["--ogui-color-accent-highlight"]).toBe(
-      palette.accentHighlight,
-    );
+  it("prefers the ink that keeps the most highlight when none keeps all of it", () => {
+    // #3355ff: #f9f8f3 keeps 7%, #ffffff keeps 10%.
+    const blue = createGlassTheme("light", { accent: "#3355ff" });
+    expect(blue).toMatchObject({ accentInk: "#ffffff", accentHighlightMix: 10 });
   });
 
-  it("derives the highlight for hand-built palettes and skips it for non-hex accents", () => {
-    const { accentHighlight: _omitted, ...legacy } = createGlassTheme("dark");
-    expect(createGlassThemeTokens(legacy)["--ogui-color-accent-highlight"]).toBe("#f6f5f1");
+  it("writes the mix amount, not a color, as a theme token", () => {
+    const tokens = createGlassThemeTokens(createGlassTheme("light", { preset: "teal" }));
+    expect(tokens["--ogui-color-accent-highlight-mix"]).toBe("5%");
+    expect(
+      createGlassThemeTokens(createGlassTheme("dark"))["--ogui-color-accent-highlight-mix"],
+    ).toBe("16%");
+    expect(Object.keys(tokens)).not.toContain("--ogui-color-accent-highlight");
+  });
+
+  it("derives the mix for hand-built palettes and skips it for non-hex accents", () => {
+    const { accentHighlightMix: _omitted, ...legacy } = createGlassTheme("light", {
+      preset: "violet",
+    });
+    expect(createGlassThemeTokens(legacy)["--ogui-color-accent-highlight-mix"]).toBe("14%");
+    // A soft ink kept by a hand-built palette gets the mix that ink allows.
+    expect(
+      createGlassThemeTokens({ ...legacy, accentInk: "#f9f8f3" })[
+        "--ogui-color-accent-highlight-mix"
+      ],
+    ).toBe("11%");
     const tokens = createGlassThemeTokens({ ...legacy, accent: "rgb(10 20 30)" });
-    expect("--ogui-color-accent-highlight" in tokens).toBe(false);
+    expect("--ogui-color-accent-highlight-mix" in tokens).toBe(false);
+    expect(
+      createGlassThemeTokens({ ...legacy, accentHighlightMix: 40 })[
+        "--ogui-color-accent-highlight-mix"
+      ],
+    ).toBe("16%");
   });
 
   it("keeps status inks readable in both appearances", () => {

@@ -87,7 +87,7 @@ describe("tone-local theme", () => {
       "--ogui-color-focus",
       "--ogui-color-accent",
       "--ogui-color-accent-ink",
-      "--ogui-color-accent-highlight",
+      "--ogui-color-accent-highlight-mix",
     ] as const) {
       expect(surface.style.getPropertyValue(name)).toBe(expected[name]);
     }
