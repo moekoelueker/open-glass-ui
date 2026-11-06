@@ -23,7 +23,7 @@ import {
 } from "react";
 import { useGlassPointerField } from "./interaction";
 import { useGlassRuntime } from "./provider";
-import { useGlassTheme } from "./theme";
+import { GlassThemeContext, resolveToneScope, useGlassTheme } from "./theme";
 
 type GlassElement = "aside" | "div" | "nav" | "section" | "span";
 
@@ -31,6 +31,13 @@ export interface GlassProps extends Omit<HTMLAttributes<HTMLElement>, "color"> {
   as?: GlassElement;
   children?: ReactNode;
   material?: MaterialPresetName;
+  /**
+   * Which appearance the material is drawn for. `auto` follows the nearest
+   * theme. A tone that differs from it also scopes the theme: the element gets
+   * that appearance's `--ogui-color-*` tokens, `data-ogui-appearance` and
+   * `color-scheme`, and descendants (including nested `Glass`) resolve
+   * against it, so text and recipes inside stay readable.
+   */
   tone?: MaterialTone | "auto";
   renderer?: RendererPreference;
   source?: RendererSource;
@@ -73,6 +80,10 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
   const runtime = useGlassRuntime();
   const theme = useGlassTheme();
   const resolvedTone = tone === "auto" ? theme.appearance : tone;
+  // A surface whose tone differs from the surrounding appearance carries that
+  // tone's own ink, so the material text and every descendant reading
+  // --ogui-color-* stays readable. A matching tone renders exactly as before.
+  const toneScope = resolveToneScope(theme, resolvedTone);
   const pointerField = useGlassPointerField(interactive && runtime.motion === "on");
   // An explicitly-undefined optics field must fall back to the preset value
   // instead of clobbering it, so conditional overrides like
@@ -108,6 +119,7 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
   const edge =
     theme.design === "liquid" && !runtime.capabilities.forcedColors ? { borderWidth: 0 } : {};
   const mergedStyle = {
+    ...(toneScope ? { ...toneScope.colorTokens, colorScheme: resolvedTone } : {}),
     ...tokens,
     ...materialStyle,
     ...edge,
@@ -123,6 +135,8 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
   return createElement(
     as,
     {
+      // Before `rest`, so an explicit attribute from the caller still wins.
+      ...(toneScope ? { "data-ogui-appearance": resolvedTone } : {}),
       ...rest,
       ref,
       className,
@@ -161,6 +175,10 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
       "data-ogui-thickness": resolvedMaterial.thickness.toFixed(3),
       "data-ogui-ior": resolvedMaterial.ior.toFixed(3),
     },
-    children,
+    toneScope ? (
+      <GlassThemeContext.Provider value={toneScope.runtime}>{children}</GlassThemeContext.Provider>
+    ) : (
+      children
+    ),
   );
 });
