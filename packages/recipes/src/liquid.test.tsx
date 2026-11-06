@@ -318,40 +318,112 @@ describe("liquid motion on portaled menus", () => {
   });
 });
 
-describe("liquid primary button", () => {
+describe("liquid accent fills", () => {
   const FORCED_COLORS = "@media (forced-colors: active)";
-  const primaryRules = (source: string, at = "") =>
+  const PRIMARY = `${SCOPE} .ogui-button--primary`;
+  const PRESSED_TOGGLE = `${SCOPE} .ogui-toggle-button[aria-pressed="true"]`;
+  const rulesFor = (source: string, at = "") =>
     liquidRules.filter((rule) => rule.at === at && rule.selectors.includes(guarded(source)));
-  const declarations = (rule: CssRule) => rule.body.replace(/\s+/g, " ").trim();
+  const declarations = (rule: CssRule | undefined) =>
+    (rule?.body ?? "").replace(/\s+/g, " ").trim();
 
-  it("takes the highlight stop from the theme, with the previous mix as the fallback", () => {
-    const [primary] = primaryRules(`${SCOPE} .ogui-button--primary`);
-    expect(declarations(primary as CssRule)).toContain(
-      "linear-gradient( 180deg, var(--ogui-color-accent-highlight, color-mix(in srgb, var(--ogui-accent), white 16%)), color-mix(in srgb, var(--ogui-accent), transparent 6%) )",
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("mixes the highlight stop by the theme's amount, 16% without a theme", () => {
+    expect(declarations(rulesFor(PRIMARY)[0])).toContain(
+      "linear-gradient( 180deg, color-mix(in srgb, var(--ogui-accent), white var(--ogui-color-accent-highlight-mix, 16%)), color-mix(in srgb, var(--ogui-accent), transparent 6%) )",
     );
   });
 
-  it("mixes white into the accent only as the highlight token's fallback", () => {
+  it("never mixes a fixed amount of white into the accent", () => {
     const source = read("./liquid.source.css").replace(/\s+/g, " ");
-    const whiteMixes = source.match(/color-mix\(in srgb, var\(--ogui-accent\), white \d+%\)/g);
-    const asFallback = source.match(
-      /var\(--ogui-color-accent-highlight, color-mix\(in srgb, var\(--ogui-accent\), white \d+%\)\)/g,
-    );
-    expect(whiteMixes?.length).toBeGreaterThan(0);
-    expect(asFallback?.length).toBe(whiteMixes?.length);
+    expect(source).not.toMatch(/var\(--ogui-accent\), white \d/);
+    expect(source).not.toContain("--ogui-color-accent-highlight,");
+    expect(source).toContain("white var(--ogui-color-accent-highlight-mix, 16%)");
   });
 
-  it("lifts on hover instead of brightening the fill", () => {
+  describe.each([
+    ["primary button", PRIMARY],
+    ["pressed toggle button", PRESSED_TOGGLE],
+  ])("%s", (_name, source) => {
+    // Every glint level the liquid layer sets (hover 1, press 1.4), plus rest.
+    const glintLevels = [
+      0,
+      ...[...read("./liquid.css").matchAll(/--ogui-lg-glint:\s*([\d.]+)/g)].map((match) =>
+        Number(match[1]),
+      ),
+    ];
+    const GLINT =
+      /radial-gradient\( ellipse ([\d.]+)% ([\d.]+)% at var\(--ogui-light-x, 50%\) 0%, rgb\(255 255 255 \/ calc\(min\(var\(--ogui-lg-glint\), ([\d.]+)\) \* ([\d.]+)\)\), transparent \)/;
+
+    it("keeps the glint on the top edge, away from the label", () => {
+      const match = declarations(rulesFor(source)[0]).match(GLINT);
+      expect(match).not.toBeNull();
+      // Anchored at y = 0 with a vertical radius under 30% of the height, so
+      // it is transparent before it reaches the vertically centred label.
+      expect(Number(match?.[2])).toBeLessThan(30);
+    });
+
+    it("caps the glint at 0.3 at rest, on hover and while pressed", () => {
+      const [, , , cap, strength] = declarations(rulesFor(source)[0]).match(GLINT) ?? [];
+      expect(glintLevels).toEqual(expect.arrayContaining([0, 1, 1.4]));
+      for (const level of glintLevels) {
+        expect(Math.min(level, Number(cap)) * Number(strength)).toBeLessThanOrEqual(0.3);
+      }
+    });
+  });
+
+  it("leaves the glint of glass controls as it was", () => {
+    const base = liquidRules.find(
+      (rule) =>
+        rule.at === "" &&
+        rule.selectors.includes(guarded(`${SCOPE} .ogui-toggle-button`)) &&
+        rule.body.includes("radial-gradient"),
+    );
+    expect(declarations(base)).toContain(
+      "radial-gradient( circle at var(--ogui-light-x, 50%) var(--ogui-light-y, 0%), rgb(255 255 255 / calc(var(--ogui-lg-glint) * 0.34)), transparent 62% ) no-repeat, var(--ogui-control)",
+    );
+  });
+
+  it("keeps the pressed toggle's accent fill on hover and press", () => {
+    const pressedSelector = guarded(PRESSED_TOGGLE);
+    // The shared hover rule (0,3,0) outranks the pressed rule (0,2,0) and
+    // matches the same button, so the pressed rule must feed its variables.
+    const hoverSelector = guarded(`${SCOPE} .ogui-toggle-button:hover:not(:disabled)`);
+    const pressed = mount(
+      ["liquid"],
+      '<button class="ogui-toggle-button" aria-pressed="true" id="target"></button>',
+    );
+    expect(pressed.matches(pressedSelector)).toBe(true);
+    expect(pressed.matches(hoverSelector.replace(":hover", ""))).toBe(true);
+    pressed.setAttribute("aria-pressed", "false");
+    expect(pressed.matches(pressedSelector)).toBe(false);
+
+    const body = declarations(rulesFor(PRESSED_TOGGLE)[0]);
+    expect(body).toContain("--ogui-control-hover: var(--ogui-accent);");
+    expect(body).toContain("--ogui-control-active: var(--ogui-accent);");
+    expect(body).toContain("background-color: var(--ogui-accent);");
+    expect(
+      declarations(rulesFor(`${SCOPE} .ogui-toggle-button:hover:not(:disabled)`)[0]),
+    ).toContain("background-color: var(--ogui-control-hover);");
+    expect(declarations(rulesFor(`${SCOPE} .ogui-toggle-button:active`)[0])).toContain(
+      "background-color: var(--ogui-control-active);",
+    );
+  });
+
+  it("lifts the primary on hover instead of brightening the fill", () => {
     const hover = `${SCOPE} .ogui-button--primary:hover:not(:disabled)`;
-    const [rule] = primaryRules(hover);
-    const body = declarations(rule as CssRule);
+    const [rule] = rulesFor(hover);
+    const body = declarations(rule);
     expect(body).not.toContain("filter");
     expect(body).toContain(
       "0 14px 34px -8px color-mix(in srgb, var(--ogui-accent), transparent 30%)",
     );
     expect(read("./liquid.source.css")).not.toMatch(/brightness\(1\.0\d\)/);
-    const [forced] = primaryRules(hover, FORCED_COLORS);
-    expect(declarations(forced as CssRule)).toBe("box-shadow: none;");
+    const [forced] = rulesFor(hover, FORCED_COLORS);
+    expect(declarations(forced)).toBe("box-shadow: none;");
   });
 });
 

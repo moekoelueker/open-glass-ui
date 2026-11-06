@@ -365,20 +365,22 @@
 }
 
 /* Tinted glass: the accent is the fill, but it stays lit like glass. The theme
-   supplies the highlight stop so the accent ink stays readable across the
-   whole fill; the mix is the fallback when no theme token is present. */
+   sets how much white the highlight stop takes so the accent ink stays
+   readable across the whole fill (16% without a theme). On accent fills the
+   glint follows the pointer along the top edge only, fades out before 30% of
+   the height and peaks at 0.3, so it never sits behind the label. */
 :where([data-ogui-design="liquid"]) .ogui-button--primary {
   color: var(--ogui-accent-ink);
   background:
     radial-gradient(
-      circle at var(--ogui-light-x, 50%) var(--ogui-light-y, 0%),
-      rgb(255 255 255 / calc(var(--ogui-lg-glint) * 0.4)),
-      transparent 60%
+      ellipse 60% 28% at var(--ogui-light-x, 50%) 0%,
+      rgb(255 255 255 / calc(min(var(--ogui-lg-glint), 1) * 0.3)),
+      transparent
     )
     no-repeat,
     linear-gradient(
       180deg,
-      var(--ogui-color-accent-highlight, color-mix(in srgb, var(--ogui-accent), white 16%)),
+      color-mix(in srgb, var(--ogui-accent), white var(--ogui-color-accent-highlight-mix, 16%)),
       color-mix(in srgb, var(--ogui-accent), transparent 6%)
     );
   box-shadow:
@@ -1066,9 +1068,18 @@
   font-weight: 650;
 }
 
+/* Hover and press keep the accent fill under the accent ink, and the glint
+   stays on the top edge as on the primary button. */
 :where([data-ogui-design="liquid"]) .ogui-toggle-button[aria-pressed="true"] {
+  --ogui-control-hover: var(--ogui-accent);
+  --ogui-control-active: var(--ogui-accent);
   color: var(--ogui-accent-ink);
   background-color: var(--ogui-accent);
+  background-image: radial-gradient(
+    ellipse 60% 28% at var(--ogui-light-x, 50%) 0%,
+    rgb(255 255 255 / calc(min(var(--ogui-lg-glint), 1) * 0.3)),
+    transparent
+  );
 }
 
 /* ------------------------------------------------------------------------ */
