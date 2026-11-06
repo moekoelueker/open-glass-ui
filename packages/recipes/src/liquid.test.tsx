@@ -6,7 +6,11 @@ import { GlassProvider } from "@open-glass-ui/react";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
-import { generateLiquidCss } from "../../../scripts/generate-liquid-css.mjs";
+import {
+  GUARD_DEPTH,
+  generateLiquidCss,
+  LIQUID_GUARD,
+} from "../../../scripts/generate-liquid-css.mjs";
 import { Button, Menu, MenuItem, SegmentedControl, Slider, Tabs } from "./index";
 
 afterEach(cleanup);
@@ -53,7 +57,10 @@ function collectRules(css: string): CssRule[] {
       const prelude = stack.pop() ?? "";
       const at = stack.join(" ");
       if (!prelude.startsWith("@") && !at.includes("@keyframes")) {
-        rules.push({ at, selectors: splitSelectorList(prelude), body: text.slice(start, index) });
+        const selectors = splitSelectorList(prelude).map((selector) =>
+          selector.replace(/\s+/g, " "),
+        );
+        rules.push({ at, selectors, body: text.slice(start, index) });
       }
       start = index + 1;
     }
@@ -72,16 +79,183 @@ describe("liquid stylesheet", () => {
     expect(read("./styles.css")).not.toContain("data-ogui-design");
   });
 
-  it("guards every scoped rule so the nearest design wins", () => {
-    const css = read("./liquid.css");
-    const guard = ':not(:where([data-ogui-design="classic"] *)';
-    const scopedPreludes = [...css.matchAll(/([^{}]*)\{/g)]
-      .map((match) => match[1] ?? "")
-      .filter((prelude) => prelude.includes('[data-ogui-design="liquid"]) .ogui-'));
-    expect(scopedPreludes.length).toBeGreaterThan(50);
-    for (const prelude of scopedPreludes) {
-      expect(prelude).toContain(guard);
+  it("only inserts the guard, so every rule keeps its source selector", () => {
+    const normalize = (css: string) => css.replace(/\s+/g, " ").replace(/\s*\{\s*/g, "{");
+    const header = read("./liquid.css").split("\n", 1)[0];
+    expect(normalize(read("./liquid.css").replaceAll(LIQUID_GUARD, ""))).toBe(
+      normalize(`${header}\n${read("./liquid.source.css")}`),
+    );
+  });
+});
+
+type Design = "liquid" | "classic";
+
+const SCOPE = ':where([data-ogui-design="liquid"])';
+const scopeChain = (designs: readonly Design[]) =>
+  designs.map((design) => `[data-ogui-design="${design}"]`).join(" ");
+
+/** The generated form of a source selector, found by stripping the guard. */
+function guarded(source: string) {
+  const selector = liquidRules
+    .flatMap((rule) => rule.selectors)
+    .find((candidate) => candidate.replaceAll(LIQUID_GUARD, "") === source);
+  if (!selector) throw new Error(`No generated rule for ${source}`);
+  return selector;
+}
+
+/** Wraps `inner` in nested design scopes, outermost first, and returns #target. */
+function mount(designs: readonly Design[], inner: string) {
+  document.body.innerHTML = designs.reduceRight(
+    (html, design) => `<div data-ogui-design="${design}">${html}</div>`,
+    inner,
+  );
+  const target = document.getElementById("target");
+  if (!target) throw new Error("mount needs an element with id target");
+  return target;
+}
+
+describe("liquid nearest-scope guard", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  const chains: Array<[string, Design[], boolean]> = [
+    ["plain liquid", ["liquid"], true],
+    ["repeated liquid scopes", ["liquid", "liquid"], true],
+    ["a classic island in a liquid app", ["liquid", "classic"], false],
+    ["a liquid island in a classic app", ["classic", "liquid"], true],
+    ["classic > liquid > classic", ["classic", "liquid", "classic"], false],
+    ["classic > liquid > classic > liquid", ["classic", "liquid", "classic", "liquid"], true],
+    ["liquid > classic > liquid", ["liquid", "classic", "liquid"], true],
+    ["liquid > classic > liquid > classic", ["liquid", "classic", "liquid", "classic"], false],
+    ["a classic app", ["classic"], false],
+    ["no design scope", [], false],
+  ];
+
+  it("is the alternating classic/liquid chain, entirely inside :where()", () => {
+    expect(GUARD_DEPTH).toBe(4);
+    const C = scopeChain(["classic"]);
+    const L = scopeChain(["liquid"]);
+    expect(LIQUID_GUARD).toBe(
+      `:not(:where(${C} *):not(:where(${C} ${L} *):not(:where(${C} ${L} ${C} *):not(:where(${C} ${L} ${C} ${L} *)))))`,
+    );
+    // Only :not() wrappers stay outside :where(), and :not() takes the
+    // specificity of its argument, so the guard adds zero specificity.
+    expect(LIQUID_GUARD.replace(/:where\([^()]*\)/g, "")).toBe(":not(:not(:not(:not())))");
+  });
+
+  it("sits on the subject compound of every scoped selector", () => {
+    const scoped = liquidRules
+      .flatMap((rule) => rule.selectors)
+      .filter(
+        (selector) =>
+          selector.startsWith(`${SCOPE} `) &&
+          !selector.startsWith(`${SCOPE} :where([data-ogui-tone`),
+      );
+    expect(scoped.length).toBeGreaterThan(100);
+    for (const selector of scoped) {
+      expect(selector.split(LIQUID_GUARD)).toHaveLength(2);
+      // Nothing but an optional pseudo-element may follow the guard.
+      expect(selector.slice(selector.indexOf(LIQUID_GUARD) + LIQUID_GUARD.length)).toMatch(
+        /^(::[\w-]+)?$/,
+      );
     }
+  });
+
+  it("leaves token definitions and self-scoped rules unguarded", () => {
+    const unguarded = liquidRules
+      .flatMap((rule) => rule.selectors)
+      .filter(
+        (selector) =>
+          selector.startsWith(`${SCOPE} :where([data-ogui-tone`) ||
+          selector.startsWith(".ogui-disclosure__surface:where("),
+      );
+    expect(unguarded.length).toBeGreaterThan(3);
+    for (const selector of unguarded) expect(selector).not.toContain(LIQUID_GUARD);
+  });
+
+  it.each(chains)("button in %s %j: liquid %s", (_name, designs, expected) => {
+    const selector = guarded(`${SCOPE} .ogui-button`);
+    const button = mount(designs, '<button class="ogui-button" id="target"></button>');
+    expect(button.matches(selector)).toBe(expected);
+  });
+
+  it.each(chains)("field input in %s %j: liquid %s", (_name, designs, expected) => {
+    const selector = guarded(`${SCOPE} .ogui-field > input`);
+    const input = mount(designs, '<label class="ogui-field"><input id="target" /></label>');
+    expect(input.matches(selector)).toBe(expected);
+  });
+
+  describe("descendant rules", () => {
+    // jsdom never reports :hover, so the dynamic state is dropped before matching.
+    const dockHover = () =>
+      guarded(`${SCOPE} .ogui-dock .ogui-button:hover:not(:disabled)`).replace(":hover", "");
+    const dock = (inner: string) => `<div class="ogui-dock">${inner}</div>`;
+    const button = '<button class="ogui-button" id="target"></button>';
+
+    it("magnifies a liquid dock button", () => {
+      expect(mount(["liquid"], dock(button)).matches(dockHover())).toBe(true);
+      expect(mount(["classic", "liquid"], dock(button)).matches(dockHover())).toBe(true);
+    });
+
+    it("skips a button whose nearest scope, between dock and button, is classic", () => {
+      const inner = dock(`<div data-ogui-design="classic">${button}</div>`);
+      expect(mount(["liquid"], inner).matches(dockHover())).toBe(false);
+    });
+
+    it("styles a button when liquid re-opens between the classic scope and the button", () => {
+      const inner = dock(
+        `<div data-ogui-design="classic"><div data-ogui-design="liquid">${button}</div></div>`,
+      );
+      expect(mount(["liquid"], inner).matches(dockHover())).toBe(true);
+    });
+
+    it("skips a dock inside a classic island", () => {
+      expect(mount(["liquid", "classic"], dock(button)).matches(dockHover())).toBe(false);
+    });
+  });
+
+  describe("pseudo-element rules", () => {
+    it("places the guard before ::before and ::after", () => {
+      expect(guarded(`${SCOPE} .ogui-card::before`)).toBe(
+        `${SCOPE} .ogui-card${LIQUID_GUARD}::before`,
+      );
+      expect(guarded(`${SCOPE} .ogui-button--quiet:hover:not(:disabled)::after`)).toBe(
+        `${SCOPE} .ogui-button--quiet:hover:not(:disabled)${LIQUID_GUARD}::after`,
+      );
+      expect(
+        guarded(`${SCOPE} :is(.ogui-slider input, .ogui-media input):active::-webkit-slider-thumb`),
+      ).toBe(
+        `${SCOPE} :is(.ogui-slider input, .ogui-media input):active${LIQUID_GUARD}::-webkit-slider-thumb`,
+      );
+    });
+
+    it.each(chains)("::before host in %s %j: liquid %s", (_name, designs, expected) => {
+      const selector = guarded(`${SCOPE} .ogui-card::before`).replace(/::before$/, "");
+      const card = mount(designs, '<article class="ogui-card" id="target"></article>');
+      expect(card.matches(selector)).toBe(expected);
+    });
+  });
+
+  describe("generator edge cases", () => {
+    const generated = (selector: string) => {
+      const css = generateLiquidCss(`${selector} {}`);
+      return css.slice(css.indexOf("\n") + 1, css.lastIndexOf("{}")).trimEnd();
+    };
+
+    it.each([
+      [`${SCOPE} .a>.b`, `${SCOPE} .a>.b${LIQUID_GUARD}`],
+      [`${SCOPE} .a + .b:hover`, `${SCOPE} .a + .b:hover${LIQUID_GUARD}`],
+      [`${SCOPE} .a ~ .b`, `${SCOPE} .a ~ .b${LIQUID_GUARD}`],
+      [`${SCOPE} :is(.a .b, .c > .d)::after`, `${SCOPE} :is(.a .b, .c > .d)${LIQUID_GUARD}::after`],
+      [`${SCOPE} .a:before`, `${SCOPE} .a${LIQUID_GUARD}:before`],
+      [`${SCOPE} .a [data-label="b c"]`, `${SCOPE} .a [data-label="b c"]${LIQUID_GUARD}`],
+      [`${SCOPE} .a, ${SCOPE} .b`, `${SCOPE} .a${LIQUID_GUARD}, ${SCOPE} .b${LIQUID_GUARD}`],
+      [`${SCOPE} :where([data-ogui-tone="dark"])`, `${SCOPE} :where([data-ogui-tone="dark"])`],
+      ['.a:where([data-ogui-design="liquid"])', '.a:where([data-ogui-design="liquid"])'],
+    ])("%s", (source, expected) => {
+      expect(generated(source)).toBe(expected);
+    });
   });
 });
 

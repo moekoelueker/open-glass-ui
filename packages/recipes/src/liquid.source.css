@@ -6,7 +6,8 @@
  * (scripts/generate-liquid-css.mjs) appends a zero-specificity guard to the
  * subject of every rule so the nearest design wins when scopes nest: a classic
  * island inside a liquid app, or a liquid island inside a classic app for
- * incremental adoption, both render correctly.
+ * incremental adoption, both render correctly, up to four alternating scopes
+ * (classic > liquid > classic > liquid).
  *
  * Edit liquid.source.css, then run `pnpm generate:liquid`. liquid.css is
  * generated and must not be edited by hand. Wrapping the scope in `:where()` keeps every
