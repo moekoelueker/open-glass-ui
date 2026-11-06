@@ -91,8 +91,10 @@ an error early instead of silently producing an unreadable palette.
 ```
 
 `createGlassTheme()` derives a readable accent foreground and exposes the
-computed contrast ratio. Always validate the result in its real UI context;
-automatic derivation is not a substitute for contrast testing.
+computed contrast ratio. The derived ink reaches 4.5:1 against the accent fills
+the liquid design renders (see `--ogui-color-accent-highlight-mix` below); the
+classic design only receives the corrected ink. Always validate the result in its real UI context; automatic derivation is not a
+substitute for contrast testing.
 
 ## Design: liquid and classic
 
@@ -217,10 +219,18 @@ The provider writes these public tokens on its `.ogui-theme` wrapper:
 | Content          | `--ogui-color-text`, `--ogui-color-muted`                                                                              |
 | Borders          | `--ogui-color-border`, `--ogui-color-border-strong`                                                                    |
 | Controls         | `--ogui-color-control`, `--ogui-color-control-hover`, `--ogui-color-control-active`                                    |
-| Accent           | `--ogui-color-accent`, `--ogui-color-accent-ink`, `--ogui-color-accent-soft`                                           |
+| Accent           | `--ogui-color-accent`, `--ogui-color-accent-ink`, `--ogui-color-accent-soft`, `--ogui-color-accent-highlight-mix`      |
 | Supporting color | `--ogui-color-secondary`, `--ogui-color-tertiary`                                                                      |
 | Status and focus | `--ogui-color-focus`, `--ogui-color-danger`, `--ogui-color-danger-ink`, `--ogui-color-success`, `--ogui-color-success-ink`, `--ogui-color-warning`, `--ogui-color-warning-ink` |
 | Shape            | `--ogui-radius-control`, `--ogui-radius-surface`, `--ogui-radius-capsule`                                              |
+
+`--ogui-color-accent-highlight-mix` is a percentage (default `16%`): how much
+white the liquid primary button mixes into its top highlight. The theme lowers
+it automatically when needed so the accent ink keeps 4.5:1 contrast. The accent
+ink is chosen so text on liquid accent fills keeps at least 4.5:1 against the
+rendered fill (the base accent, the highlight and the translucency). That
+guarantee applies to the default liquid design; classic keeps its 0.3 rendering
+and only receives the corrected ink.
 
 Not every token is read by a recipe. `--ogui-color-background`,
 `--ogui-color-surface`, `--ogui-color-surface-strong`,
@@ -289,11 +299,16 @@ Use one of these instead.
      --ogui-color-accent: #22705c;
      --ogui-color-accent-ink: #ffffff;
      --ogui-color-focus: #22705c;
+     /* Light ink on a mid-tone accent: lower the highlight, for example 0%
+        to 8%, so the label keeps its contrast. */
+     --ogui-color-accent-highlight-mix: 8%;
    }
    ```
 
-Override an accent together with its `-ink` and the focus colour, and verify the
-contrast of the result.
+When you override `--ogui-color-accent` locally, also set
+`--ogui-color-accent-ink` and the focus colour. For a light ink on a mid-tone
+accent, also lower `--ogui-color-accent-highlight-mix`. Then verify the contrast
+of the result.
 
 ## Typography
 

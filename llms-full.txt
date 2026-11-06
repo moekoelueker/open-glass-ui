@@ -644,6 +644,7 @@ The theme provider writes semantic `--ogui-*` custom properties inline on its
 --ogui-color-border      --ogui-color-border-strong
 --ogui-color-control     --ogui-color-control-hover   --ogui-color-control-active
 --ogui-color-accent      --ogui-color-accent-ink      --ogui-color-accent-soft
+--ogui-color-accent-highlight-mix
 --ogui-color-secondary   --ogui-color-tertiary        --ogui-color-focus
 --ogui-color-danger      --ogui-color-danger-ink
 --ogui-color-success     --ogui-color-success-ink
@@ -668,11 +669,22 @@ Where to override them:
   --ogui-color-accent: #22705c;
   --ogui-color-accent-ink: #ffffff;
   --ogui-color-focus: #22705c;
+  /* Light ink on a mid-tone accent: lower the highlight, for example 0% to
+     8%, so the label keeps its contrast. */
+  --ogui-color-accent-highlight-mix: 8%;
 }
 ```
 
-Always override an accent together with its `-ink` and the focus colour, and
-check contrast.
+When you override `--ogui-color-accent` locally, also set
+`--ogui-color-accent-ink` and the focus colour, and for a light ink on a
+mid-tone accent lower `--ogui-color-accent-highlight-mix`. Then check contrast.
+
+`--ogui-color-accent-highlight-mix` is a percentage (default `16%`): how much
+white the liquid primary button mixes into its top highlight. The theme lowers
+it automatically when needed so the accent ink keeps 4.5:1 contrast. Accent ink
+is chosen so text on liquid accent fills keeps at least 4.5:1 against the
+rendered fill; that guarantee applies to the default liquid design, while
+classic keeps its 0.3 rendering and only receives the corrected ink.
 
 Which tokens recipes actually read:
 
