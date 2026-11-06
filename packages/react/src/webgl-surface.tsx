@@ -126,7 +126,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
     const lensesRef = useRef(lenses);
     const drawRef = useRef<() => void>(() => undefined);
     const scheduleRef = useRef<() => void>(() => undefined);
-    const syncSourceRef = useRef<() => boolean>(() => false);
+    const followSourceRef = useRef<() => void>(() => undefined);
     const callbacksRef = useRef({ onStatusChange, onRendererError });
     const statusRef = useRef<WebGLSurfaceStatus>("idle");
     const gatedRef = useRef(gateReason !== null);
@@ -238,6 +238,11 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
       drawRef.current = draw;
 
       const motionEnabled = runtime.motion !== "off";
+      // The source the frame loop was last armed for, tracked apart from the
+      // readiness listeners: any draw() (the lens effect runs first) may
+      // already have moved those to a new element, and that must not hide the
+      // switch from the loop, which would keep waiting on the old video.
+      let scheduledSource: WebGLSource | null = null;
       const cancelPending = () => {
         cancelAnimationFrame(animationFrame);
         if (videoFrameSource && typeof videoFrameSource.cancelVideoFrameCallback === "function") {
@@ -253,6 +258,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
         }
 
         const source = sourceRef.current;
+        scheduledSource = source;
         if (
           source &&
           isVideoSource(source) &&
@@ -280,7 +286,20 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
         schedule();
       };
 
-      syncSourceRef.current = syncSource;
+      // Catches up with whatever element the ref holds now: a source the
+      // listeners have not seen yet paints once, and a source the frame loop
+      // is not armed for re-arms it, which also drops the old video's pending
+      // callback.
+      followSourceRef.current = () => {
+        const listenersMoved = syncSource();
+        if (listenersMoved) {
+          draw();
+        }
+        if (listenersMoved || scheduledSource !== sourceRef.current) {
+          cancelPending();
+          schedule();
+        }
+      };
 
       resize();
       draw();
@@ -307,7 +326,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
         stopped = true;
         drawRef.current = () => undefined;
         scheduleRef.current = () => undefined;
-        syncSourceRef.current = () => false;
+        followSourceRef.current = () => undefined;
         drawnSignatureRef.current = null;
         cancelPending();
         if (boundSource && "removeEventListener" in boundSource) {
@@ -359,10 +378,7 @@ export const WebGLGlassSurface = forwardRef<HTMLCanvasElement, WebGLGlassSurface
 
     // The ref may now point at another element without a renderKey bump.
     useEffect(() => {
-      if (syncSourceRef.current()) {
-        drawRef.current();
-        scheduleRef.current();
-      }
+      followSourceRef.current();
     });
 
     const unavailable = status === "unavailable";

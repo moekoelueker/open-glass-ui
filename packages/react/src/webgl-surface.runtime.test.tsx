@@ -273,3 +273,55 @@ describe("WebGLGlassSurface static invalidation", () => {
     expect(renderer?.renders.at(-1)?.source).toBe(second.element);
   });
 });
+
+/** A ready video whose frame callbacks fire only when the test plays a frame. */
+function fakeVideo() {
+  const element = document.createElement("video");
+  Object.defineProperty(element, "readyState", { configurable: true, value: 4 });
+  const pending = new Map<number, () => void>();
+  let handle = 0;
+  Object.assign(element, {
+    requestVideoFrameCallback: (callback: () => void) => {
+      handle += 1;
+      pending.set(handle, callback);
+      return handle;
+    },
+    cancelVideoFrameCallback: (id: number) => {
+      pending.delete(id);
+    },
+  });
+  const playFrame = () => {
+    const callbacks = [...pending.values()];
+    pending.clear();
+    for (const callback of callbacks) {
+      callback();
+    }
+  };
+  return { element, pending, playFrame };
+}
+
+describe("WebGLGlassSurface video scheduling", () => {
+  it("follows a swapped video when its lenses change in the same render", () => {
+    const paused = fakeVideo();
+    const playing = fakeVideo();
+    const sourceRef: { current: WebGLSource | null } = { current: paused.element };
+    const { rerender } = render(<Harness sourceRef={sourceRef} lenses={[lens(40)]} />);
+    const [renderer] = state.renderers;
+    expect(paused.pending.size).toBe(1);
+
+    // The lens effect draws first and already moves the readiness listeners to
+    // the new video; the frame loop must still leave the paused one.
+    sourceRef.current = playing.element;
+    rerender(<Harness sourceRef={sourceRef} lenses={[lens(70)]} />);
+    expect(paused.pending.size).toBe(0);
+    expect(playing.pending.size).toBe(1);
+
+    const before = renderer?.renders.length ?? 0;
+    playing.playFrame();
+    playing.playFrame();
+    expect(renderer?.renders.length).toBe(before + 2);
+    expect(renderer?.renders.at(-1)?.source).toBe(playing.element);
+    expect(renderer?.renders.at(-1)?.lenses[0]?.x).toBe(70);
+    expect(playing.pending.size).toBe(1);
+  });
+});
