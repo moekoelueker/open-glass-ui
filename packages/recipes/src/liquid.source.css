@@ -1223,8 +1223,11 @@
     transition-duration: 0.01ms !important;
   }
 
+  /* Portaled menus and popovers carry the design scope on the surface itself,
+     so they need a self-matching selector next to the descendant one. */
   :where([data-ogui-design="liquid"])
-    :is(.ogui-disclosure__surface, .ogui-toast, .ogui-overlay__surface) {
+  :is(.ogui-disclosure__surface, .ogui-toast, .ogui-overlay__surface),
+  .ogui-disclosure__surface:where([data-ogui-design="liquid"]) {
     /* biome-ignore lint/complexity/noImportantStyles: user motion preference must beat every animated state */
     animation: none !important;
   }
@@ -1250,7 +1253,8 @@
     .ogui-accordion i
   ),
 [data-ogui-design="liquid"][data-ogui-motion="off"]
-  :is(.ogui-disclosure__surface, .ogui-toast, .ogui-overlay__surface) {
+  :is(.ogui-disclosure__surface, .ogui-toast, .ogui-overlay__surface),
+.ogui-disclosure__surface[data-ogui-design="liquid"][data-ogui-motion="off"] {
   /* biome-ignore lint/complexity/noImportantStyles: explicit motion="off" must beat every animated state */
   animation: none !important;
   /* biome-ignore lint/complexity/noImportantStyles: explicit motion="off" must beat every animated state */
