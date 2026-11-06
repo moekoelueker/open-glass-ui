@@ -932,6 +932,11 @@ export function Toast({
         if (
           !event.defaultPrevented &&
           event.key === "Escape" &&
+          // React bubbles events from portals through the component tree, so a
+          // key pressed in a dialog or menu opened from the toast arrives here
+          // too. Only keys pressed in the toast itself close it.
+          event.target instanceof Node &&
+          event.currentTarget.contains(event.target) &&
           // A tooltip or popover opened from inside the toast closes first.
           !hasReachableLayerWithin(event.currentTarget)
         ) {

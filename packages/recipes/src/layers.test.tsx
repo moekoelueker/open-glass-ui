@@ -613,6 +613,18 @@ describe("Tooltip visibility", () => {
     expect(screen.getByRole("dialog", { name: "Confirm share" })).toBe(dialog);
     expect(getOpenLayers()[0]?.id).toBe(popoverLayer?.id);
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
+
+    // Escape inside the dialog closes only the dialog: the key bubbles to the
+    // toast through React's portal tree, but the toast must not take it.
+    const close = screen.getByRole("button", { name: "Close Confirm share" });
+    act(() => close.focus());
+    fireEvent.keyDown(close, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "Confirm share" })).toBeNull();
+    expect(trigger.isConnected).toBe(true);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("button", { name: "Publish" })),
+    );
   });
 
   it("closes a focused tooltip inside a toast before the toast", async () => {

@@ -231,10 +231,19 @@ export function isReachableLayer(id: string) {
  * before the element that contains it.
  */
 export function hasReachableLayerWithin(element: Element) {
-  return activeLayers().some(
-    (layer) =>
-      element.contains(layer.host) || (layer.anchor !== null && element.contains(layer.anchor)),
-  );
+  const opensFrom = (layer: Layer) =>
+    element.contains(layer.host) || (layer.anchor !== null && element.contains(layer.anchor));
+  // Follow the owner chain: a dialog opened from a popover whose trigger is in
+  // the element came from the element too, even though its own host and
+  // anchor are elsewhere.
+  return activeLayers().some((layer) => {
+    for (let current: Layer | null = layer; current; current = current.owner) {
+      if (opensFrom(current)) {
+        return true;
+      }
+    }
+    return false;
+  });
 }
 
 /** Whether the layer is the most recently opened modal: only it traps Tab. */
