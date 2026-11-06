@@ -4,12 +4,79 @@ function normalizedPath(pathname = window.location.pathname) {
   return pathname.replace(/\/+$/, "") || "/";
 }
 
-// Routes are lazy, so the element a hash points at may not exist when
-// navigation starts or when the page first loads. Retry across animation frames
-// until it mounts, but never for longer than this.
+// Even after its route has rendered, the element a hash points at may mount a
+// little later. Retry across animation frames until it does, but never for
+// longer than this.
 const HASH_SCROLL_TIMEOUT_MS = 2000;
 
 let cancelPendingScroll: (() => void) | null = null;
+
+// Stop looking as soon as the reader scrolls, touches, types or presses, so a
+// late mount never yanks the page away from where they went.
+const READER_INPUT = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
+
+function untilReaderInput(stop: () => void) {
+  for (const type of READER_INPUT) {
+    window.addEventListener(type, stop, { passive: true, once: true });
+  }
+  return () => {
+    for (const type of READER_INPUT) {
+      window.removeEventListener(type, stop);
+    }
+  };
+}
+
+// Routes are lazy, so a destination may take any time to load. A scroll for a
+// route that has not rendered yet waits here, and the bounded lookup starts
+// only once the route has committed (see `routeCommitted`), so a slow chunk
+// cannot use up its budget.
+let pendingRouteScroll: { path: string; hash: string; cancel: () => void } | null = null;
+// The path of the route on screen, or null while none has rendered (first
+// load, or after a path change until the new route commits).
+let committedPath: string | null = null;
+
+/**
+ * Scrolls to `hash` once the route at `path` has rendered. A newer navigation
+ * or any reader input drops the request.
+ */
+export function scrollAfterRouteCommits(path: string, hash: string) {
+  cancelPendingScroll?.();
+  pendingRouteScroll?.cancel();
+  let unsubscribe = () => {};
+  const request = {
+    path,
+    hash,
+    cancel: () => {
+      unsubscribe();
+      if (pendingRouteScroll === request) {
+        pendingRouteScroll = null;
+      }
+    },
+  };
+  unsubscribe = untilReaderInput(request.cancel);
+  pendingRouteScroll = request;
+}
+
+/** The app calls this each time a route's content has committed. */
+export function routeCommitted(path: string) {
+  committedPath = path;
+  const request = pendingRouteScroll;
+  if (!request) {
+    return;
+  }
+  request.cancel();
+  // A request for another path is moot: the reader went somewhere else.
+  if (request.path === path) {
+    scrollToDestination(request.hash);
+  }
+}
+
+/** The app calls this when a route's content unmounts. */
+export function routeLeft(path: string) {
+  if (committedPath === path) {
+    committedPath = null;
+  }
+}
 
 function findHashTarget(hash: string) {
   let id = hash.slice(1);
@@ -23,6 +90,7 @@ function findHashTarget(hash: string) {
 
 export function scrollToDestination(hash: string) {
   cancelPendingScroll?.();
+  pendingRouteScroll?.cancel();
 
   if (!hash || hash === "#") {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -36,13 +104,11 @@ export function scrollToDestination(hash: string) {
   }
 
   const startedAt = performance.now();
-  const interruptions = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
   let frame = 0;
+  let unsubscribe = () => {};
   const stop = () => {
     window.cancelAnimationFrame(frame);
-    for (const type of interruptions) {
-      window.removeEventListener(type, stop);
-    }
+    unsubscribe();
     if (cancelPendingScroll === stop) {
       cancelPendingScroll = null;
     }
@@ -62,11 +128,7 @@ export function scrollToDestination(hash: string) {
   };
 
   cancelPendingScroll = stop;
-  // Stop looking as soon as the reader scrolls or types, so a late mount never
-  // yanks the page away from where they went.
-  for (const type of interruptions) {
-    window.addEventListener(type, stop, { passive: true, once: true });
-  }
+  unsubscribe = untilReaderInput(stop);
   frame = window.requestAnimationFrame(tick);
 }
 
@@ -77,16 +139,29 @@ export function navigate(href: string) {
   const nextLocation = `${destination.pathname}${destination.search}${destination.hash}`;
   const currentLocation = `${window.location.pathname}${window.location.search}${window.location.hash}`;
 
+  // A destination that has not rendered yet (another route, or this one while
+  // its chunk still loads) is looked up once it has.
+  const rendered = committedPath === nextPath;
+
   if (currentLocation === nextLocation) {
-    scrollToDestination(destination.hash);
+    if (rendered) {
+      scrollToDestination(destination.hash);
+    } else {
+      scrollAfterRouteCommits(nextPath, destination.hash);
+    }
     return;
   }
 
   window.history.pushState({}, "", nextLocation);
+  if (!rendered) {
+    scrollAfterRouteCommits(nextPath, destination.hash);
+  }
   if (currentPath !== nextPath) {
     window.dispatchEvent(new PopStateEvent("popstate"));
   }
-  window.requestAnimationFrame(() => scrollToDestination(destination.hash));
+  if (rendered) {
+    window.requestAnimationFrame(() => scrollToDestination(destination.hash));
+  }
 }
 
 export function AppLink({
