@@ -5,13 +5,20 @@
  * Every rule in the source is written as `:where([data-ogui-design="liquid"]) X`.
  * On its own that matches X anywhere below a liquid scope, including inside a
  * nested `design="classic"` island. The generator appends a zero-specificity
- * guard to the subject compound of X so the nearest design scope wins:
+ * guard to the subject compound of X (its last compound, before any
+ * pseudo-element) so the nearest design scope above the subject wins:
  *
- *   X:not(:where(classic *):not(:where(classic liquid *)))
+ *   X:not(:where(C *):not(:where(C L *):not(:where(C L C *):not(:where(C L C L *)))))
  *
- * i.e. "not inside a classic scope, unless a liquid scope re-opens inside it".
- * Specificity is unchanged, so the promise that each liquid rule shares the
- * specificity of the classic rule it replaces still holds.
+ * with C = [data-ogui-design="classic"] and L = [data-ogui-design="liquid"].
+ * Read inside out: the subject is styled liquid unless it sits in a classic
+ * scope, except when a liquid scope re-opens inside that classic scope, except
+ * when a classic scope re-opens inside that one, and so on. The chain is
+ * bounded at GUARD_DEPTH alternating scopes counted from the outermost classic
+ * one (classic > liquid > classic > liquid); deeper alternation resolves as if
+ * it stopped there. Every part of the guard sits inside `:where()`, so
+ * specificity is unchanged and each liquid rule keeps the specificity of the
+ * classic rule it replaces.
  *
  * Usage: node scripts/generate-liquid-css.mjs [--check]
  */
@@ -19,25 +26,89 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const SCOPE = ':where([data-ogui-design="liquid"])';
-const GUARD =
-  ':not(:where([data-ogui-design="classic"] *):not(:where([data-ogui-design="classic"] [data-ogui-design="liquid"] *)))';
+const CLASSIC = '[data-ogui-design="classic"]';
+const LIQUID = '[data-ogui-design="liquid"]';
+
+export const GUARD_DEPTH = 4;
+
+function nearestScopeGuard(depth) {
+  let guard = "";
+  for (let level = depth; level >= 1; level -= 1) {
+    const chain = Array.from({ length: level }, (_, index) =>
+      index % 2 === 0 ? CLASSIC : LIQUID,
+    ).join(" ");
+    guard = `:not(:where(${chain} *)${guard})`;
+  }
+  return guard;
+}
+
+export const LIQUID_GUARD = nearestScopeGuard(GUARD_DEPTH);
+
+/**
+ * Calls `visit(index)` for every character of `text` that is outside
+ * parentheses, brackets and quoted strings. Returning true stops the scan.
+ */
+function scanTopLevel(text, visit, from = 0) {
+  let depth = 0;
+  let quote = "";
+  for (let index = from; index < text.length; index += 1) {
+    const character = text[index];
+    if (quote) {
+      if (character === "\\") index += 1;
+      else if (character === quote) quote = "";
+      continue;
+    }
+    if (character === "\\") {
+      index += 1;
+    } else if (character === '"' || character === "'") {
+      quote = character;
+    } else if (character === "(" || character === "[") {
+      depth += 1;
+    } else if (character === ")" || character === "]") {
+      depth -= 1;
+    } else if (depth === 0 && visit(index)) {
+      return;
+    }
+  }
+}
 
 function splitTopLevel(text) {
   const parts = [];
-  let depth = 0;
-  let current = "";
-  for (const character of text) {
-    if (character === "(" || character === "[") depth += 1;
-    if (character === ")" || character === "]") depth -= 1;
-    if (character === "," && depth === 0) {
-      parts.push(current);
-      current = "";
-    } else {
-      current += character;
+  let start = 0;
+  scanTopLevel(text, (index) => {
+    if (text[index] === ",") {
+      parts.push(text.slice(start, index));
+      start = index + 1;
     }
-  }
-  parts.push(current);
+    return false;
+  });
+  parts.push(text.slice(start));
   return parts;
+}
+
+const LEGACY_PSEUDO_ELEMENT = /^:(?:before|after|first-line|first-letter)(?![\w-])/;
+
+/** Where the guard goes: the end of the subject compound, before any pseudo-element. */
+function subjectGuardIndex(selector) {
+  let subjectStart = 0;
+  scanTopLevel(selector, (index) => {
+    if (/\s/.test(selector[index]) || ">~+".includes(selector[index])) subjectStart = index + 1;
+    return false;
+  });
+  let insertAt = selector.length;
+  scanTopLevel(
+    selector,
+    (index) => {
+      const tail = selector.slice(index);
+      if (tail.startsWith("::") || LEGACY_PSEUDO_ELEMENT.test(tail)) {
+        insertAt = index;
+        return true;
+      }
+      return false;
+    },
+    subjectStart,
+  );
+  return insertAt;
 }
 
 function guardSelector(selector) {
@@ -47,23 +118,12 @@ function guardSelector(selector) {
   const afterScope = body.slice(SCOPE.length);
   if (!/^\s/.test(afterScope)) return selector;
   const rest = afterScope.trimStart();
+  if (!rest) return selector;
   // Token definitions cascade through inheritance, where nearest already wins.
   if (rest.startsWith(":where([data-ogui-tone")) return selector;
 
-  let depth = 0;
-  let index = 0;
-  for (; index < rest.length; index += 1) {
-    const character = rest[index];
-    if (character === "(" || character === "[") depth += 1;
-    else if (character === ")" || character === "]") depth -= 1;
-    else if (
-      depth === 0 &&
-      (/\s/.test(character) || ">~+".includes(character) || rest.startsWith("::", index))
-    ) {
-      break;
-    }
-  }
-  return `${leading}${SCOPE} ${rest.slice(0, index)}${GUARD}${rest.slice(index)}`;
+  const index = subjectGuardIndex(rest);
+  return `${leading}${SCOPE} ${rest.slice(0, index)}${LIQUID_GUARD}${rest.slice(index)}`;
 }
 
 export function generateLiquidCss(source) {
