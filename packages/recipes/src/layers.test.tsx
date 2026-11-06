@@ -437,6 +437,57 @@ describe("layer stack", () => {
     expect(screen.getByRole("dialog", { name: "Editor" })).toBeTruthy();
   });
 
+  it("keeps an inert popover open when a press lands on a toast above its dialog", async () => {
+    const user = userEvent.setup();
+    const onUndo = vi.fn();
+
+    function Fixture() {
+      const [confirming, setConfirming] = useState(false);
+      const { toast } = useToast();
+      return (
+        <Popover label="Inspector" trigger={<Button>Inspect</Button>}>
+          <button
+            type="button"
+            onClick={() => {
+              setConfirming(true);
+              toast({ title: "Draft saved", actionLabel: "Undo", onAction: onUndo });
+            }}
+          >
+            Publish
+          </button>
+          {confirming ? (
+            <Dialog
+              title="Confirm publish"
+              open
+              onOpenChange={setConfirming}
+              closeOnBackdrop={false}
+            >
+              Body
+            </Dialog>
+          ) : null}
+        </Popover>
+      );
+    }
+
+    render(
+      <ToastProvider defaultDuration={0}>
+        <Fixture />
+      </ToastProvider>,
+    );
+    const trigger = screen.getByRole("button", { name: "Inspector" });
+    await user.click(trigger);
+    await user.click(await screen.findByRole("button", { name: "Publish" }));
+    const dialog = await screen.findByRole("dialog", { name: "Confirm publish" });
+
+    // The toast is reachable under the modal, but pressing it is not an
+    // outside press for the inert popover: closing it would unmount the
+    // dialog it owns.
+    await user.click(screen.getByRole("button", { name: "Undo" }));
+    expect(onUndo).toHaveBeenCalledOnce();
+    expect(screen.getByRole("dialog", { name: "Confirm publish" })).toBe(dialog);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+  });
+
   it("wraps the modal Tab trap around a popover opened from the dialog", async () => {
     const user = userEvent.setup();
     render(

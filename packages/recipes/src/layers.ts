@@ -183,6 +183,16 @@ export function isTopLayer(id: string) {
   return activeLayers().at(-1)?.id === id;
 }
 
+/**
+ * Whether the user can reach the layer: it is the active modal, belongs to
+ * it, or no modal is open. A layer outside the active modal's tree is inert,
+ * so it must not react to presses elsewhere either (a click on a toast would
+ * otherwise close a popover and unmount the dialog it owns).
+ */
+export function isReachableLayer(id: string) {
+  return activeLayers().some((layer) => layer.id === id);
+}
+
 /** Whether the layer is the most recently opened modal: only it traps Tab. */
 export function isTopModal(id: string) {
   return stack[topModalIndex()]?.id === id;

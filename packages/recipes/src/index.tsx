@@ -23,7 +23,13 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { joinIds, normalizeToStep, type StepRule } from "./atlas";
-import { isInDescendantLayer, isTopLayer, openLayer, useIsomorphicLayoutEffect } from "./layers";
+import {
+  isInDescendantLayer,
+  isReachableLayer,
+  isTopLayer,
+  openLayer,
+  useIsomorphicLayoutEffect,
+} from "./layers";
 import "./styles.css";
 import "./liquid.css";
 
@@ -784,6 +790,9 @@ function DisclosureSurface({
     // dialog belongs to the dialog and stays usable while it is modal.
     const closeLayer = openLayer(id, "disclosure", portalHost, wrapperRef.current);
     const handlePointerDown = (event: PointerEvent) => {
+      if (!isReachableLayer(id)) {
+        return;
+      }
       if (
         event.target instanceof Node &&
         !wrapperRef.current?.contains(event.target) &&
