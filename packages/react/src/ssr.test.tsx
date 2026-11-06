@@ -19,6 +19,41 @@ describe("Glass SSR contract", () => {
     expect(html).toContain("Play");
   });
 
+  it("writes material tokens and data attributes, and leaves painting to the stylesheet", () => {
+    const html = renderToString(
+      <GlassProvider>
+        <Glass material="regular">Panel</Glass>
+      </GlassProvider>,
+    );
+    const style = html.match(/style="([^"]*)"/)?.[1] ?? "";
+    const declared = style.split(";").map((declaration) => declaration.split(":")[0]);
+
+    expect(html).toContain('data-ogui-glass=""');
+    expect(html).toContain('data-ogui-design="liquid"');
+    expect(html).toContain('data-ogui-material="regular"');
+    expect(html).toContain('data-ogui-tone="dark"');
+    for (const token of [
+      "--ogui-material-background",
+      "--ogui-material-border",
+      "--ogui-material-shadow",
+      "--ogui-material-text",
+      "--ogui-material-filter",
+    ]) {
+      expect(declared).toContain(token);
+    }
+    for (const property of [
+      "background",
+      "border-color",
+      "box-shadow",
+      "color",
+      "backdrop-filter",
+      "-webkit-backdrop-filter",
+    ]) {
+      expect(declared).not.toContain(property);
+    }
+    expect(declared).toContain("border-width");
+  });
+
   it("supports semantic element composition without changing the material contract", () => {
     const html = renderToString(
       <Glass as="nav" aria-label="Primary" material="regular">
