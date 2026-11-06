@@ -356,18 +356,21 @@ describe("liquid accent fills", () => {
       ),
     ];
     const GLINT =
-      /radial-gradient\( ellipse ([\d.]+)% ([\d.]+)% at var\(--ogui-light-x, 50%\) 0%, rgb\(255 255 255 \/ calc\(min\(var\(--ogui-lg-glint\), ([\d.]+)\) \* ([\d.]+)\)\), transparent \)/;
+      /radial-gradient\( ellipse ([\d.]+)% min\(([\d.]+)%, ([\d.]+)rem\) at var\(--ogui-light-x, 50%\) 0%, rgb\(255 255 255 \/ calc\(min\(var\(--ogui-lg-glint\), ([\d.]+)\) \* ([\d.]+)\)\), transparent \)/;
 
     it("keeps the glint on the top edge, away from the label", () => {
       const match = declarations(rulesFor(source)[0]).match(GLINT);
       expect(match).not.toBeNull();
-      // Anchored at y = 0 with a vertical radius under 30% of the height, so
-      // it is transparent before it reaches the vertically centred label.
+      // Anchored at y = 0. Its vertical radius is the smaller of 28% of the
+      // height and an absolute band no taller than the smallest control's
+      // top padding (0.42rem), so even a label that wraps onto several lines
+      // never sits under it.
       expect(Number(match?.[2])).toBeLessThan(30);
+      expect(Number(match?.[3])).toBeLessThanOrEqual(0.42);
     });
 
     it("caps the glint at 0.3 at rest, on hover and while pressed", () => {
-      const [, , , cap, strength] = declarations(rulesFor(source)[0]).match(GLINT) ?? [];
+      const [, , , , cap, strength] = declarations(rulesFor(source)[0]).match(GLINT) ?? [];
       expect(glintLevels).toEqual(expect.arrayContaining([0, 1, 1.4]));
       for (const level of glintLevels) {
         expect(Math.min(level, Number(cap)) * Number(strength)).toBeLessThanOrEqual(0.3);

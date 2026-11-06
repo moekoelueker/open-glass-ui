@@ -391,13 +391,15 @@
    is opaque so the page never shifts the label's contrast, and the theme sets
    how much white the highlight stop takes so the accent ink stays readable
    across the whole fill (16% without a theme). On accent fills the
-   glint follows the pointer along the top edge only, fades out before 30% of
-   the height and peaks at 0.3, so it never sits behind the label. */
+   glint follows the pointer along the top edge only: it peaks at 0.3 and is
+   gone within 0.4rem (or 28% of a short control), which is inside the
+   smallest control's top padding, so it never sits behind the label, even
+   when the label wraps onto several lines. */
 :where([data-ogui-design="liquid"]) .ogui-button--primary {
   color: var(--ogui-accent-ink);
   background:
     radial-gradient(
-      ellipse 60% 28% at var(--ogui-light-x, 50%) 0%,
+      ellipse 60% min(28%, 0.4rem) at var(--ogui-light-x, 50%) 0%,
       rgb(255 255 255 / calc(min(var(--ogui-lg-glint), 1) * 0.3)),
       transparent
     )
@@ -1100,7 +1102,7 @@
   color: var(--ogui-accent-ink);
   background-color: var(--ogui-accent);
   background-image: radial-gradient(
-    ellipse 60% 28% at var(--ogui-light-x, 50%) 0%,
+    ellipse 60% min(28%, 0.4rem) at var(--ogui-light-x, 50%) 0%,
     rgb(255 255 255 / calc(min(var(--ogui-lg-glint), 1) * 0.3)),
     transparent
   );
