@@ -82,6 +82,12 @@ Do not also import `open-glass-ui/styles.css` from JavaScript, or the unlayered
 copy comes back. With this order, utilities override recipe styles, recipe styles
 override Tailwind's preflight, and your own unlayered CSS overrides both.
 
+`Glass` (and the recipes drawn through it: Toolbar, Dock, Menu and Popover
+surfaces) writes its material inline, so utilities still restyle its shape and
+spacing but not its background, border color, shadow or backdrop filter. Change
+the material with the `look` prop, the `--ogui-glass-*` tokens, or the `style`
+prop.
+
 ## The liquid design
 
 Version 0.4 is a visual rebuild. Glass is clearer and brighter, with one clean

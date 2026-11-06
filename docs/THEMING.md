@@ -337,6 +337,12 @@ override Tailwind's preflight, and your own unlayered CSS overrides both. The
 same layering works with any other layered CSS setup. Custom properties are not
 layer-sensitive, so the token scoping rules above apply unchanged.
 
+`Glass` (and the recipes drawn through it: Toolbar, Dock, Menu and Popover
+surfaces) writes its material inline, so utilities still restyle its shape and
+spacing but not its background, border color, shadow or backdrop filter. Change
+the material with the `look` prop, the `--ogui-glass-*` tokens, or the `style`
+prop.
+
 ## Material tokens
 
 Each `Glass` surface also resolves material-specific tokens:
