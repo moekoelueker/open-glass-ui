@@ -215,10 +215,12 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
       "data-ogui-thickness": resolvedMaterial.thickness.toFixed(3),
       "data-ogui-ior": resolvedMaterial.ior.toFixed(3),
     },
-    toneScope ? (
-      <GlassThemeContext.Provider value={toneScope.runtime}>{children}</GlassThemeContext.Provider>
-    ) : (
-      children
-    ),
+    // Always the same provider boundary, so the tree keeps its shape when the
+    // app appearance flips and the tone starts or stops differing from it.
+    // Otherwise every descendant would remount and lose its state and focus.
+    // A matching tone re-provides the surrounding theme, which adds no markup.
+    <GlassThemeContext.Provider value={toneScope?.runtime ?? theme}>
+      {children}
+    </GlassThemeContext.Provider>,
   );
 });

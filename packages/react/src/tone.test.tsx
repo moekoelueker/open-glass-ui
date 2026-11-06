@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { createGlassTheme, createGlassThemeTokens } from "@open-glass-ui/core";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { CSSProperties } from "react";
 import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it } from "vitest";
@@ -173,6 +173,31 @@ describe("tone-local theme", () => {
     const surface = screen.getByTestId("surface");
     expect(surface.getAttribute("data-ogui-appearance")).toBe("light");
     expect(surface.style.getPropertyValue("--ogui-color-text")).toBe(LIGHT_TEXT);
+  });
+
+  it("keeps descendants mounted when the app appearance flips", () => {
+    const tree = (appearance: "dark" | "light") => (
+      <GlassThemeProvider appearance={appearance}>
+        <Glass tone="dark">
+          <input aria-label="Draft" defaultValue="" />
+        </Glass>
+      </GlassThemeProvider>
+    );
+    const { rerender } = render(tree("light"));
+    const input = screen.getByLabelText("Draft") as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "unsaved draft" } });
+    input.focus();
+
+    // The tone matches now, so the surface stops scoping; its children stay put.
+    rerender(tree("dark"));
+    expect(screen.getByLabelText("Draft")).toBe(input);
+    expect(input.value).toBe("unsaved draft");
+    expect(document.activeElement).toBe(input);
+
+    rerender(tree("light"));
+    expect(screen.getByLabelText("Draft")).toBe(input);
+    expect(input.value).toBe("unsaved draft");
+    expect(document.activeElement).toBe(input);
   });
 
   it("renders the same scoped markup on every server pass", () => {
