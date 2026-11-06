@@ -1,13 +1,15 @@
 # Current State
 
-Status date: 2026-09-29  
-Product feature baseline: the 0.4.0 release commit  
+Status date: 2026-11-06  
+Product feature baseline: the 0.5.0 release commit  
 Branch: `main`
 
 ## Release posture
 
-OpenGlass UI is `0.4.0` (the liquid design, D-022), published on npm on
-2026-09-29 through trusted publishing with signed provenance. The owner authorized the
+OpenGlass UI is `0.5.0` (the review fixes: D-023 to D-025), published on npm on
+2026-11-06 from the `v0.5.0` tag through trusted publishing with signed
+provenance. The owner authorized the 0.5.0 release on 2026-11-06. 0.4.0 (the
+liquid design, D-022) was published on 2026-09-29; the owner authorized the
 0.4.0 release, the README media refresh, and the moelueker.com/liquid-glass
 update on 2026-09-29. Publication was first authorized on 2026-07-26:
 a public GitHub repository at `moekoelueker/open-glass-ui`, npm publication of
@@ -77,7 +79,7 @@ It is still not:
 
 ## Validation summary
 
-Measured 2026-11-06 on the review-fix branch (`fix/2026-11-05-review-fixes`):
+Measured 2026-11-06 on the 0.5.0 release commit (the merged review-fix branch):
 
 - 130 files passing Biome.
 - TypeScript passing across all packages, showcase, and Next fixture.

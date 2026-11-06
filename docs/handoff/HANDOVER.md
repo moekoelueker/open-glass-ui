@@ -1,8 +1,8 @@
 # OpenGlass UI Handover
 
-Status date: 2026-09-29  
-Product implementation baseline: the 0.4.0 release commit  
-Release posture: `0.4.0`, publishing to npm as a single package
+Status date: 2026-11-06  
+Product implementation baseline: the 0.5.0 release commit  
+Release posture: `0.5.0`, publishing to npm as a single package
 
 ## Why this document exists
 
