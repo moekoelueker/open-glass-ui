@@ -29,6 +29,11 @@ export interface SdfFilterOptions {
   height: number;
   geometry: LensGeometry;
   material?: GlassMaterial;
+  /**
+   * Map resolution. Defaults to the nearest `GlassProvider`'s runtime quality
+   * (its `quality` preference resolved against device capabilities), so the
+   * filter follows the same policy as the rest of the UI.
+   */
   quality?: OpticsQuality;
   canvasFactory?: CanvasFactory;
 }
@@ -60,9 +65,11 @@ export function useSdfFilter({
   height,
   geometry,
   material = getMaterialPreset("regular"),
-  quality = "medium",
+  quality: qualityOption,
   canvasFactory,
 }: SdfFilterOptions): SdfFilterState {
+  const runtimeQuality = useGlassRuntime().quality;
+  const quality = qualityOption ?? runtimeQuality;
   const { kind, width: geometryWidth, height: geometryHeight, cornerRadius, exponent } = geometry;
   const { thickness, ior, dispersion, edgeStrength, bevel, frost } = material;
   const input = useMemo<DisplacementMapInput>(
