@@ -60,6 +60,28 @@ export function App() {
 
 That is the whole setup. One package, one stylesheet, one provider.
 
+Recipes inherit the surrounding font (`font: inherit`) and the library ships no
+font family, so set one on your app, for example `body { font-family: system-ui,
+sans-serif; }`. Without it a bare page renders in the browser default serif.
+
+### Using with Tailwind CSS v4 (cascade layers)
+
+The library stylesheet is unlayered, and unlayered CSS beats layered CSS
+regardless of specificity. Tailwind v4 keeps its utilities in `@layer utilities`,
+so a utility such as `rounded-lg` or `bg-red-500` on an OpenGlass component loses
+to the recipe styles. Import the stylesheet into its own layer, ordered between
+Tailwind's `base` and `components`, at the top of your main CSS file:
+
+```css
+@layer theme, base, ogui, components, utilities;
+@import "open-glass-ui/styles.css" layer(ogui);
+@import "tailwindcss";
+```
+
+Do not also import `open-glass-ui/styles.css` from JavaScript, or the unlayered
+copy comes back. With this order, utilities override recipe styles, recipe styles
+override Tailwind's preflight, and your own unlayered CSS overrides both.
+
 ## The liquid design
 
 Version 0.4 is a visual rebuild. Glass is clearer and brighter, with one clean
@@ -231,7 +253,9 @@ sponsored by Apple Inc.
 | [Changelog](https://github.com/moekoelueker/open-glass-ui/blob/main/CHANGELOG.md) | Release history |
 
 Machine-readable references for coding agents: [`llms.txt`](https://github.com/moekoelueker/open-glass-ui/blob/main/llms.txt) and
-[`llms-full.txt`](https://github.com/moekoelueker/open-glass-ui/blob/main/llms-full.txt).
+[`llms-full.txt`](https://github.com/moekoelueker/open-glass-ui/blob/main/llms-full.txt). Both ship inside the npm package, so an
+installed version carries the reference that matches it
+(`node_modules/open-glass-ui/llms-full.txt`).
 
 ## The research behind it
 

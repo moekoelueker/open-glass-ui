@@ -23,7 +23,9 @@
   "files": [
     "dist",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "llms.txt",
+    "llms-full.txt"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",

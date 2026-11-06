@@ -1,7 +1,7 @@
 import { Component, lazy, type ReactNode, Suspense, useEffect, useState } from "react";
 import type { AtlasVariant } from "./component-atlas";
 import { LandingPage } from "./landing-page";
-import { AppLink } from "./navigation";
+import { AppLink, scrollToDestination } from "./navigation";
 
 const loadAtlas = () => import("./component-atlas");
 const loadPages = () => import("./pages");
@@ -140,6 +140,14 @@ function Route({ path }: { path: string }) {
 
 export function App() {
   const [path, setPath] = useState(normalizedPath);
+
+  useEffect(() => {
+    // A deep link such as /components#atlas-A loads a lazy route, so the browser's
+    // own fragment scroll finds nothing. Scroll once the target mounts.
+    if (window.location.hash) {
+      scrollToDestination(window.location.hash);
+    }
+  }, []);
 
   useEffect(() => {
     const handlePathChange = () => setPath(normalizedPath());

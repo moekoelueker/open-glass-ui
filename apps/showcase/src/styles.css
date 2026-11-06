@@ -58,6 +58,45 @@ a {
   --ogui-accent-ink: #170907;
 }
 
+/* Suspense fallback while a lazy route loads: one centred status line. */
+:where(.route-pending) > main {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+}
+
+:where(.route-pending) [role="status"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:where(.route-pending) [role="status"] > span {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: route-pending-spin 800ms linear infinite;
+}
+
+@keyframes route-pending-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.route-pending) [role="status"] > span {
+    animation: none;
+    border-top-color: currentColor;
+  }
+}
+
 .site-shell
   :where(
     .ogui-button,
@@ -218,6 +257,17 @@ a {
 
 .site-header__github svg {
   font-size: 0.85rem;
+}
+
+/* Repository link label. The full word is shown when there is room; narrow
+   headers fall back to the short form. Both headers share these classes. This
+   base rule must stay above the narrow-viewport media query that switches the
+   short label on: both have the same specificity, so a later base rule would
+   hide the label again and leave an empty box. */
+.repo-link__short {
+  display: none;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
 }
 
 .home-hero {
@@ -3265,7 +3315,6 @@ a {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   border: 1px solid var(--atlas-line);
-  background: var(--atlas-line);
 }
 
 .atlas-specimen {
@@ -3443,6 +3492,28 @@ a {
   background:
     linear-gradient(135deg, var(--ogui-color-accent-soft), transparent 32%),
     var(--ogui-color-canvas);
+  /* Each cell draws the hairlines on its own right and bottom sides, into the
+     1px grid gap, instead of the grid painting its whole background as the line
+     colour. That way an incomplete last row ends cleanly: the unused slots stay
+     transparent and no grey block shows. The two shadows cover disjoint pixels,
+     so the translucent line colour never doubles up. The outer edge is the
+     grid's own border; the last column and row draw into it, and the grid's
+     overflow clip removes that overdraw. */
+  box-shadow:
+    1px 0 0 0 var(--atlas-line),
+    0 1px 0 0 var(--atlas-line);
+}
+
+/* The one gap pixel where a row gap and a column gap meet. */
+.atlas--hybrid .atlas-specimen::before {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 1px;
+  height: 1px;
+  background: var(--atlas-line);
+  content: "";
+  pointer-events: none;
 }
 
 .atlas--hybrid .atlas-specimen::after {
@@ -4066,13 +4137,4 @@ a {
     border: 1px solid CanvasText;
     forced-color-adjust: auto;
   }
-}
-
-/* Repository link label. The full word is shown when there is room; narrow
-   headers fall back to the short form. Both headers share these classes so the
-   rule lives in one place instead of being duplicated per header stylesheet. */
-.repo-link__short {
-  display: none;
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
 }
