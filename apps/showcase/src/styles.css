@@ -2854,15 +2854,16 @@ a {
     .ogui-toggle-button,
     .ogui-dropzone
   ) {
-  --ogui-accent: var(--atlas-accent);
+  --ogui-accent: var(--ogui-color-accent);
   --ogui-accent-ink: var(--ogui-color-accent-ink);
   --ogui-focus: var(--ogui-color-focus);
-  --ogui-hairline: var(--atlas-line);
+  --ogui-hairline: var(--ogui-color-border);
   --ogui-control: var(--ogui-color-control);
   --ogui-control-hover: var(--ogui-color-control-hover);
   --ogui-control-active: var(--ogui-color-control-active);
-  /* Read the theme tokens here, not the page-level --atlas-* copies, so a
-     recipe inside a forced-tone Glass (the hero card) gets that tone's ink. */
+  /* Theme tokens, not the page-level --atlas-* copies: those resolve once on
+     the page, so a recipe inside a forced-tone Glass (the hero card) would
+     keep the page's palette instead of that tone's. */
   --ogui-ink: var(--ogui-color-text);
   --ogui-muted: var(--ogui-color-muted);
 }
