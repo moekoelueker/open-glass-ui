@@ -251,3 +251,36 @@ describe("resolveToneTheme", () => {
     expect(light.tokens["--ogui-radius-surface"]).toBe(theme.tokens["--ogui-radius-surface"]);
   });
 });
+
+describe("Glass with dangerouslySetInnerHTML", () => {
+  const html = { __html: "<p>Trusted content</p>" };
+
+  it("renders on the server for matching and opposite tones", () => {
+    for (const tone of ["auto", "dark", "light"] as const) {
+      const markup = renderToString(
+        <GlassThemeProvider appearance="dark">
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: the test covers that Glass accepts this native prop; the markup is a constant. */}
+          <Glass tone={tone} dangerouslySetInnerHTML={html} />
+        </GlassThemeProvider>,
+      );
+      expect(markup).toContain("<p>Trusted content</p>");
+    }
+  });
+
+  it("renders on the client and keeps rendering when the tone changes", () => {
+    const { container, rerender } = render(
+      <GlassThemeProvider appearance="light">
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: the test covers that Glass accepts this native prop; the markup is a constant. */}
+        <Glass tone="auto" dangerouslySetInnerHTML={html} />
+      </GlassThemeProvider>,
+    );
+    expect(container.querySelector("[data-ogui-glass] p")?.textContent).toBe("Trusted content");
+    rerender(
+      <GlassThemeProvider appearance="light">
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: the test covers that Glass accepts this native prop; the markup is a constant. */}
+        <Glass tone="dark" dangerouslySetInnerHTML={html} />
+      </GlassThemeProvider>,
+    );
+    expect(container.querySelector("[data-ogui-glass] p")?.textContent).toBe("Trusted content");
+  });
+});

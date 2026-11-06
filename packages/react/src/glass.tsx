@@ -172,7 +172,7 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     ...style,
   } as unknown as CSSProperties;
 
-  return createElement(
+  const host = createElement(
     as,
     {
       // Before `rest`, so an explicit attribute from the caller still wins.
@@ -215,12 +215,19 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
       "data-ogui-thickness": resolvedMaterial.thickness.toFixed(3),
       "data-ogui-ior": resolvedMaterial.ior.toFixed(3),
     },
-    // Always the same provider boundary, so the tree keeps its shape when the
-    // app appearance flips and the tone starts or stops differing from it.
-    // Otherwise every descendant would remount and lose its state and focus.
-    // A matching tone re-provides the surrounding theme, which adds no markup.
+    children,
+  );
+
+  // Always the same provider boundary, so the tree keeps its shape when the
+  // app appearance flips and the tone starts or stops differing from it.
+  // Otherwise every descendant would remount and lose its state and focus.
+  // It wraps the host element rather than its children, so the host receives
+  // exactly the children the caller passed (none when the caller uses
+  // `dangerouslySetInnerHTML`). A matching tone re-provides the surrounding
+  // theme, and a provider adds no markup.
+  return (
     <GlassThemeContext.Provider value={toneScope?.runtime ?? theme}>
-      {children}
-    </GlassThemeContext.Provider>,
+      {host}
+    </GlassThemeContext.Provider>
   );
 });
