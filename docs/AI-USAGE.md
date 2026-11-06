@@ -18,8 +18,9 @@ OpenGlass UI repository itself should start with
 4. Import GPU functionality only from `open-glass-ui/webgl`.
 5. Do not generate consumer imports from internal `@open-glass-ui/*` workspace
    packages.
-6. The facade is published on npm as `open-glass-ui`; still verify the
-   installed version before relying on version-specific behavior.
+6. The facade is published on npm as `open-glass-ui`; check the installed
+   version before relying on version-specific behavior. The package ships
+   `llms.txt` and `llms-full.txt`, which match the installed version.
 
 ```tsx
 import "open-glass-ui/styles.css";
@@ -53,7 +54,12 @@ export function OpenGlassExample() {
 ```
 
 Do not set `renderer="webgl2"` on arbitrary DOM. Do not assume that `auto`
-selects WebGL or SVG; `auto` is deliberately CSS-first.
+selects WebGL or SVG; `auto` is deliberately CSS-first. Only the `frost` field of
+`Glass.optics` changes the material; refraction comes from
+`useSdfFilter({ material })` and `WebGLLens.material`. Never put text inside a
+`Glass` that has a `filterId`: filter a decorative `aria-hidden` layer and keep
+the content in an unfiltered sibling. To place glass over photos, force the tone
+with `<Glass tone="dark">`.
 
 ## Renderer decision algorithm
 
@@ -87,16 +93,32 @@ When generating code:
 - give `Toolbar`, `Dock`, `Tabs`, `Menu`, `Popover`, and fields their required
   label props;
 - preserve native `disabled`, `required`, `name`, `value`, and form props;
-- use controlled and uncontrolled props consistently;
-- use `useToast` below `GlassSystemProvider` instead of inventing a global
-  notification store;
+- use controlled and uncontrolled props consistently, with the right callback
+  per component (`Slider`, `TextField`, `Textarea`, `Select`, and `Checkbox` use
+  native `onChange`; `Switch` uses `onCheckedChange`; `SegmentedControl`,
+  `Tabs`, `RadioGroup`, `SearchField`, and `NumberField` use `onValueChange`);
+- pass the required shapes: `Tabs` `items` of `{ value, label, content }`, a
+  `trigger` for `Menu` and `Popover`, and `options` for `Select`;
+- do not wrap `Card`, `Toolbar`, `Dock`, `Dialog`, `Drawer`, `Menu`, or `Popover`
+  in `Glass`; they already paint a material;
+- use `const { toast } = useToast();` below `GlassSystemProvider` instead of
+  inventing a global notification store;
 - hide decorative glyphs with `aria-hidden="true"`; and
 - never use material appearance as the only selected/error/loading signal.
 
 ## Theming rules
 
 - Start with neutral, high-contrast, adaptive themes.
-- Customize through `GlassThemeProvider` and semantic `--ogui-*` tokens.
+- Customize through `GlassThemeProvider` and semantic `--ogui-*` tokens. The
+  provider writes them inline, so never override them on `:root`; use the
+  `theme` prop, the provider `style`, or a descendant class. In the liquid
+  design, controls read `--ogui-lg-fill*`, `--ogui-lg-hairline`, and
+  `--ogui-radius-capsule` instead of `--ogui-color-control*`,
+  `--ogui-color-border`, and `--ogui-radius-control`.
+- With Tailwind CSS v4, import the stylesheet into a layer:
+  `@layer theme, base, ogui, components, utilities;` then
+  `@import "open-glass-ui/styles.css" layer(ogui);`.
+- Recipes inherit the app font; set one on `body`.
 - Preserve the `ogui` prefix for library CSS variables, classes, data
   attributes, and generated IDs.
 - Do not output generic global selectors for `button`, `input`, or `[role]` that
@@ -153,8 +175,9 @@ Before presenting generated code as complete:
 2. run the relevant unit and browser tests;
 3. test keyboard, focus, reduced motion, forced colors, and no-WebGL fallback;
 4. check mobile overflow and real background contrast; and
-5. state clearly if the package is being consumed from this local pre-release
-   workspace rather than npm.
+5. state the installed `open-glass-ui` version, and say so if the package is
+   being consumed from a local workspace build rather than npm.
 
 Use [llms.txt](../llms.txt) for routing and [llms-full.txt](../llms-full.txt) for
-a self-contained agent reference.
+a self-contained agent reference. Both ship in the npm package
+(`node_modules/open-glass-ui/llms-full.txt`).
