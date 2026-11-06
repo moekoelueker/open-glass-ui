@@ -100,12 +100,6 @@ function mix(color: string, target: "white" | "black", percent: number) {
     .join("")}`;
 }
 
-const DARK_INKS = ["#101214", "#000000"];
-const INK_CANDIDATES = ["#101214", "#f9f8f3", "#000000", "#ffffff"];
-/** The 6% translucent bottom stop over the worst backdrop for that ink. */
-const translucentStop = (accent: string, ink: string) =>
-  mix(accent, DARK_INKS.includes(ink) ? "black" : "white", 6);
-
 describe("accent ink and highlight mix", () => {
   const themes = [
     ...PRESETS.flatMap((preset) =>
@@ -121,15 +115,6 @@ describe("accent ink and highlight mix", () => {
       })),
     ),
   ];
-  /**
-   * Mid-tone accents for which no ink, at any highlight mix, also reaches
-   * 4.5:1 on the 6% translucent stop over a white or black page. For these the
-   * translucency check is dropped and only the opaque stops are guaranteed.
-   */
-  const MID_TONES = new Set(["teal/light", "coral/light", "#777777", "#c94735"]);
-  const isMidTone = (name: string) =>
-    MID_TONES.has(name) || MID_TONES.has(name.slice(0, name.indexOf("/")));
-
   it.each(themes)("reaches 4.5:1 on the accent and its highlight for $name", ({ palette }) => {
     const highlightMix = palette.accentHighlightMix as number;
     expect(Number.isInteger(highlightMix)).toBe(true);
@@ -140,25 +125,6 @@ describe("accent ink and highlight mix", () => {
       contrastRatio(mix(palette.accent, "white", highlightMix), palette.accentInk),
     ).toBeGreaterThanOrEqual(4.5);
   });
-
-  it.each(themes)(
-    "covers the translucent stop wherever any ink can for $name",
-    ({ name, palette }) => {
-      const stop = translucentStop(palette.accent, palette.accentInk);
-      if (isMidTone(name)) {
-        for (const ink of INK_CANDIDATES) {
-          expect(
-            Math.min(
-              contrastRatio(palette.accent, ink),
-              contrastRatio(translucentStop(palette.accent, ink), ink),
-            ),
-          ).toBeLessThan(4.5);
-        }
-      } else {
-        expect(contrastRatio(stop, palette.accentInk)).toBeGreaterThanOrEqual(4.5);
-      }
-    },
-  );
 
   it("chooses the ink and the highlight mix together for every preset", () => {
     const choices = Object.fromEntries(

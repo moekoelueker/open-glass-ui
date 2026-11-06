@@ -177,25 +177,25 @@
    would draw an ellipse across the whole dialog). Zero specificity, so a
    recipe that positions an element itself (indicators, portals) still wins. */
 :where([data-ogui-design="liquid"])
-  :where(
-    .ogui-button,
-    .ogui-overlay-trigger > button,
-    .ogui-toast__restore,
-    .ogui-toggle-button,
-    .ogui-toolbar,
-    .ogui-dock,
-    .ogui-card,
-    .ogui-toast,
-    .ogui-accordion,
-    .ogui-overlay__surface,
-    .ogui-overlay__header > button,
-    .ogui-tooltip__bubble,
-    .ogui-badge,
-    .ogui-avatar,
-    .ogui-alert,
-    .ogui-banner,
-    .ogui-pagination button[aria-current="page"]
-  ),
+:where(
+  .ogui-button,
+  .ogui-overlay-trigger > button,
+  .ogui-toast__restore,
+  .ogui-toggle-button,
+  .ogui-toolbar,
+  .ogui-dock,
+  .ogui-card,
+  .ogui-toast,
+  .ogui-accordion,
+  .ogui-overlay__surface,
+  .ogui-overlay__header > button,
+  .ogui-tooltip__bubble,
+  .ogui-badge,
+  .ogui-avatar,
+  .ogui-alert,
+  .ogui-banner,
+  .ogui-pagination button[aria-current="page"]
+),
 :where([data-ogui-glass][data-ogui-design="liquid"]) {
   position: relative;
 }
@@ -387,9 +387,10 @@
   padding-inline: 0;
 }
 
-/* Tinted glass: the accent is the fill, but it stays lit like glass. The theme
-   sets how much white the highlight stop takes so the accent ink stays
-   readable across the whole fill (16% without a theme). On accent fills the
+/* Tinted glass: the accent is the fill, but it stays lit like glass. The fill
+   is opaque so the page never shifts the label's contrast, and the theme sets
+   how much white the highlight stop takes so the accent ink stays readable
+   across the whole fill (16% without a theme). On accent fills the
    glint follows the pointer along the top edge only, fades out before 30% of
    the height and peaks at 0.3, so it never sits behind the label. */
 :where([data-ogui-design="liquid"]) .ogui-button--primary {
@@ -404,7 +405,7 @@
     linear-gradient(
       180deg,
       color-mix(in srgb, var(--ogui-accent), white var(--ogui-color-accent-highlight-mix, 16%)),
-      color-mix(in srgb, var(--ogui-accent), transparent 6%)
+      var(--ogui-accent)
     );
   box-shadow:
     inset calc(sin(var(--ogui-glass-light-angle, 340deg)) * -10px)

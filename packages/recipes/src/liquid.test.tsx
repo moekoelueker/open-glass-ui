@@ -331,9 +331,9 @@ describe("liquid accent fills", () => {
     document.body.innerHTML = "";
   });
 
-  it("mixes the highlight stop by the theme's amount, 16% without a theme", () => {
+  it("mixes the highlight stop by the theme's amount over an opaque accent", () => {
     expect(declarations(rulesFor(PRIMARY)[0])).toContain(
-      "linear-gradient( 180deg, color-mix(in srgb, var(--ogui-accent), white var(--ogui-color-accent-highlight-mix, 16%)), color-mix(in srgb, var(--ogui-accent), transparent 6%) )",
+      "linear-gradient( 180deg, color-mix(in srgb, var(--ogui-accent), white var(--ogui-color-accent-highlight-mix, 16%)), var(--ogui-accent) )",
     );
   });
 

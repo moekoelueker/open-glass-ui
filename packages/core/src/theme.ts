@@ -192,14 +192,7 @@ const PURE_DARK_INK = "#000000";
 const PURE_LIGHT_INK = "#ffffff";
 /** Largest white share of the lit top stop of a liquid accent fill, in percent. */
 const ACCENT_HIGHLIGHT_MIX = 16;
-/**
- * The bottom stop of a liquid accent fill is 6% translucent, so the backdrop
- * shows through: a white page lifts it towards light ink, a black page darkens
- * it towards dark ink.
- */
-const ACCENT_TRANSLUCENCY = 6;
 const ACCENT_INK_CANDIDATES = [SOFT_DARK_INK, SOFT_LIGHT_INK, PURE_DARK_INK, PURE_LIGHT_INK];
-const DARK_INKS: ReadonlySet<string> = new Set([SOFT_DARK_INK, PURE_DARK_INK]);
 
 export interface ReadableForegroundOptions {
   /**
@@ -255,25 +248,20 @@ function mixChannels(color: string, target: 0 | 255, percent: number) {
 }
 
 /**
- * Every color text in `ink` sits on across a liquid accent fill with a
- * `mix`% white highlight: the accent, the highlight stop and, when
- * `translucency` is checked, the translucent stop over the worst backdrop.
+ * Every color text in `ink` sits on across an opaque liquid accent fill with a
+ * `mix`% white highlight: the accent itself (bottom stop) and the highlight
+ * (top stop). The gradient between them is a blend of the two, so its
+ * contrast lies between theirs.
  */
-function accentFills(accent: string, ink: string, mix: number, translucency: boolean) {
-  const fills = [accent, mixChannels(accent, 255, mix)];
-  if (translucency) {
-    fills.push(mixChannels(accent, DARK_INKS.has(ink) ? 0 : 255, ACCENT_TRANSLUCENCY));
-  }
-  return fills;
+function accentFills(accent: string, mix: number) {
+  return [accent, mixChannels(accent, 255, mix)];
 }
 
 /** The largest highlight mix (16% down to 0%) at which `ink` reads at 4.5:1, or -1. */
-function largestHighlightMix(accent: string, ink: string, translucency: boolean) {
+function largestHighlightMix(accent: string, ink: string) {
   for (let mix = ACCENT_HIGHLIGHT_MIX; mix >= 0; mix -= 1) {
     if (
-      accentFills(accent, ink, mix, translucency).every(
-        (fill) => contrastRatio(fill, ink) >= MINIMUM_TEXT_CONTRAST,
-      )
+      accentFills(accent, mix).every((fill) => contrastRatio(fill, ink) >= MINIMUM_TEXT_CONTRAST)
     ) {
       return mix;
     }
@@ -285,33 +273,27 @@ function largestHighlightMix(accent: string, ink: string, translucency: boolean)
  * Chooses the accent ink and the highlight mix together. In preference order
  * (#101214, #f9f8f3, #000000, #ffffff), the first ink that keeps the full 16%
  * highlight wins, so the fill looks as before; otherwise the ink that keeps
- * the most highlight. If no ink can also clear the translucent stop over the
- * worst backdrop (mid-tone accents), that check is dropped; pure black or
- * white always reaches 4.5:1 on the opaque stops.
+ * the most highlight. Pure black or white always reaches 4.5:1 on the accent
+ * itself (the better of the two is at least 4.58:1), so with mix 0 a pair
+ * always exists.
  */
 function chooseAccentInk(accent: string): { ink: string; mix: number } {
-  for (const translucency of [true, false]) {
-    let best: { ink: string; mix: number } | null = null;
-    for (const ink of ACCENT_INK_CANDIDATES) {
-      const mix = largestHighlightMix(accent, ink, translucency);
-      if (mix === ACCENT_HIGHLIGHT_MIX) {
-        return { ink, mix };
-      }
-      if (mix >= 0 && (best === null || mix > best.mix)) {
-        best = { ink, mix };
-      }
+  let best: { ink: string; mix: number } | null = null;
+  for (const ink of ACCENT_INK_CANDIDATES) {
+    const mix = largestHighlightMix(accent, ink);
+    if (mix === ACCENT_HIGHLIGHT_MIX) {
+      return { ink, mix };
     }
-    if (best) {
-      return best;
+    if (mix >= 0 && (best === null || mix > best.mix)) {
+      best = { ink, mix };
     }
   }
-  return { ink: readableForeground(accent), mix: 0 };
+  return best ?? { ink: readableForeground(accent), mix: 0 };
 }
 
 /** Highlight mix for a fixed ink, as chooseAccentInk would judge it. */
 function highlightMixForInk(accent: string, ink: string) {
-  const mix = largestHighlightMix(accent, ink, true);
-  return mix >= 0 ? mix : Math.max(largestHighlightMix(accent, ink, false), 0);
+  return Math.max(largestHighlightMix(accent, ink), 0);
 }
 
 function alpha(color: string, opacity: number) {
