@@ -173,6 +173,84 @@ describe("layer stack", () => {
     expect(getOpenLayers()).toHaveLength(0);
   });
 
+  it("lets a popover own a trigger-less dialog that mounts already open inside it", async () => {
+    const user = userEvent.setup();
+    const onConfirm = vi.fn();
+
+    function Fixture() {
+      const [confirming, setConfirming] = useState(false);
+      return (
+        <Popover label="Inspector" trigger={<Button>Inspect</Button>}>
+          <button type="button" onClick={() => setConfirming(true)}>
+            Publish
+          </button>
+          {confirming ? (
+            <Dialog title="Confirm publish" open onOpenChange={setConfirming}>
+              <button type="button" onClick={onConfirm}>
+                Confirm
+              </button>
+            </Dialog>
+          ) : null}
+        </Popover>
+      );
+    }
+
+    render(<Fixture />);
+    const trigger = screen.getByRole("button", { name: "Inspector" });
+    await user.click(trigger);
+    const publish = await screen.findByRole("button", { name: "Publish" });
+    await user.click(publish);
+
+    const dialog = await screen.findByRole("dialog", { name: "Confirm publish" });
+    const [popoverLayer, dialogLayer] = getOpenLayers();
+    // The dialog never saw a closed state, yet the control that mounted it
+    // still decides its owner.
+    expect(dialogLayer).toMatchObject({ kind: "modal", owner: popoverLayer?.id });
+    expect(hostOf(publish).inert).toBe(true);
+    expect(hostOf(dialog).inert).not.toBe(true);
+
+    // Pressing the dialog's action is not an outside press for the popover.
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(onConfirm).toHaveBeenCalledOnce();
+    expect(screen.getByRole("dialog", { name: "Confirm publish" })).toBe(dialog);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "Confirm publish" })).toBeNull();
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(hostOf(publish).inert).not.toBe(true);
+  });
+
+  it("returns focus to the control that mounted an already-open dialog", async () => {
+    const user = userEvent.setup();
+
+    function Fixture() {
+      const [mounted, setMounted] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setMounted(true)}>
+            Rename
+          </button>
+          {mounted ? (
+            <Dialog title="Rename layer" defaultOpen>
+              Body
+            </Dialog>
+          ) : null}
+        </>
+      );
+    }
+
+    render(<Fixture />);
+    const rename = screen.getByRole("button", { name: "Rename" });
+    await user.click(rename);
+    const dialog = await screen.findByRole("dialog", { name: "Rename layer" });
+    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "Rename layer" })).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(rename));
+  });
+
   it("orders dialog, popover and a second dialog, and unwinds them one Escape at a time", async () => {
     const user = userEvent.setup();
     render(

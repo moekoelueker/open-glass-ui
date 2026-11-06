@@ -597,7 +597,11 @@ function Overlay({
   const surfaceRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
-  const wasOpenRef = useRef(open);
+  // Starts closed even when the overlay mounts open, so the closed-to-open
+  // path below also runs on mount: a trigger-less dialog rendered already
+  // open (mounted by a button inside a popover, say) still captures its
+  // opener, and with it the layer that owns it, before it registers.
+  const wasOpenRef = useRef(false);
   const titleId = useId();
   const descriptionId = description ? `${titleId}-description` : undefined;
 
