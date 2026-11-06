@@ -1,6 +1,6 @@
 import { getMaterialPreset } from "@open-glass-ui/core";
 import { describe, expect, it } from "vitest";
-import { MAX_WEBGL_LENSES, packLensUniforms, type WebGLLens } from "./webgl";
+import { MAX_WEBGL_LENSES, packLensUniforms, WebGLGlassRenderer, type WebGLLens } from "./webgl";
 
 function lens(index: number): WebGLLens {
   return {
@@ -55,5 +55,67 @@ describe("WebGL lens uniforms", () => {
     expect(packed.optics[2]).toBeLessThanOrEqual(0.08);
     expect(packed.surface[0]).toBe(0);
     expect(packed.surface[1]).toBe(1);
+  });
+});
+
+describe("WebGLGlassRenderer.clear", () => {
+  function fakeCanvas(options: { lost?: boolean } = {}) {
+    const calls: Array<[string, unknown[]]> = [];
+    const overrides: Record<string, unknown> = {
+      getShaderParameter: () => true,
+      getProgramParameter: () => true,
+      getAttribLocation: () => 0,
+      isContextLost: () => options.lost === true,
+    };
+    const gl = new Proxy(
+      {},
+      {
+        get(_target, property: string) {
+          if (property in overrides) {
+            return overrides[property];
+          }
+          return (...args: unknown[]) => {
+            calls.push([property, args]);
+            return {};
+          };
+        },
+      },
+    );
+    const canvas = {
+      width: 320,
+      height: 180,
+      getContext: () => gl,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    } as unknown as HTMLCanvasElement;
+    return { canvas, calls, options };
+  }
+
+  it("clears the default framebuffer to transparent", () => {
+    const { canvas, calls } = fakeCanvas();
+    const renderer = new WebGLGlassRenderer(canvas);
+    calls.length = 0;
+
+    renderer.clear();
+
+    expect(calls.find(([name]) => name === "clearColor")?.[1]).toEqual([0, 0, 0, 0]);
+    expect(calls.find(([name]) => name === "viewport")?.[1]).toEqual([0, 0, 320, 180]);
+    expect(calls.some(([name]) => name === "clear")).toBe(true);
+  });
+
+  it("does nothing once disposed or while the context is lost", () => {
+    const disposed = fakeCanvas();
+    const renderer = new WebGLGlassRenderer(disposed.canvas);
+    renderer.dispose();
+    disposed.calls.length = 0;
+    renderer.clear();
+    expect(disposed.calls).toEqual([]);
+
+    const lost = fakeCanvas();
+    const lostRenderer = new WebGLGlassRenderer(lost.canvas);
+    lost.options.lost = true;
+    lost.calls.length = 0;
+    lostRenderer.clear();
+    expect(lost.calls).toEqual([]);
   });
 });

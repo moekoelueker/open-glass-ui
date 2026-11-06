@@ -1,3 +1,22 @@
+/* Glass material. `<Glass>` writes only the --ogui-material-* tokens inline;
+   this rule paints them. Zero specificity, so any class, utility or `style`
+   can restyle a surface. */
+:where([data-ogui-glass]) {
+  background: var(--ogui-material-background);
+  border-color: var(--ogui-material-border);
+  box-shadow: var(--ogui-material-shadow);
+  color: var(--ogui-material-text);
+  -webkit-backdrop-filter: var(--ogui-material-filter);
+  backdrop-filter: var(--ogui-material-filter);
+}
+
+/* Recipes rendered through Glass reset their border color (`border: 1px
+   solid`, or liquid's transparent edge); the material border keeps winning
+   there, as it did when Glass wrote it inline. */
+:is(.ogui-toolbar, .ogui-dock, .ogui-disclosure__surface)[data-ogui-glass] {
+  border-color: var(--ogui-material-border);
+}
+
 :where(
   .ogui-button,
   .ogui-segments,

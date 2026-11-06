@@ -46,6 +46,13 @@ export interface GlassThemePalette {
   accent: string;
   accentInk: string;
   accentSoft: string;
+  /**
+   * White share, in percent (0 to 16), of the lit top stop of liquid accent
+   * fills: `color-mix(in srgb, accent, white <mix>%)`. Chosen together with
+   * `accentInk` so the ink reaches 4.5:1 across the whole fill. Optional so
+   * hand-built palettes stay valid.
+   */
+  accentHighlightMix?: number;
   secondary: string;
   tertiary: string;
   focus: string;
@@ -77,6 +84,8 @@ export interface GlassThemeTokens {
   "--ogui-color-accent": string;
   "--ogui-color-accent-ink": string;
   "--ogui-color-accent-soft": string;
+  /** White share of the liquid accent highlight stop, such as `16%`. */
+  "--ogui-color-accent-highlight-mix"?: string;
   "--ogui-color-secondary": string;
   "--ogui-color-tertiary": string;
   "--ogui-color-focus": string;
@@ -175,10 +184,134 @@ export function contrastRatio(first: string, second: string) {
   return (high + 0.05) / (low + 0.05);
 }
 
-export function readableForeground(background: string) {
-  const dark = "#101214";
-  const light = "#f9f8f3";
-  return contrastRatio(background, dark) >= contrastRatio(background, light) ? dark : light;
+/** WCAG AA contrast for body text, the floor every generated ink must reach. */
+const MINIMUM_TEXT_CONTRAST = 4.5;
+const SOFT_DARK_INK = "#101214";
+const SOFT_LIGHT_INK = "#f9f8f3";
+const PURE_DARK_INK = "#000000";
+const PURE_LIGHT_INK = "#ffffff";
+/** Largest white share of the lit top stop of a liquid accent fill, in percent. */
+const ACCENT_HIGHLIGHT_MIX = 16;
+/**
+ * The bottom stop of a liquid accent fill is 6% translucent, so the backdrop
+ * shows through: a white page lifts it towards light ink, a black page darkens
+ * it towards dark ink.
+ */
+const ACCENT_TRANSLUCENCY = 6;
+const ACCENT_INK_CANDIDATES = [SOFT_DARK_INK, SOFT_LIGHT_INK, PURE_DARK_INK, PURE_LIGHT_INK];
+const DARK_INKS: ReadonlySet<string> = new Set([SOFT_DARK_INK, PURE_DARK_INK]);
+
+export interface ReadableForegroundOptions {
+  /**
+   * Further backgrounds the same text must read over, such as the other stops
+   * of a gradient fill. The ink is judged by its worst contrast across all of
+   * them.
+   */
+  over?: readonly string[];
+}
+
+/**
+ * Picks the softer near-black or near-white ink when it reaches 4.5:1 and
+ * falls back to pure black or white (whichever reads better) when neither
+ * does. `worstContrast` reports an ink's lowest contrast over every background
+ * it sits on.
+ */
+function pickInk(worstContrast: (ink: string) => number) {
+  const softDark = worstContrast(SOFT_DARK_INK);
+  const softLight = worstContrast(SOFT_LIGHT_INK);
+  const soft = softDark >= softLight ? SOFT_DARK_INK : SOFT_LIGHT_INK;
+  if (Math.max(softDark, softLight) >= MINIMUM_TEXT_CONTRAST) {
+    return soft;
+  }
+  return worstContrast(PURE_DARK_INK) >= worstContrast(PURE_LIGHT_INK)
+    ? PURE_DARK_INK
+    : PURE_LIGHT_INK;
+}
+
+/**
+ * A text color for `background`: the soft near-black `#101214` or near-white
+ * `#f9f8f3` when it reaches 4.5:1, otherwise pure `#000000` or `#ffffff`.
+ * Pass `options.over` when the text also sits on other colors.
+ */
+export function readableForeground(background: string, options: ReadableForegroundOptions = {}) {
+  const backgrounds = [background, ...(options.over ?? [])];
+  return pickInk((ink) =>
+    Math.min(...backgrounds.map((candidate) => contrastRatio(candidate, ink))),
+  );
+}
+
+/**
+ * The same color as CSS `color-mix(in srgb, <color>, <target> <percent>%)`
+ * for a white (255) or black (0) target, rounded to 8-bit channels and
+ * written as hex.
+ */
+function mixChannels(color: string, target: 0 | 255, percent: number) {
+  const value = rgb(color);
+  const channel = (component: number) =>
+    Math.round((component * (100 - percent) + target * percent) / 100)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${channel(value.r)}${channel(value.g)}${channel(value.b)}`;
+}
+
+/**
+ * Every color text in `ink` sits on across a liquid accent fill with a
+ * `mix`% white highlight: the accent, the highlight stop and, when
+ * `translucency` is checked, the translucent stop over the worst backdrop.
+ */
+function accentFills(accent: string, ink: string, mix: number, translucency: boolean) {
+  const fills = [accent, mixChannels(accent, 255, mix)];
+  if (translucency) {
+    fills.push(mixChannels(accent, DARK_INKS.has(ink) ? 0 : 255, ACCENT_TRANSLUCENCY));
+  }
+  return fills;
+}
+
+/** The largest highlight mix (16% down to 0%) at which `ink` reads at 4.5:1, or -1. */
+function largestHighlightMix(accent: string, ink: string, translucency: boolean) {
+  for (let mix = ACCENT_HIGHLIGHT_MIX; mix >= 0; mix -= 1) {
+    if (
+      accentFills(accent, ink, mix, translucency).every(
+        (fill) => contrastRatio(fill, ink) >= MINIMUM_TEXT_CONTRAST,
+      )
+    ) {
+      return mix;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Chooses the accent ink and the highlight mix together. In preference order
+ * (#101214, #f9f8f3, #000000, #ffffff), the first ink that keeps the full 16%
+ * highlight wins, so the fill looks as before; otherwise the ink that keeps
+ * the most highlight. If no ink can also clear the translucent stop over the
+ * worst backdrop (mid-tone accents), that check is dropped; pure black or
+ * white always reaches 4.5:1 on the opaque stops.
+ */
+function chooseAccentInk(accent: string): { ink: string; mix: number } {
+  for (const translucency of [true, false]) {
+    let best: { ink: string; mix: number } | null = null;
+    for (const ink of ACCENT_INK_CANDIDATES) {
+      const mix = largestHighlightMix(accent, ink, translucency);
+      if (mix === ACCENT_HIGHLIGHT_MIX) {
+        return { ink, mix };
+      }
+      if (mix >= 0 && (best === null || mix > best.mix)) {
+        best = { ink, mix };
+      }
+    }
+    if (best) {
+      return best;
+    }
+  }
+  return { ink: readableForeground(accent), mix: 0 };
+}
+
+/** Highlight mix for a fixed ink, as chooseAccentInk would judge it. */
+function highlightMixForInk(accent: string, ink: string) {
+  const mix = largestHighlightMix(accent, ink, true);
+  return mix >= 0 ? mix : Math.max(largestHighlightMix(accent, ink, false), 0);
 }
 
 function alpha(color: string, opacity: number) {
@@ -195,7 +328,7 @@ export function createGlassTheme(
   const radius = RADII[input.radius ?? "balanced"];
   const preset = PRESET_ACCENTS[input.preset ?? "neutral"][appearance];
   const accent = expandHex(input.accent ?? preset.accent);
-  const accentInk = readableForeground(accent);
+  const { ink: accentInk, mix: accentHighlightMix } = chooseAccentInk(accent);
   const highContrast = contrast === "high";
   const danger = dark ? "#ff8176" : "#b93630";
   const success = dark ? "#58d79e" : "#15734d";
@@ -225,6 +358,7 @@ export function createGlassTheme(
     accent,
     accentInk,
     accentSoft: alpha(accent, dark ? 0.16 : 0.12),
+    accentHighlightMix,
     secondary: expandHex(input.secondary ?? preset.secondary),
     tertiary: expandHex(input.tertiary ?? preset.tertiary),
     focus,
@@ -241,7 +375,23 @@ export function createGlassTheme(
   };
 }
 
+/**
+ * A hand-built palette without `accentHighlightMix` gets one derived from its
+ * accent and ink when both are hex colors; otherwise the token is left out and
+ * the stylesheet falls back to its own 16%.
+ */
+function paletteAccentHighlightMix(palette: GlassThemePalette) {
+  if (palette.accentHighlightMix !== undefined) {
+    return Math.min(Math.max(palette.accentHighlightMix, 0), ACCENT_HIGHLIGHT_MIX);
+  }
+  if (HEX_COLOR.test(palette.accent) && HEX_COLOR.test(palette.accentInk)) {
+    return highlightMixForInk(palette.accent, palette.accentInk);
+  }
+  return undefined;
+}
+
 export function createGlassThemeTokens(palette: GlassThemePalette): GlassThemeTokens {
+  const accentHighlightMix = paletteAccentHighlightMix(palette);
   return {
     "--ogui-color-background": palette.background,
     "--ogui-color-canvas": palette.canvas,
@@ -257,6 +407,9 @@ export function createGlassThemeTokens(palette: GlassThemePalette): GlassThemeTo
     "--ogui-color-accent": palette.accent,
     "--ogui-color-accent-ink": palette.accentInk,
     "--ogui-color-accent-soft": palette.accentSoft,
+    ...(accentHighlightMix === undefined
+      ? {}
+      : { "--ogui-color-accent-highlight-mix": `${accentHighlightMix}%` }),
     "--ogui-color-secondary": palette.secondary,
     "--ogui-color-tertiary": palette.tertiary,
     "--ogui-color-focus": palette.focus,

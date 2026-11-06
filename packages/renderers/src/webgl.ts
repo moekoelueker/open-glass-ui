@@ -318,6 +318,22 @@ export class WebGLGlassRenderer {
     gl.bindVertexArray(null);
   }
 
+  /**
+   * Clears the canvas to transparent, so the last frame does not linger once
+   * the surface stops rendering. A no-op after disposal or context loss.
+   */
+  clear() {
+    if (this.#disposed || this.#gl.isContextLost()) {
+      return;
+    }
+
+    const gl = this.#gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, this.#canvas.width, this.#canvas.height);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  }
+
   dispose() {
     if (this.#disposed) {
       return;

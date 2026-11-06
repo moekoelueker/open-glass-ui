@@ -35,5 +35,6 @@ export { GlassGroup, GlassSource, useGlassGroup } from "./source";
 export type {
   GlassThemeProviderProps,
   GlassThemeRuntime,
+  GlassToneTokens,
 } from "./theme";
-export { GlassThemeProvider, useGlassTheme } from "./theme";
+export { GlassThemeProvider, resolveToneTheme, useGlassTheme } from "./theme";

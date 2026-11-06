@@ -7,7 +7,6 @@ import {
   type MaterialPresetName,
 } from "@open-glass-ui/core";
 import {
-  createCssMaterialStyle,
   createCssMaterialTokens,
   type MaterialTone,
   type RendererPreference,
@@ -20,21 +19,61 @@ import {
   forwardRef,
   type HTMLAttributes,
   type ReactNode,
+  useEffect,
 } from "react";
 import { useGlassPointerField } from "./interaction";
 import { useGlassRuntime } from "./provider";
-import { useGlassTheme } from "./theme";
+import { GlassThemeContext, resolveToneScope, useGlassTheme } from "./theme";
 
 type GlassElement = "aside" | "div" | "nav" | "section" | "span";
+
+export const GLASS_OPTICS_WARNING =
+  "OpenGlass UI: <Glass optics> only changes `frost` on the rendered material, on every " +
+  "renderer path. The refraction fields (thickness, ior, dispersion, edgeStrength, bevel) are " +
+  "only reported as data attributes. To refract, pass the same material to " +
+  "useSdfFilter({ material }) or to WebGLLens.material.";
+
+let opticsWarningShown = false;
+
+/**
+ * True outside production builds. Bundlers replace `process.env.NODE_ENV`
+ * literally; where nothing defines `process` the check fails closed.
+ */
+function isDevelopmentBuild() {
+  try {
+    return process.env.NODE_ENV !== "production";
+  } catch {
+    return false;
+  }
+}
 
 export interface GlassProps extends Omit<HTMLAttributes<HTMLElement>, "color"> {
   as?: GlassElement;
   children?: ReactNode;
   material?: MaterialPresetName;
+  /**
+   * Which appearance the material is drawn for. `auto` follows the nearest
+   * theme. A tone that differs from it also scopes the theme: the element gets
+   * that appearance's `--ogui-color-*` tokens, `data-ogui-appearance` and
+   * `color-scheme`, and descendants (including nested `Glass`) resolve
+   * against it, so text and recipes inside stay readable.
+   */
   tone?: MaterialTone | "auto";
   renderer?: RendererPreference;
   source?: RendererSource;
   interactive?: boolean;
+  /**
+   * Optical parameters merged over the material preset.
+   *
+   * Only `frost` changes what `Glass` paints, on every renderer path: it sets
+   * the material's blur and fill density. The refraction fields (`thickness`,
+   * `ior`, `dispersion`, `edgeStrength`, `bevel`) are only reported, as
+   * `data-ogui-thickness` and `data-ogui-ior`; choosing another `renderer`
+   * does not make `Glass` refract with them. To refract, pass one material
+   * object to `useSdfFilter({ material })` (and its filter id to `filterId`)
+   * or to `WebGLLens.material`. Development builds warn once when a
+   * refraction field is set here.
+   */
   optics?: Partial<GlassMaterial>;
   geometry?: LensGeometry;
   filterId?: string;
@@ -73,6 +112,10 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
   const runtime = useGlassRuntime();
   const theme = useGlassTheme();
   const resolvedTone = tone === "auto" ? theme.appearance : tone;
+  // A surface whose tone differs from the surrounding appearance carries that
+  // tone's own ink, so the material text and every descendant reading
+  // --ogui-color-* stays readable. A matching tone renders exactly as before.
+  const toneScope = resolveToneScope(theme, resolvedTone);
   const pointerField = useGlassPointerField(interactive && runtime.motion === "on");
   // An explicitly-undefined optics field must fall back to the preset value
   // instead of clobbering it, so conditional overrides like
@@ -81,6 +124,13 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     Object.entries(optics ?? {}).filter(([, value]) => value !== undefined),
   ) as Partial<GlassMaterial>;
   const resolvedMaterial = { ...getMaterialPreset(material), ...opticsOverrides };
+  const setsRefractionOptics = Object.keys(opticsOverrides).some((name) => name !== "frost");
+  useEffect(() => {
+    if (setsRefractionOptics && !opticsWarningShown && isDevelopmentBuild()) {
+      opticsWarningShown = true;
+      console.warn(GLASS_OPTICS_WARNING);
+    }
+  }, [setsRefractionOptics]);
   const rendererPreference = renderer ?? (filterId ? "sdf-svg" : runtime.renderer);
   const decision = selectRenderer({
     source,
@@ -100,7 +150,6 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     // tokens verbatim.
     ...(optics?.frost === undefined ? {} : { frost: optics.frost }),
   });
-  const materialStyle = createCssMaterialStyle(tokens);
   // In liquid the stylesheet draws one ring exactly on the outer edge. A
   // painted border would sit beside it as a second, offset contour, so the
   // border is collapsed. Forced colors keeps it: there the system draws edges.
@@ -108,8 +157,12 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
   const edge =
     theme.design === "liquid" && !runtime.capabilities.forcedColors ? { borderWidth: 0 } : {};
   const mergedStyle = {
+    ...(toneScope ? { ...toneScope.colorTokens, colorScheme: resolvedTone } : {}),
+    // Only the --ogui-material-* tokens are inline. The stylesheet's
+    // zero-specificity `:where([data-ogui-glass])` rule paints them as
+    // background, border-color, box-shadow, color and backdrop-filter, so a
+    // class or utility can restyle a surface without fighting inline styles.
     ...tokens,
-    ...materialStyle,
     ...edge,
     "--ogui-pointer-x": "0",
     "--ogui-pointer-y": "0",
@@ -123,6 +176,8 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
   return createElement(
     as,
     {
+      // Before `rest`, so an explicit attribute from the caller still wins.
+      ...(toneScope ? { "data-ogui-appearance": resolvedTone } : {}),
       ...rest,
       ref,
       className,
@@ -161,6 +216,10 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
       "data-ogui-thickness": resolvedMaterial.thickness.toFixed(3),
       "data-ogui-ior": resolvedMaterial.ior.toFixed(3),
     },
-    children,
+    toneScope ? (
+      <GlassThemeContext.Provider value={toneScope.runtime}>{children}</GlassThemeContext.Provider>
+    ) : (
+      children
+    ),
   );
 });
