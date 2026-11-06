@@ -2,6 +2,7 @@
 
 // Its own file: the warning is shown once per module instance, and Vitest
 // gives every test file a fresh one.
+import type { GlassMaterial } from "@open-glass-ui/core";
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { GLASS_OPTICS_WARNING, Glass } from "./glass";
@@ -16,7 +17,9 @@ describe("Glass optics development warning", () => {
   it("stays quiet for frost, which the material does render", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     render(<Glass optics={{ frost: 0.5 }} />);
-    render(<Glass optics={{ frost: 0.5, thickness: undefined }} />);
+    // exactOptionalPropertyTypes rejects the literal; plain JavaScript passes it.
+    const conditional = { frost: 0.5, thickness: undefined } as unknown as Partial<GlassMaterial>;
+    render(<Glass optics={conditional} />);
     expect(warn).not.toHaveBeenCalled();
   });
 
