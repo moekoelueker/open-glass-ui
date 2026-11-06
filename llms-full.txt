@@ -1,263 +1,838 @@
-# OpenGlass UI: full agent reference
+# OpenGlass UI: full consumer reference
 
-OpenGlass UI is a pre-release React and web UI system for premium glass-like
-interfaces. It combines neutral adaptive themes, forty accessible native-DOM
-recipes, CSS-first materials, explicit SVG/SDF refraction, and opt-in WebGL2 for
-controlled media.
+OpenGlass UI (`open-glass-ui` on npm, MIT, zero runtime dependencies) is a React
+UI system built from glass materials: forty accessible native-DOM recipes,
+neutral adaptive themes, CSS-first glass, explicit SVG/SDF refraction and an
+opt-in WebGL2 surface for media you own.
 
-The public brand is `OpenGlass UI`. The published npm package is
-`open-glass-ui`; the repository is https://github.com/moekoelueker/open-glass-ui;
-the internal workspace namespace is `@open-glass-ui/*`; and the runtime
-CSS/class/data/ID prefix is `ogui`.
+This file ships inside the npm package, so it describes the version you have
+installed. Read it from `node_modules/open-glass-ui/llms-full.txt`. Check the
+installed version in `node_modules/open-glass-ui/package.json` before relying on
+anything newer than it. Repository: https://github.com/moekoelueker/open-glass-ui.
+Live demo: https://moelueker.com/liquid-glass.
 
-## Publication status
+OpenGlass UI is independent and is not affiliated with, endorsed by, or
+sponsored by Apple Inc. It does not promise pixel parity with a proprietary
+native renderer and must not use Apple assets, fonts or branding.
 
-The package is published on npm as `open-glass-ui` (MIT, zero runtime
-dependencies). Source: https://github.com/moekoelueker/open-glass-ui. Live demo
-and docs: https://moelueker.com/liquid-glass. The installation commands and
-public imports below are the released API; still verify the exact installed
-version before relying on version-specific behavior.
+## Contents
 
-The project is MIT licensed. It is independent and is not affiliated with,
-endorsed by, or sponsored by Apple Inc. It does not promise pixel parity with a
-proprietary native renderer and must not use Apple assets, fonts, or branding.
+1. Install, stylesheet and provider
+2. Imports
+3. Callback conventions (read this before writing a screen)
+4. Component reference (all forty recipes)
+5. A complete screen
+6. Toasts
+7. Providers, themes and design
+8. Tokens and scoping
+9. Tailwind CSS v4 and cascade layers
+10. Typography
+11. Glass, already-glass recipes and tone over imagery
+12. Renderers: CSS, SDF/SVG and WebGL2
+13. Accessibility modes, SSR and Next.js
+14. Common mistakes
 
-## Canonical imports
+## 1. Install, stylesheet and provider
 
-Consumer code imports the facade, not internal workspace packages:
+```sh
+npm install open-glass-ui react react-dom
+```
+
+React 18 or newer and React DOM are peer dependencies. Import the stylesheet once
+near the application root and wrap the app in `GlassSystemProvider`:
 
 ```tsx
 import "open-glass-ui/styles.css";
-import { Button, Glass, GlassSystemProvider } from "open-glass-ui";
-```
+import { GlassSystemProvider } from "open-glass-ui";
 
-GPU code uses the explicit subpath:
-
-```tsx
-import { WebGLGlassSurface } from "open-glass-ui/webgl";
-```
-
-Server components, build tools, tests, and non-React adapters use the pure
-subpath:
-
-```ts
-import {
-  contrastRatio,
-  createGlassTheme,
-  signedDistance,
-} from "open-glass-ui/core";
-```
-
-`open-glass-ui/styles.css` should be imported once near the application root.
-Do not generate consumer imports from `@open-glass-ui/core`,
-`@open-glass-ui/renderers`, `@open-glass-ui/react`, or
-`@open-glass-ui/recipes`; those are implementation boundaries.
-
-## Minimal integration
-
-```tsx
-import "open-glass-ui/styles.css";
-import { Button, Glass, GlassSystemProvider } from "open-glass-ui";
-
-export function App() {
+export function Root({ children }: { children: React.ReactNode }) {
   return (
-    <GlassSystemProvider
-      renderer="auto"
-      quality="auto"
-      motion="system"
-      theme={{
-        appearance: "system",
-        defaultAppearance: "dark",
-        theme: { preset: "neutral", contrast: "high", radius: "balanced" },
-      }}
-    >
-      <Glass material="regular" interactive>
-        <Button variant="primary">Continue</Button>
-      </Glass>
+    <GlassSystemProvider theme={{ appearance: "system", defaultAppearance: "dark" }}>
+      {children}
     </GlassSystemProvider>
   );
 }
 ```
 
-`GlassSystemProvider` combines the runtime, theme, and global toast boundaries.
-Its top-level props own renderer, quality, motion, capability, and accessibility
-policy; its `theme` object configures `GlassThemeProvider`. The lower-level
-`GlassProvider`, `GlassThemeProvider`, and `ToastProvider` remain available
-separately.
+`GlassSystemProvider` combines the runtime policy, the theme boundary and the
+global toast queue. Every recipe, `Glass` and `useToast` must render below it.
+Without the stylesheet the components render as unstyled native elements and
+`Glass` has no material, so never omit the import.
 
-## Themes
+## 2. Imports
 
-Appearance values are `light`, `dark`, and `system`. With `system`, the server
-uses `defaultAppearance` (default `dark`) and updates from
-`prefers-color-scheme` after hydration.
+```tsx
+import "open-glass-ui/styles.css";
+import { Button, Glass, GlassSystemProvider, useToast } from "open-glass-ui";
+import { WebGLGlassSurface } from "open-glass-ui/webgl"; // owned media only
+import { contrastRatio, createGlassTheme } from "open-glass-ui/core"; // server-safe, no React
+```
 
-Theme input:
+- `open-glass-ui`: providers, `Glass`, hooks, all forty recipes, theme and
+  material utilities, renderer utilities and public types. It is a client entry
+  (`"use client"`).
+- `open-glass-ui/styles.css`: the recipe and design stylesheet.
+- `open-glass-ui/core`: pure geometry, material, theme and quality helpers. It
+  never imports React and can run in server components and build tools.
+- `open-glass-ui/webgl`: the opt-in WebGL2 renderer and surface.
+- Never import `@open-glass-ui/*`. Those workspace packages are private,
+  inlined into this package and do not exist on npm.
 
-- `preset`: `neutral`, `cobalt`, `teal`, `violet`, `coral`, or `amber`;
-- `accent`, `secondary`, `tertiary`: 3- or 6-digit hex;
-- `contrast`: `standard` or `high` (default `high`);
-- `radius`: `sharp`, `balanced`, or `soft` (default `soft` in the liquid
-  design, `balanced` in classic).
+## 3. Callback conventions (read this before writing a screen)
 
-Design (0.4+): `design` on `GlassSystemProvider` or `GlassThemeProvider` is
-`liquid` (default) or `classic`. `liquid` renders clear, saturated glass with a
-directional specular rim, capsule controls, and a sliding selection thumb.
-`classic` renders the 0.3 look exactly. Scopes nest and the nearest wins, so a
-section can be migrated at a time:
+There is no single "value / onValueChange" convention. Some recipes take a
+custom change callback with a typed value. Others are thin wrappers over a
+native input and use the native `onChange` event. Using the wrong one is a type
+error.
+
+| Recipe | Value props | Change callback |
+| --- | --- | --- |
+| SegmentedControl, Tabs, RadioGroup | `value`, `defaultValue` (string union `T`) | `onValueChange(value: T)` |
+| SearchField | `value`, `defaultValue` (string) | `onValueChange(value: string)` |
+| NumberField | `value`, `defaultValue` (number) | `onValueChange(value: number)`, plus native `onChange(event)` |
+| Slider | native `value`, `defaultValue` (number, string or string array) | native `onChange(event)` and `onInput(event)`. No `onValueChange`. Read `Number(event.currentTarget.value)` |
+| TextField, Textarea | native `value`, `defaultValue` | native `onChange(event)`. No `onValueChange` |
+| Select | native `value`, `defaultValue` (string) | native `onChange(event)`. No `onValueChange` |
+| Checkbox | native `checked`, `defaultChecked` | native `onChange(event)`. No `onCheckedChange` |
+| Switch | `checked`, `defaultChecked` | `onCheckedChange(checked: boolean)` and native `onChange(event)` |
+| ToggleButton | `pressed`, `defaultPressed` | `onPressedChange(pressed: boolean)` |
+| Menu, Popover, Dialog, Drawer, Toast | `open`, `defaultOpen` | `onOpenChange(open: boolean)` |
+| Pagination | `page`, `count` | `onPageChange(page: number)` |
+| Stepper | `current` | `onStepChange(index: number)` |
+
+Rules that follow from the table:
+
+- A controlled input (`value` or `checked`) needs its change callback, or React
+  warns and the field is read-only.
+- Components that wrap a native element forward its other native props, so
+  `name`, `required`, `disabled`, `min`, `max`, `step`, `placeholder`,
+  `autoComplete`, `onBlur` and `aria-*` all work. A generated `id`, `name`
+  (defaults to the id) and label association are added for you.
+- `Button` defaults to `type="button"`, so it never submits a form by accident.
+
+## 4. Component reference (all forty recipes)
+
+Each entry lists the props interface, the props you must pass (`Required`) and
+the callbacks it declares (`Callbacks`). `Native` lists native events that are
+forwarded rather than declared. Everything else is optional. Components that
+extend an HTML element type also accept that element's native props and
+`className`. `T` is the string union of the item values and is inferred from
+the `items` you pass, so `onValueChange` receives a narrowed type.
+
+### Button
+Interface: `ButtonProps`
+Required: none
+Native: `onClick`, `onPointerMove`, `disabled`, `type`, `form`
+Props: `variant` is `"primary" | "secondary" | "quiet" | "danger"` (default
+`secondary`), `size` is `"small" | "medium" | "large"`, `leadingIcon` and
+`trailingIcon` are nodes shown beside the label. Children are the label.
+
+### IconButton
+Interface: `IconButtonProps`
+Required: `aria-label`, `children`
+Native: `onClick`
+Props: a `Button` that renders only the icon passed as children. Defaults to
+`variant="quiet"`. The accessible name is mandatory.
+
+### SegmentedControl
+Interface: `SegmentedControlProps<T extends string>`
+Required: `aria-label`, `items`
+Callbacks: `onValueChange`
+Props: `items: readonly { value: T; label: string; icon?: ReactNode; disabled?: boolean }[]`,
+`value?: T`, `defaultValue?: T` (defaults to the first item). Renders a
+`fieldset` of toggle buttons with `aria-pressed`. Throws if there are no items
+and no `defaultValue`.
+
+### Switch
+Interface: `SwitchProps`
+Required: `label`
+Callbacks: `onCheckedChange`
+Native: `onChange`, `checked`, `defaultChecked`, `disabled`, `name`
+Props: `label: ReactNode`, `description?: ReactNode`, `labelProps?`. Renders an
+input with `role="switch"`.
+
+### Slider
+Interface: `SliderProps`
+Required: `label`
+Native: `onChange`, `onInput`, `value`, `defaultValue`, `min`, `max`, `step`
+Props: `label: ReactNode`, `valueText?: string` (the visible and spoken value),
+`unit?: string` (appended to the numeric value). `min` defaults to 0 and `max`
+to 100. Renders a native range input and an `output`.
+
+### Toolbar
+Interface: `ToolbarProps`
+Required: `label`
+Props: `label: string` (the toolbar's accessible name), `orientation?:
+"horizontal" | "vertical"`, `material?: "clear" | "regular" | "frosted"`,
+`tone?: "light" | "dark" | "auto"`. Renders `role="toolbar"` on a `Glass`, so it
+already paints a glass material.
+
+### Dock
+Interface: `DockProps`
+Required: `label`
+Props: `label: string` (names the `nav` landmark), `material?`, `tone?`. Renders
+a `Glass` as a `nav`, so it already paints a glass material.
+
+### Tabs
+Interface: `TabsProps<T extends string>`
+Required: `label`, `items`
+Callbacks: `onValueChange`
+Props: `label: string` (names the tablist),
+`items: readonly { value: T; label: ReactNode; content: ReactNode; disabled?: boolean }[]`,
+`value?: T`, `defaultValue?: T` (defaults to the first enabled item). Each
+item's `content` is the panel; only the active panel is rendered. Arrow, Home
+and End keys move between tabs. Throws if no item is enabled.
+
+### Menu
+Interface: `MenuProps`
+Required: `label`, `trigger`
+Callbacks: `onOpenChange`
+Props: `label: string` (becomes the trigger's accessible name and names the
+menu), `trigger: ReactElement` (a single button element such as
+`<Button>Actions</Button>`; the recipe adds the id, `aria-expanded` and click
+handling), children are `MenuItem` elements. Optional: `material` (default
+`frosted`), `tone`, `placement?: "start" | "center" | "end"`, `open`,
+`defaultOpen`. The surface renders in a portal as a `Glass`.
+
+### MenuItem
+Interface: `MenuItemProps`
+Required: none
+Native: `onClick`, `disabled`
+Props: `destructive?: boolean`. Use only inside a `Menu`. The menu closes after
+`onClick` unless the handler calls `event.preventDefault()`.
+
+### Popover
+Interface: `PopoverProps`
+Required: `label`, `trigger`
+Callbacks: `onOpenChange`
+Props: same shape as `Menu`, but the content is a free-form dialog. `label`
+names the trigger and the popover. Children are any content.
+
+### Tooltip
+Interface: `TooltipProps`
+Required: `label`, `children`
+Props: `label: ReactNode`, `children: ReactElement` (exactly one focusable
+element; the tooltip adds `aria-describedby` to it), `placement?: "top" |
+"bottom"`. A tooltip supplements a visible label; never put essential text only
+in a tooltip.
+
+### MediaControls
+Interface: `MediaControlsProps`
+Required: `playing`, `currentTime`, `duration`, `onPlayingChange`, `onSeek`
+Callbacks: `onPlayingChange`, `onSeek`, `onMutedChange`
+Props: `playing: boolean`, `currentTime: number`, `duration: number` (seconds),
+`onPlayingChange(playing: boolean)`, `onSeek(time: number)`, `muted?: boolean`,
+`onMutedChange?(muted: boolean)`. The mute button renders only when
+`onMutedChange` is passed. The component is a controlled view; it does not
+touch a media element, so you wire it to your `<video>` yourself.
+
+### Badge
+Interface: `BadgeProps`
+Required: none
+Props: `tone?: "neutral" | "accent" | "positive" | "warning" | "danger"`.
+Children are the text.
+
+### Avatar
+Interface: `AvatarProps`
+Required: `name`
+Props: `name: string` (the accessible name; initials are derived from it),
+`src?: string`, `size?: "small" | "medium" | "large"`.
+
+### AvatarGroup
+Interface: inline
+Required: none
+Props: a `div` that lays out `Avatar` children as an overlapping stack.
+
+### Card
+Interface: `CardProps`
+Required: none
+Native: `onClick`
+Callbacks: `onPress`
+Props: `eyebrow?: ReactNode`, `title?: ReactNode`, `footer?: ReactNode`,
+`interactive?: boolean` (hover styling only, no focus), `onPress?: () => void`
+(makes the card a keyboard-operable `role="button"`). Children are the body. A
+card already paints its own surface; do not wrap it in `Glass`.
+
+### Stat
+Interface: `StatProps`
+Required: `label`, `value`
+Props: `label: ReactNode`, `value: ReactNode`, `change?: ReactNode`, `tone?`
+(same union as `Badge`).
+
+### Progress
+Interface: `ProgressProps`
+Required: `label`, `value`
+Props: `label: ReactNode`, `value: number`, `max?: number` (default 100). Renders
+a native `progress` with a percentage readout.
+
+### Meter
+Interface: `MeterProps`
+Required: `label`, `value`
+Props: `label: ReactNode`, `value: number`, `min?`, `max?`, `low?`, `high?`,
+`optimum?` (defaults 0, 100, 30, 75, 90). Renders a native `meter`.
+
+### Spinner
+Interface: inline
+Required: none
+Props: `label?: string` (default `"Loading"`, announced through `role="status"`).
+
+### Skeleton
+Interface: inline
+Required: none
+Props: `width?: string` (a CSS length, default `"100%"`). Decorative and hidden
+from assistive technology.
+
+### Alert
+Interface: `AlertProps`
+Required: `title`
+Callbacks: `onDismiss`
+Props: `title: ReactNode`, `tone?` (same union as `Badge`), `onDismiss?: () => void`
+(shows a dismiss button). Children are the description. `tone="danger"` uses
+`role="alert"`; other tones use `role="status"`.
+
+### Banner
+Interface: `BannerProps`
+Required: `title`
+Callbacks: `onDismiss`
+Props: `title: ReactNode`, `action?: ReactNode`, `dismissible?: boolean`,
+`onDismiss?: () => void`. Children are the message. A dismissed banner removes
+itself.
+
+### Breadcrumbs
+Interface: inline
+Required: `items`
+Props: `items: readonly { label: string; href?: string }[]`. The last item is
+the current page and is not a link.
+
+### Pagination
+Interface: `PaginationProps`
+Required: `page`, `count`, `onPageChange`
+Callbacks: `onPageChange`
+Props: `page: number` (1-based), `count: number` (total pages),
+`onPageChange(page: number)`. Pass an `aria-label` when a page has more than
+one pagination.
+
+### Accordion
+Interface: inline
+Required: `items`
+Props: `items: readonly { id: string; title: ReactNode; content: ReactNode }[]`,
+`multiple?: boolean`, `defaultOpenIds?: readonly string[]` (the first item is
+open when omitted; pass `[]` to start collapsed), `headingLevel?: 2 | 3 | 4 | 5 | 6`
+(default 3). It manages its own open state.
+
+### Dialog
+Interface: `OverlayProps`
+Required: `title`, `children`
+Callbacks: `onOpenChange`
+Props: `title: string`, `children: ReactNode` (the dialog body),
+`description?: string`, `triggerLabel?: string` (renders a built-in trigger
+button; omit it and drive the dialog with `open`/`onOpenChange`),
+`open?: boolean`, `defaultOpen?: boolean`, `closeOnBackdrop?: boolean`
+(default true). Renders in a portal, traps focus, closes on Escape, locks page
+scroll, makes the rest of the page inert and returns focus to the opener.
+`Dialog` and `Drawer` already paint a glass overlay surface.
+
+### Drawer
+Interface: `OverlayProps`
+Required: `title`, `children`
+Callbacks: `onOpenChange`
+Props: identical to `Dialog`, rendered as a side sheet.
+
+### Toast
+Interface: `ToastProps`
+Required: `title`
+Callbacks: `onAction`, `onOpenChange`
+Props: `title: ReactNode`, `actionLabel?: string`, `onAction?: () => void`,
+`open?`, `defaultOpen?` (default true), `duration?: number` (milliseconds, 0
+means persistent), `restoreLabel?: string`. This is the single-toast component.
+For an app-wide queue use `useToast` (section 6) instead.
+
+### Checkbox
+Interface: `CheckboxProps`
+Required: `label`
+Native: `onChange`, `checked`, `defaultChecked`, `disabled`, `name`
+Props: `label: ReactNode`, `description?: ReactNode`.
+
+### RadioGroup
+Interface: `RadioGroupProps<T extends string>`
+Required: `label`, `items`
+Callbacks: `onValueChange`
+Props: `label: string` (the group's accessible name),
+`items: readonly { value: T; label: ReactNode; description?: ReactNode; disabled?: boolean }[]`,
+`value?: T`, `defaultValue?: T`, `name?: string`, `disabled?: boolean`,
+`className?: string`. It does not accept other native props.
+
+### Select
+Interface: `SelectProps`
+Required: `label`, `options`
+Native: `onChange`, `value`, `defaultValue`, `disabled`, `name`, `required`
+Props: `label: ReactNode`,
+`options: readonly { value: string; label: string; disabled?: boolean }[]`.
+Renders a native `select`. Read the choice from `event.currentTarget.value`.
+
+### TextField
+Interface: `TextFieldProps`
+Required: `label`
+Native: `onChange`, `value`, `defaultValue`, `type`, `name`, `required`, `placeholder`
+Props: `label: ReactNode`, `hint?: ReactNode`, `error?: ReactNode`. An `error`
+sets `aria-invalid` and is announced; a `hint` is wired with `aria-describedby`.
+
+### Textarea
+Interface: `TextareaProps`
+Required: `label`
+Native: `onChange`, `value`, `defaultValue`, `rows`
+Props: same as `TextField`, on a native `textarea`.
+
+### SearchField
+Interface: `SearchFieldProps`
+Required: `label`
+Callbacks: `onValueChange`
+Props: `label: string` (visually hidden, used as the accessible name),
+`value?: string`, `defaultValue?: string`, `onValueChange(value: string)`. A
+clear button appears when there is text. The native `onChange` is not accepted.
+
+### NumberField
+Interface: `NumberFieldProps`
+Required: `label`
+Callbacks: `onValueChange`
+Native: `onChange`, `min`, `max`, `step`, `disabled`
+Props: `label: ReactNode`, `value?: number`, `defaultValue?: number` (default
+0), `onValueChange(value: number)`, `decrementLabel?: string`,
+`incrementLabel?: string`. Renders a native number input with stepper buttons.
+
+### Stepper
+Interface: inline
+Required: `items`, `current`
+Callbacks: `onStepChange`
+Props: `items: readonly { id?: string; label: ReactNode; description?: ReactNode }[]`,
+`current: number` (zero-based index of the active step),
+`onStepChange?(index: number)`. Without `onStepChange` the steps are
+non-interactive.
+
+### ToggleButton
+Interface: `ToggleButtonProps`
+Required: none
+Callbacks: `onPressedChange`
+Native: `onClick`
+Props: `pressed?: boolean`, `defaultPressed?: boolean`,
+`onPressedChange?(pressed: boolean)`. Uses `aria-pressed`. Children are the label.
+
+### FileDropzone
+Interface: `FileDropzoneProps`
+Required: `label`
+Callbacks: `onFiles`, `onRejected`, `onInputChange`
+Props: `label: string`, `name?: string`, `accept?: string` (an `accept` list
+such as `"image/*,.pdf"`), `multiple?: boolean`, `maxSizeBytes?: number`,
+`onFiles?(files: File[])`, `onRejected?(files: File[])` (files that fail
+`accept` or `maxSizeBytes`), `onInputChange?(event)`. Wraps a real file input.
+
+Exports: `useToast`, `ToastProvider`
+
+Types you can import by name include `ButtonProps`, `TabsProps`, `TabItem`,
+`SegmentItem`, `RadioItem`, `SelectOption`, `AccordionItem`, `BreadcrumbItem`,
+`StepItem`, `OverlayProps`, `ToastOptions`, `ToastController`, `SemanticTone`,
+`ButtonVariant` and `ControlSize`.
+
+## 5. A complete screen
+
+This example uses the exact prop shapes above and type-checks against the
+package. `Menu` needs `trigger`, `Tabs` needs `items` with `content`, `Select`
+needs `options`, and `Dialog` takes its body as children.
+
+```tsx
+import "open-glass-ui/styles.css";
+import {
+  Button,
+  Card,
+  Dialog,
+  GlassSystemProvider,
+  Menu,
+  MenuItem,
+  Select,
+  Slider,
+  Switch,
+  Tabs,
+  TextField,
+  useToast,
+} from "open-glass-ui";
+import { useState } from "react";
+
+function Settings() {
+  const { toast } = useToast();
+  const [volume, setVolume] = useState(40);
+  const [theme, setTheme] = useState("system");
+  const [name, setName] = useState("");
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Card eyebrow="Account" title="Preferences">
+      <Tabs
+        label="Settings sections"
+        items={[
+          {
+            value: "general",
+            label: "General",
+            content: (
+              <>
+                <TextField
+                  label="Display name"
+                  value={name}
+                  onChange={(event) => setName(event.currentTarget.value)}
+                />
+                <Select
+                  label="Theme"
+                  value={theme}
+                  onChange={(event) => setTheme(event.currentTarget.value)}
+                  options={[
+                    { value: "system", label: "System" },
+                    { value: "light", label: "Light" },
+                    { value: "dark", label: "Dark" },
+                  ]}
+                />
+                <Slider
+                  label="Volume"
+                  unit="%"
+                  value={volume}
+                  onChange={(event) => setVolume(Number(event.currentTarget.value))}
+                />
+                <Switch
+                  label="Email updates"
+                  defaultChecked
+                  onCheckedChange={(checked) => console.log(checked)}
+                />
+              </>
+            ),
+          },
+          { value: "danger", label: "Danger zone", content: <p>Be careful here.</p> },
+        ]}
+      />
+
+      <Menu label="More actions" trigger={<Button variant="quiet">More</Button>}>
+        <MenuItem onClick={() => toast({ title: "Saved", description: "Preferences updated." })}>
+          Save
+        </MenuItem>
+        <MenuItem destructive onClick={() => setOpen(true)}>
+          Delete account
+        </MenuItem>
+      </Menu>
+
+      <Dialog
+        title="Delete account?"
+        description="This cannot be undone."
+        open={open}
+        onOpenChange={setOpen}
+      >
+        <Button variant="danger" onClick={() => setOpen(false)}>
+          Delete
+        </Button>
+      </Dialog>
+    </Card>
+  );
+}
+
+export function App() {
+  return (
+    <GlassSystemProvider>
+      <Settings />
+    </GlassSystemProvider>
+  );
+}
+```
+
+## 6. Toasts
+
+`GlassSystemProvider` includes the toast queue and renders its viewport in a
+portal. Call `useToast` in any component below it:
+
+```tsx
+import { Button, useToast } from "open-glass-ui";
+
+export function SaveButton() {
+  const { toast } = useToast();
+  return (
+    <Button
+      onClick={() =>
+        toast({
+          title: "Theme saved",
+          description: "Neutral contrast settings are now active.",
+          actionLabel: "Undo",
+          onAction: () => console.log("undo"),
+          duration: 6000, // ms; 0 keeps it until dismissed
+        })
+      }
+    >
+      Save theme
+    </Button>
+  );
+}
+```
+
+- `useToast()` returns `{ toast, dismiss }`. `toast(options)` returns the new
+  toast's id; `dismiss(id)` closes it.
+- `ToastOptions` is `{ title: ReactNode; description?: ReactNode;
+  actionLabel?: string; onAction?: () => void; duration?: number }`.
+- It throws "useToast must be used within a ToastProvider." outside a provider.
+  If you build providers yourself, render `ToastProvider` inside
+  `GlassThemeProvider` and `GlassProvider`, or pass `toasts={false}` to
+  `GlassSystemProvider` and supply your own.
+- `GlassSystemProvider toasts={{ defaultDuration, maxVisible, label }}`
+  configures the queue (defaults 5000 ms, 3 visible, "Notifications").
+- Timed toasts pause while hovered or focused and close on Escape.
+
+## 7. Providers, themes and design
+
+`GlassSystemProvider` props: `children`, `renderer`, `quality`, `motion`,
+`theme`, `toasts`, `design`.
+
+- `renderer`: `"auto"` (default, CSS-first), `"css"`, `"organic-svg"`,
+  `"sdf-svg"` or `"webgl2"`. Unsupported choices fall back to CSS.
+- `quality`: `"auto"`, `"low"`, `"medium"` or `"high"`.
+- `motion`: `"system"` (follow `prefers-reduced-motion`), `"on"` or `"off"`.
+- `design`: `"liquid"` (default since 0.4) or `"classic"` (the 0.3 look).
+- `theme`: the `GlassThemeProvider` props below, as one object.
+- `toasts`: queue options, or `false` to opt out.
+
+`GlassThemeProvider` props (also the shape of `GlassSystemProvider`'s `theme`):
+
+- `appearance`: `"light"`, `"dark"` or `"system"` (default `"system"`).
+- `defaultAppearance`: `"light"` or `"dark"`. What the server and the first
+  client render use before `system` resolves. Default `"dark"`.
+- `theme`: `{ preset, accent, secondary, tertiary, contrast, radius, glass }`.
+  `preset` is `neutral`, `cobalt`, `teal`, `violet`, `coral` or `amber`.
+  `accent`, `secondary` and `tertiary` are 3- or 6-digit hex (invalid values
+  throw). `contrast` is `standard` or `high` (default `high`). `radius` is
+  `sharp`, `balanced` or `soft` (default `soft` in liquid, `balanced` in
+  classic). `glass` is a look (section 11).
+- `design`: `"liquid"` or `"classic"`. Scopes nest and the nearest one wins:
 
 ```tsx
 <GlassSystemProvider design="classic">
-  <LegacyApp />
+  <LegacyArea />
   <GlassThemeProvider design="liquid">
-    <NewFeature />
+    <NewArea />
   </GlassThemeProvider>
 </GlassSystemProvider>
 ```
 
-Glass look (liquid only): `theme.glass` or `<Glass look>` takes a preset
-(`liquid`, `frosted`, `clear`, `smoked`, `lensed`) or multipliers `{ blur,
-opacity, tint, saturation, brightness, rim, highlight, lightAngle, lightSpread,
-lensing, shadow }`; `tint` may be `{ dark, light }` (1 = default; lightAngle in degrees, 0 = top). They map to
-`--ogui-glass-*` CSS variables that can also be set from plain CSS.
+- `className`, `style` and other `div` props go on the `.ogui-theme` wrapper
+  element the provider renders.
 
-Public theme utilities include `createGlassTheme`, `createGlassThemeTokens`,
-`contrastRatio`, `relativeLuminance`, and `readableForeground`.
+Lower-level pieces: `GlassProvider` (runtime policy only), `GlassThemeProvider`
+(theme only) and `ToastProvider` can be used separately.
 
-Public theme tokens:
+Hooks: `useGlassRuntime()` returns `{ capabilities, renderer, quality, motion,
+hydrated }`; `useGlassCapabilities()` returns the capability probe;
+`useGlassTheme()` returns `{ appearance, preference, palette, tokens, hydrated,
+design }`.
+
+Exports: `GlassSystemProvider`, `GlassProvider`, `GlassThemeProvider`, `Glass`,
+`GlassGroup`, `GlassSource`, `SdfFilterDefinition`, `OrganicFilterDefinition`,
+`useGlassCapabilities`, `useGlassRuntime`, `useGlassTheme`, `useGlassGroup`,
+`useGlassPointerField`, `useSdfFilter`, `createGlassTheme`,
+`createGlassThemeTokens`, `contrastRatio`, `relativeLuminance`,
+`readableForeground`, `getMaterialPreset`, `GLASS_LOOK_PRESETS`
+
+## 8. Tokens and scoping
+
+The theme provider writes semantic `--ogui-*` custom properties inline on its
+`.ogui-theme` element:
 
 ```text
---ogui-color-background
---ogui-color-canvas
---ogui-color-surface
---ogui-color-surface-strong
---ogui-color-text
---ogui-color-muted
---ogui-color-border
---ogui-color-border-strong
---ogui-color-control
---ogui-color-control-hover
---ogui-color-control-active
---ogui-color-accent
---ogui-color-accent-ink
---ogui-color-accent-soft
---ogui-color-secondary
---ogui-color-tertiary
---ogui-color-focus
---ogui-color-danger
---ogui-color-danger-ink
---ogui-color-success
---ogui-color-success-ink
---ogui-color-warning
---ogui-color-warning-ink
---ogui-radius-control
---ogui-radius-surface
---ogui-radius-capsule
+--ogui-color-background  --ogui-color-canvas
+--ogui-color-surface     --ogui-color-surface-strong
+--ogui-color-text        --ogui-color-muted
+--ogui-color-border      --ogui-color-border-strong
+--ogui-color-control     --ogui-color-control-hover   --ogui-color-control-active
+--ogui-color-accent      --ogui-color-accent-ink      --ogui-color-accent-soft
+--ogui-color-secondary   --ogui-color-tertiary        --ogui-color-focus
+--ogui-color-danger      --ogui-color-danger-ink
+--ogui-color-success     --ogui-color-success-ink
+--ogui-color-warning     --ogui-color-warning-ink
+--ogui-radius-control    --ogui-radius-surface        --ogui-radius-capsule
 ```
 
-Glass surfaces also resolve `--ogui-material-*` tokens for background, border,
-highlight, shadow, text, muted text, filter, and dimming. Prefer semantic theme
-inputs and validate real foreground/background contrast.
+Where to override them:
 
-## Components
+- Because the provider writes the tokens inline on its own element, a
+  `:root { --ogui-color-accent: ... }` rule has no effect: the inline value on a
+  closer element always wins. Do not override tokens on `:root`, `html` or
+  `body`.
+- Preferred: the typed `theme` input (`theme={{ theme: { preset, accent } }}`).
+- Or pass the token through the provider's `style` (or `className`), for
+  example `theme={{ style: { "--ogui-color-accent": "#185fd1" } as CSSProperties }}`
+  (the cast is needed because TypeScript's style type omits custom properties).
+- Or set it on a descendant class, which affects everything inside it:
 
-The public facade contains forty native-DOM React recipes:
+```css
+.billing-zone {
+  --ogui-color-accent: #22705c;
+  --ogui-color-accent-ink: #ffffff;
+  --ogui-color-focus: #22705c;
+}
+```
 
-1. Button
-2. IconButton
-3. SegmentedControl
-4. Switch
-5. Slider
-6. Toolbar
-7. Dock
-8. Tabs
-9. Menu
-10. MenuItem
-11. Popover
-12. Tooltip
-13. MediaControls
-14. Badge
-15. Avatar
-16. AvatarGroup
-17. Card
-18. Stat
-19. Progress
-20. Meter
-21. Spinner
-22. Skeleton
-23. Alert
-24. Banner
-25. Breadcrumbs
-26. Pagination
-27. Accordion
-28. Dialog
-29. Drawer
-30. Toast
-31. Checkbox
-32. RadioGroup
-33. Select
-34. TextField
-35. Textarea
-36. SearchField
-37. NumberField
-38. Stepper
-39. ToggleButton
-40. FileDropzone
+Always override an accent together with its `-ink` and the focus colour, and
+check contrast.
 
-The facade also exposes `GlassSystemProvider`, `GlassProvider`,
-`GlassThemeProvider`, `Glass`, `GlassGroup`, `GlassSource`, `SdfFilterDefinition`,
-`OrganicFilterDefinition`, `useGlassCapabilities`, `useGlassRuntime`,
-`useGlassTheme`, `useGlassGroup`, `useGlassPointerField`, and `useSdfFilter`,
-plus their public types. Since 0.3.0 it also re-exports the renderer utilities
-and types (`RendererCapabilities`, `RendererPreference`, `RendererSource`,
-`MaterialTone`, `detectRendererCapabilities`, `selectRenderer`,
-`createCssMaterialTokens`, `createCssMaterialStyle`, and the SVG filter
-helpers), so every type referenced by `Glass` props is nameable.
+Which tokens recipes actually read:
 
-Recipe conventions:
+- `--ogui-color-surface`, `-surface-strong`, `-border-strong`, `-secondary`,
+  `-tertiary`, `-accent-soft` and `-background` are for your own CSS. No recipe
+  reads them.
+- In the classic design, controls read `--ogui-color-control`, `-hover`,
+  `-active` for fills, `--ogui-color-border` for hairlines and
+  `--ogui-radius-control` for corners.
+- In the liquid design those three groups do not apply to controls. Liquid reads
+  its own public control tokens instead:
 
-- Use native semantics instead of clickable generic elements.
-- Import the stylesheet.
-- `IconButton` requires `aria-label`.
-- `SegmentedControl` requires `aria-label`.
-- Toolbars, docks, tabs, menus, popovers, fields, and file inputs require
-  meaningful labels.
-- Preserve native form props and generated ARIA relationships.
-- Controlled/uncontrolled APIs use `value`/`defaultValue`/`onValueChange`,
-  `open`/`defaultOpen`/`onOpenChange`, or checked/pressed equivalents.
-- Never communicate selected, invalid, loading, or destructive state with
-  transparency/color alone.
-- `Dialog`/`Drawer`: `triggerLabel` is optional; omit it and drive the overlay
-  through `open`/`onOpenChange` to open it from menus or shortcuts. Focus
-  returns to the opener on close.
-- `Accordion` accepts `defaultOpenIds` (use `[]` to start collapsed) and
-  `headingLevel`; `Banner` reports dismissal via `onDismiss`; `Card`'s
-  `interactive` prop adds hover styling without making the card focusable.
-- Keep the visible text of a `Menu`/`Popover` trigger inside the `label` prop,
-  which becomes the trigger's accessible name.
+```text
+--ogui-lg-fill          control fill (rest)
+--ogui-lg-fill-hover    control fill on hover
+--ogui-lg-fill-active   control fill while pressed
+--ogui-lg-hairline      control and field hairline
+--ogui-radius-capsule   corner radius of capsule controls (buttons, toggles,
+                        segments, tabs); 999px by default, 0.5rem with
+                        radius "sharp"
+--ogui-radius-surface   corner radius of cards, overlays and panels
+```
 
-## Renderer policy
+  In liquid, setting `--ogui-radius-control` does not change buttons; use
+  `--ogui-radius-capsule`. Setting `--ogui-color-control` or
+  `--ogui-color-border` does not recolour liquid controls; use the `--ogui-lg-*`
+  tokens. `--ogui-color-text`, `-muted`, `-accent`, `-accent-ink`, `-focus`,
+  `-danger` and `-success` still apply in both designs.
+- Liquid re-resolves its fills on every liquid scope root and on every `Glass`
+  element, and each of those overrides the value it inherits. Set
+  `--ogui-lg-fill*` on the provider (`className` or `style`) for controls outside
+  any `Glass`, and on the `Glass` (`className`) for controls inside it. One
+  selector covers a region: `.scope, .scope [data-ogui-glass] { --ogui-lg-fill:
+  ...; }`. A rule on a plain wrapper `div` does not reach controls inside a
+  `Glass`.
+- The overall glass look is set with the `--ogui-glass-*` multipliers
+  (section 11), which are public and work from plain CSS on any theme boundary
+  or `Glass`.
+- `--ogui-material-*` (background, border, highlight, shadow, text, muted, filter,
+  dim) are written by each `Glass`. They are an advanced surface; prefer the
+  theme tokens.
 
-`renderer="auto"` is deliberately CSS-first. It does not pick the most capable
-GPU/filter path. The CSS renderer is the universal arbitrary-DOM material and
-fallback. It uses blur/tint/border/shadow but does not claim true refraction.
+Public theme helpers (also from `open-glass-ui/core`): `createGlassTheme`,
+`createGlassThemeTokens`, `contrastRatio`, `relativeLuminance`,
+`readableForeground`. `createGlassTheme` derives a readable accent foreground;
+still verify contrast in the real layout.
 
-Concrete renderer values are `css`, `organic-svg`, `sdf-svg`, and `webgl2`.
-Sources are `dom` or `media`. Explicit enhanced renderers fall back to CSS when
-unsupported. Forced colors or detected reduced transparency always selects the
-accessibility CSS/opaque path.
+## 9. Tailwind CSS v4 and cascade layers
+
+Unlayered CSS beats layered CSS regardless of specificity. The library
+stylesheet is unlayered, so with Tailwind v4 (whose utilities live in
+`@layer utilities`) a utility such as `rounded-lg` or `bg-red-500` on an
+OpenGlass component loses to the recipe styles. Fix it by importing the library
+into its own layer, ordered between Tailwind's `base` and `components`. Put this
+at the top of your main CSS file, before `@import "tailwindcss"`:
+
+```css
+@layer theme, base, ogui, components, utilities;
+@import "open-glass-ui/styles.css" layer(ogui);
+@import "tailwindcss";
+```
+
+Do not also import `open-glass-ui/styles.css` in JavaScript, or the unlayered
+copy comes back. With this order, utilities override recipe styles, recipe
+styles override Tailwind's preflight, and your own unlayered CSS overrides both.
+The same layering works with any other layered CSS setup.
+
+## 10. Typography
+
+Recipes use `font: inherit`; the library ships no font family. A bare page
+renders in the browser default serif. Set a font on the application:
+
+```css
+body {
+  font-family: system-ui, sans-serif;
+}
+```
+
+With Tailwind, set it in your theme or on `body`. The provider wrapper does not
+set a font.
+
+## 11. Glass, already-glass recipes and tone over imagery
+
+`Glass` is the low-level material surface. Props: `as` (`div`, `section`,
+`nav`, `aside`, `span`), `material` (`"clear"`, `"regular"`, `"frosted"`),
+`tone` (`"light"`, `"dark"` or `"auto"`), `renderer`, `source`, `interactive`,
+`optics`, `geometry`, `filterId`, `look`, plus native element props.
+
+Already glass: `Toolbar`, `Dock`, `Menu` and `Popover` render a `Glass`;
+`Dialog`, `Drawer` and `Toast` paint a glass overlay surface; `Card` paints its
+own translucent surface. Do not wrap any of them in `<Glass>`: it double-wraps
+the material. Use `<Glass>` for custom regions (a hero panel, a sidebar, a
+floating bar) and put plain recipes such as `Button`, `Switch` and `Slider`
+inside it. Use glass selectively for controls, navigation and transient
+surfaces, not for content-dense cards and tables.
+
+Material look (liquid design). `theme={{ theme: { glass } }}` or
+`<Glass look={...}>` takes a preset (`liquid`, `frosted`, `clear`, `smoked`,
+`lensed`) or multipliers `{ blur, opacity, tint, saturation, brightness, rim,
+highlight, lightAngle, lightSpread, lensing, shadow }` (1 is the default;
+`lightAngle` is degrees with 0 at the top; `tint` may be `{ dark, light }`).
+They map to `--ogui-glass-*` variables.
+
+Placing glass over photos or video: force the tone of the surface so its
+material and text match the image, whatever the app theme is.
+
+```tsx
+<Glass tone="dark" material="frosted" style={{ padding: 16, borderRadius: 24 }}>
+  <p>Caption over a photo</p>
+  <Button>Share</Button>
+</Glass>
+```
+
+In releases after 0.4.0, a `Glass` whose `tone` differs from the surrounding
+appearance also switches its text, muted text, borders and control tokens to
+that tone, and nested recipes and nested `Glass` follow it. In 0.4.0 only the
+material changes, so text inside inherits the app theme colours. Keep a
+legible background behind it and check contrast over the real image.
+`Menu`, `Popover` and `Toolbar` accept the same `tone` prop.
+
+`optics` and the renderer: `optics` accepts a partial material
+(`thickness`, `ior`, `dispersion`, `edgeStrength`, `bevel`, `frost`). Only
+`frost` changes the glass material on every renderer path. The other fields do
+not change `Glass` pixels, and switching `renderer` does not make them apply.
+Refraction comes from two other inputs, which take their own material object:
+`useSdfFilter({ material })` and a WebGL lens's `material`. Share one object
+between them when you want a consistent look (see section 12).
+
+## 12. Renderers: CSS, SDF/SVG and WebGL2
+
+- `renderer="auto"` is CSS-first. It never silently escalates to SVG or WebGL.
+  The CSS material uses blur, tint, border and shadow; it implies refraction but
+  does not bend page pixels.
+- SDF/SVG refraction is explicit, for stable geometry. WebGL2 is explicit, for an
+  image, canvas or video you own. Both fall back to CSS when unsupported.
+- Forced colors and reduced transparency always select the accessible CSS path.
 
 Use cases:
 
 ```text
-arbitrary DOM -> CSS-first Glass
-stable owned/supplied DOM needing refraction -> explicit SDF/SVG
-owned image/canvas/video needing refraction -> open-glass-ui/webgl
+arbitrary DOM                              -> Glass with the default CSS material
+stable DOM shape needing refraction        -> useSdfFilter + SdfFilterDefinition
+owned image/canvas/video needing refraction-> open-glass-ui/webgl
 ```
 
-### Explicit SDF/SVG
+### SDF/SVG: a decorative filtered layer
+
+`filterId` applies an SVG `filter: url(#id)` to the `Glass` element. A filter
+displaces everything that element paints, including its children, so putting
+text or controls inside a filtered `Glass` distorts them and breaks legibility
+and selection. Filter a decorative layer instead, and keep the real content in
+an unfiltered sibling above it:
 
 ```tsx
-import { Glass, SdfFilterDefinition, useSdfFilter } from "open-glass-ui";
+import {
+  Glass,
+  getMaterialPreset,
+  SdfFilterDefinition,
+  useSdfFilter,
+} from "open-glass-ui";
 
 const geometry = {
   kind: "rounded-rect",
@@ -265,6 +840,7 @@ const geometry = {
   height: 160,
   cornerRadius: 28,
 } as const;
+const material = { ...getMaterialPreset("regular"), thickness: 0.8 };
 
 export function RefractedPanel({ children }: { children: React.ReactNode }) {
   const filter = useSdfFilter({
@@ -272,174 +848,143 @@ export function RefractedPanel({ children }: { children: React.ReactNode }) {
     width: 320,
     height: 160,
     geometry,
+    material,
     quality: "medium",
   });
 
   return (
-    <>
+    <div style={{ position: "relative", width: 320, height: 160 }}>
       <SdfFilterDefinition filter={filter} />
-      <Glass renderer="sdf-svg" filterId={filter.filterId} geometry={geometry}>
-        {children}
-      </Glass>
-    </>
+      <Glass
+        aria-hidden="true"
+        renderer="sdf-svg"
+        filterId={filter.filterId}
+        geometry={geometry}
+        style={{ position: "absolute", inset: 0 }}
+      />
+      <div style={{ position: "relative" }}>{children}</div>
+    </div>
   );
 }
 ```
 
-Supported SDF shapes: circle, capsule, rounded rectangle, and superellipse.
-Semantic materials: clear, regular, and frosted. Optical material fields are
-thickness, index of refraction (`ior`), dispersion, edge strength, bevel, and
-frost.
+Supported shapes: `circle`, `capsule`, `rounded-rect`, `superellipse`.
+Pass `quality` (`"low"`, `"medium"` or `"high"`) explicitly. Regenerate the map
+only when size, geometry, material or quality changes, not when the element
+moves. The map is
+encoded after mount, so server and hydration output stays the CSS baseline.
+`OrganicFilterDefinition` plus `renderer="organic-svg"` is an expressive,
+decorative option; keep it away from text and respect reduced motion.
 
-### Opt-in WebGL2
+### WebGL2: owned media only
 
-`WebGLGlassSurface` accepts a ref to an owned HTML image/canvas/video,
-`ImageBitmap`, `ImageData`, or `OffscreenCanvas`. It supports at most six lenses
-sharing one source. It cannot generally sample arbitrary page pixels.
+`WebGLGlassSurface` samples an HTML image, canvas or video (or an
+`ImageBitmap`, `ImageData` or `OffscreenCanvas`) that you own, through
+`sourceRef`. It cannot sample arbitrary page pixels. At most six lenses share one
+source. Keep text and controls in the DOM, never in the canvas.
+
+The surface only needs the runtime policy (capabilities and quality), and a
+canvas over media has no themed DOM, which is why this example uses
+`GlassProvider`. Use `GlassSystemProvider` instead if the same tree also renders
+recipes.
 
 ```tsx
 "use client";
 
 import { useRef } from "react";
-import { GlassProvider } from "open-glass-ui";
+import { GlassProvider, getMaterialPreset } from "open-glass-ui";
 import { WebGLGlassSurface } from "open-glass-ui/webgl";
 
-const material = {
-  thickness: 0.62,
-  ior: 1.46,
-  dispersion: 0.012,
-  edgeStrength: 0.46,
-  bevel: 0.68,
-  frost: 0.24,
-};
+// One material object drives both refraction paths.
+const material = getMaterialPreset("clear");
 
 export function MediaLens() {
   const sourceRef = useRef<HTMLVideoElement>(null);
 
   return (
     <GlassProvider>
-      <video ref={sourceRef} src="/demo.mp4" muted playsInline />
+      <video ref={sourceRef} src="/demo.mp4" muted playsInline autoPlay loop />
       <WebGLGlassSurface
         sourceRef={sourceRef}
         continuous
         maxDevicePixelRatio={2}
-        lenses={[
-          {
-            x: 240,
-            y: 140,
-            width: 220,
-            height: 92,
-            radius: 0.36,
-            material,
-          },
-        ]}
+        lenses={[{ x: 240, y: 140, width: 220, height: 92, radius: 0.36, material }]}
       />
     </GlassProvider>
   );
 }
 ```
 
-Keep the original media and all text/controls in the DOM. The surface handles
-resize, visibility, video-frame callbacks, context loss/restoration, and
-resource cleanup.
+The same `material` can be passed to `useSdfFilter({ ..., material })` for a
+matching SDF layer elsewhere. Props: `sourceRef`, `lenses`, `continuous`
+(only for animated sources), `renderKey`, `maxDevicePixelRatio` (default 2),
+`onStatusChange`, `onRendererError`, plus canvas attributes. Keep the original
+media and its fallback in the DOM.
 
-## SSR and Next.js
+## 13. Accessibility modes, SSR and Next.js
 
-The server does not guess browser capabilities. It renders semantic content and
-the CSS baseline, then the client provider probes backdrop blur, SVG filter
-elements, backdrop URL syntax, WebGL2, device characteristics, and accessibility
-preferences after hydration.
+The target is WCAG 2.2 AA, not certification. Semantics, focus and interaction
+stay in native DOM. Reduced motion, reduced transparency and forced colors are
+designed states: motion stops, glass becomes opaque with equivalent hierarchy,
+and forced colors hands rendering to the system palette. Give every control a
+visible label or accessible name, and test over real backgrounds.
 
-In Next.js App Router, create a client boundary for the React root and WebGL
-entries. Pure theme, geometry, material, quality, and cache helpers may be
-imported directly in server components from `open-glass-ui/core`:
-
-```ts
-import { createGlassTheme } from "open-glass-ui/core";
-```
-
-Create the client boundary around providers and interactive components:
+The server renders semantic content with the CSS baseline; the client provider
+probes capabilities and preferences after hydration. Do not read `window`,
+`document`, `matchMedia`, canvas or WebGL during render, and do not branch
+initial markup on capability. In the Next.js App Router, put providers and any
+component that uses hooks or recipes behind `"use client"`:
 
 ```tsx
 "use client";
 
 import "open-glass-ui/styles.css";
-import { GlassProvider, GlassThemeProvider } from "open-glass-ui";
+import { GlassSystemProvider } from "open-glass-ui";
 
 export function OpenGlassRoot({ children }: { children: React.ReactNode }) {
-  return (
-    <GlassProvider>
-      <GlassThemeProvider appearance="system">{children}</GlassThemeProvider>
-    </GlassProvider>
-  );
+  return <GlassSystemProvider>{children}</GlassSystemProvider>;
 }
 ```
 
-Do not access `window`, `document`, `matchMedia`, canvas, or WebGL during server
-render. Do not branch initial semantic markup on capability and do not suppress
-hydration warnings.
+Pure helpers from `open-glass-ui/core` may run in server components.
 
-## Accessibility
+## 14. Common mistakes
 
-The target is WCAG 2.2 AA, not certification.
+1. Using `onValueChange` on Slider, TextField, Textarea, Select, Checkbox or
+   Switch. Use native `onChange` (and `onCheckedChange` on Switch). See section 3.
+2. Omitting `trigger` on `Menu` or `Popover`, `items` on `Tabs`, or `options` on
+   `Select`. They are required and have fixed shapes (section 4).
+3. Giving `IconButton`, `SegmentedControl`, `Toolbar`, `Dock`, `Tabs`, `Menu`,
+   `Popover`, `RadioGroup` or `SearchField` no accessible label.
+4. Wrapping `Card`, `Toolbar`, `Dock`, `Dialog`, `Drawer`, `Menu` or `Popover` in
+   `<Glass>`. They already paint a material.
+5. Calling `useToast` outside `GlassSystemProvider`, or forgetting the braces:
+   `const { toast } = useToast();`.
+6. Overriding `--ogui-*` tokens on `:root`. The provider writes them inline;
+   use the `theme` prop, the provider `style`, or a descendant class.
+7. Setting `--ogui-radius-control` or `--ogui-color-control` and expecting liquid
+   buttons to change. Use `--ogui-radius-capsule` and `--ogui-lg-fill*`.
+8. Importing the stylesheet unlayered next to Tailwind v4 and then fighting
+   utilities. Use the layer setup in section 9.
+9. Leaving the page without a font. Recipes inherit it.
+10. Applying `filterId` to a `Glass` that contains text or controls. Filter a
+    decorative sibling layer instead.
+11. Expecting `optics` thickness, ior or dispersion to change `Glass`, or a
+    different `renderer` to enable them. Only `frost` applies; refraction uses
+    `useSdfFilter({ material })` or a WebGL lens material.
+12. Using `renderer="webgl2"` on arbitrary DOM. WebGL needs an owned media source.
+13. Importing `@open-glass-ui/*` or deep paths. Use the three public entries.
+14. Rendering the provider or hook-using components in a Next.js server
+    component. Add `"use client"`.
 
-- Keep semantics, text, focus, and interaction in native DOM.
-- Normal text target: 4.5:1.
-- Large text, essential boundaries, focus, and state indicators: 3:1.
-- Give every control a visible label or accessible name.
-- Preserve keyboard behavior, focus visibility, and focus restoration.
-- Respect reduced motion, reduced transparency, and forced colors.
-- Test light/dark and difficult photographic/noisy/high-chroma backgrounds.
-- Prefer regular/frosted material for overlays and text-heavy transient UI.
-- Validate VoiceOver, NVDA, zoom/reflow, touch targets, and physical devices.
-- Reduced-transparency media-query support is uneven; apps with strict needs
-  should provide an explicit opaque preference too.
+## Checklist before returning generated code
 
-## Performance
+1. Import the stylesheet once and render everything below `GlassSystemProvider`.
+2. Use an existing recipe before building a custom control.
+3. Match each recipe's required props and callback names from section 4.
+4. Default to the CSS renderer and semantic DOM.
+5. Add labels, keep keyboard behavior, and keep Next.js output hydration-stable.
+6. Type-check against the installed package, and test keyboard, focus, reduced
+   motion, forced colors, contrast and mobile overflow.
 
-- Use CSS for ordinary component surfaces.
-- Use glass selectively for controls/navigation, not every card.
-- Keep one or a few high-value WebGL media stages; never render text as canvas.
-- Keep WebGL DPR at 2 unless real-device measurements justify more.
-- Use `continuous` only for animated sources.
-- Use refs, transforms, and CSS variables for pointer-rate updates, not React
-  state every frame.
-- Do not regenerate SDF maps for position-only movement.
-- Use low quality during resize and cache/defer medium/high stable maps.
-- Profile physical mobile and desktop GPUs before making claims.
-
-## Architecture
-
-The published facade is `open-glass-ui`. Internally:
-
-- `@open-glass-ui/core`: zero-runtime-dependency geometry, materials, quality,
-  cache, and theme math; no React or browser globals.
-- `@open-glass-ui/renderers`: capability policy, CSS material, SVG encoding,
-  and WebGL2.
-- `@open-glass-ui/react`: SSR-safe providers/primitives and post-hydration
-  lifecycle.
-- `@open-glass-ui/recipes`: forty native-DOM components and CSS.
-
-React and React DOM are peer dependencies. CSS is the default; SVG and WebGL are
-bounded enhancements.
-
-## Agent checklist
-
-Before returning generated code:
-
-1. use public facade imports and import CSS once;
-2. choose an existing recipe before creating a custom control;
-3. default to CSS and semantic DOM;
-4. use SVG or WebGL only for a source they can actually sample;
-5. add labels and preserve keyboard/fallback behavior;
-6. keep Next.js output hydration-stable;
-7. type-check against the actual packed/installed package;
-8. test keyboard, focus, reduced motion, forced colors, no-WebGL fallback,
-   contrast, and mobile overflow; and
-9. state the pre-release/local-workspace status honestly.
-
-Detailed local documents: `docs/COMPONENTS.md`, `docs/THEMING.md`,
-`docs/RENDERERS.md`, `docs/ACCESSIBILITY.md`, `docs/AI-USAGE.md`,
-`docs/ARCHITECTURE.md`, `docs/BROWSER-SUPPORT.md`, `docs/PERFORMANCE.md`,
-`docs/LIMITATIONS.md`, `docs/MIGRATION.md`, `docs/RELEASE-CHECKLIST.md`,
-`docs/NAMING-RESEARCH.md`, and `CHANGELOG.md`.
+More detail: https://github.com/moekoelueker/open-glass-ui/tree/main/docs
