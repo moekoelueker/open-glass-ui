@@ -2861,8 +2861,10 @@ a {
   --ogui-control: var(--ogui-color-control);
   --ogui-control-hover: var(--ogui-color-control-hover);
   --ogui-control-active: var(--ogui-color-control-active);
-  --ogui-ink: var(--atlas-ink);
-  --ogui-muted: var(--atlas-muted);
+  /* Read the theme tokens here, not the page-level --atlas-* copies, so a
+     recipe inside a forced-tone Glass (the hero card) gets that tone's ink. */
+  --ogui-ink: var(--ogui-color-text);
+  --ogui-muted: var(--ogui-color-muted);
 }
 
 .atlas-nav {
