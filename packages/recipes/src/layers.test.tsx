@@ -511,6 +511,53 @@ describe("layer stack", () => {
 });
 
 describe("Tooltip visibility", () => {
+  it("lets a hovered tooltip inside a toast answer Escape before the dialog", async () => {
+    const user = userEvent.setup();
+
+    function SaveButton() {
+      const { toast } = useToast();
+      return (
+        <button
+          type="button"
+          onClick={() =>
+            toast({
+              title: (
+                <Tooltip label="Saved to the shared library">
+                  <button type="button">Saved</button>
+                </Tooltip>
+              ),
+            })
+          }
+        >
+          Save
+        </button>
+      );
+    }
+
+    render(
+      <ToastProvider defaultDuration={0}>
+        <Dialog title="Editor" defaultOpen>
+          <SaveButton />
+        </Dialog>
+      </ToastProvider>,
+    );
+    const save = await screen.findByRole("button", { name: "Save" });
+    await user.click(save);
+    const wrapper = screen.getByRole("button", { name: "Saved" }).closest(".ogui-tooltip");
+    if (!wrapper) {
+      throw new Error("Missing tooltip wrapper.");
+    }
+    // Hovered with the keyboard focus still in the dialog.
+    fireEvent.mouseEnter(wrapper);
+    act(() => save.focus());
+    fireEvent.keyDown(save, { key: "Escape" });
+    expect(wrapper.getAttribute("data-dismissed")).toBe("true");
+    expect(screen.getByRole("dialog", { name: "Editor" })).toBeTruthy();
+
+    fireEvent.keyDown(save, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "Editor" })).toBeNull();
+  });
+
   it("dismisses a hovered tooltip on Escape while focus is elsewhere", () => {
     render(
       <>

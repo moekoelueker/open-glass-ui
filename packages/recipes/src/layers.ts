@@ -20,7 +20,15 @@ interface Layer {
    * by the dialog; a dialog opened from a popover is owned by the popover.
    */
   readonly owner: Layer | null;
+  /**
+   * Whether the layer opened from inside the toast viewport. A modal never
+   * makes the toast host inert, so these layers stay reachable while it is
+   * open (a tooltip in a toast still answers Escape before the dialog).
+   */
+  readonly inToast: boolean;
 }
+
+const TOAST_HOST_SELECTOR = '[data-ogui-portal="toast"]';
 
 /**
  * Paint order comes from the open order: the first open layer's host sits at
@@ -57,8 +65,9 @@ function isDescendant(layer: Layer, ancestor: Layer) {
 }
 
 /**
- * The layers the user can reach: with a modal open, the topmost modal and
- * the layers it owns (directly or through its menus and popovers); without
+ * The layers the user can reach: with a modal open, the topmost modal, the
+ * layers it owns (directly or through its menus and popovers) and the layers
+ * opened from the toast viewport, which a modal never makes inert; without
  * one, every layer.
  */
 function activeLayers() {
@@ -66,7 +75,17 @@ function activeLayers() {
   if (!modal) {
     return stack;
   }
-  return stack.filter((layer) => layer === modal || isDescendant(layer, modal));
+  return stack.filter((layer) => layer === modal || isDescendant(layer, modal) || fromToast(layer));
+}
+
+/** Whether the layer, or a layer it opened from, sits in the toast viewport. */
+function fromToast(layer: Layer) {
+  for (let current: Layer | null = layer; current; current = current.owner) {
+    if (current.inToast) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function ownerOf(anchor: Element | null) {
@@ -157,7 +176,10 @@ function syncLayers() {
  * effect only: it touches the document.
  */
 export function openLayer(id: string, kind: LayerKind, host: HTMLElement, anchor: Element | null) {
-  const layer: Layer = { id, kind, host, owner: ownerOf(anchor) };
+  const inToast = Boolean(
+    (anchor ?? host).closest(TOAST_HOST_SELECTOR) ?? host.closest(TOAST_HOST_SELECTOR),
+  );
+  const layer: Layer = { id, kind, host, owner: ownerOf(anchor), inToast };
   stack.push(layer);
   syncLayers();
   return () => {
