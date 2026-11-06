@@ -56,8 +56,9 @@ export function Root({ children }: { children: React.ReactNode }) {
 
 `GlassSystemProvider` combines the runtime policy, the theme boundary and the
 global toast queue. Every recipe, `Glass` and `useToast` must render below it.
-Without the stylesheet the components render as unstyled native elements and
-`Glass` has no material, so never omit the import.
+Without the stylesheet the recipes render as unstyled native elements, and
+`Glass` keeps only its inline base material (fill, shadow and backdrop
+filter) without the liquid edge ring, so never omit the import.
 
 ## 2. Imports
 
