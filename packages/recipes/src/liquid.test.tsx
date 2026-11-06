@@ -318,6 +318,43 @@ describe("liquid motion on portaled menus", () => {
   });
 });
 
+describe("liquid primary button", () => {
+  const FORCED_COLORS = "@media (forced-colors: active)";
+  const primaryRules = (source: string, at = "") =>
+    liquidRules.filter((rule) => rule.at === at && rule.selectors.includes(guarded(source)));
+  const declarations = (rule: CssRule) => rule.body.replace(/\s+/g, " ").trim();
+
+  it("takes the highlight stop from the theme, with the previous mix as the fallback", () => {
+    const [primary] = primaryRules(`${SCOPE} .ogui-button--primary`);
+    expect(declarations(primary as CssRule)).toContain(
+      "linear-gradient( 180deg, var(--ogui-color-accent-highlight, color-mix(in srgb, var(--ogui-accent), white 16%)), color-mix(in srgb, var(--ogui-accent), transparent 6%) )",
+    );
+  });
+
+  it("mixes white into the accent only as the highlight token's fallback", () => {
+    const source = read("./liquid.source.css").replace(/\s+/g, " ");
+    const whiteMixes = source.match(/color-mix\(in srgb, var\(--ogui-accent\), white \d+%\)/g);
+    const asFallback = source.match(
+      /var\(--ogui-color-accent-highlight, color-mix\(in srgb, var\(--ogui-accent\), white \d+%\)\)/g,
+    );
+    expect(whiteMixes?.length).toBeGreaterThan(0);
+    expect(asFallback?.length).toBe(whiteMixes?.length);
+  });
+
+  it("lifts on hover instead of brightening the fill", () => {
+    const hover = `${SCOPE} .ogui-button--primary:hover:not(:disabled)`;
+    const [rule] = primaryRules(hover);
+    const body = declarations(rule as CssRule);
+    expect(body).not.toContain("filter");
+    expect(body).toContain(
+      "0 14px 34px -8px color-mix(in srgb, var(--ogui-accent), transparent 30%)",
+    );
+    expect(read("./liquid.source.css")).not.toMatch(/brightness\(1\.0\d\)/);
+    const [forced] = primaryRules(hover, FORCED_COLORS);
+    expect(declarations(forced as CssRule)).toBe("box-shadow: none;");
+  });
+});
+
 describe("liquid recipe hooks", () => {
   it("publishes the selected segment box for the sliding thumb", async () => {
     const user = userEvent.setup();

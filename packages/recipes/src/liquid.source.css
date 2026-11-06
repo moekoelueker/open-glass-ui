@@ -364,7 +364,9 @@
   padding-inline: 0;
 }
 
-/* Tinted glass: the accent is the fill, but it stays lit like glass. */
+/* Tinted glass: the accent is the fill, but it stays lit like glass. The theme
+   supplies the highlight stop so the accent ink stays readable across the
+   whole fill; the mix is the fallback when no theme token is present. */
 :where([data-ogui-design="liquid"]) .ogui-button--primary {
   color: var(--ogui-accent-ink);
   background:
@@ -376,7 +378,7 @@
     no-repeat,
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--ogui-accent), white 16%),
+      var(--ogui-color-accent-highlight, color-mix(in srgb, var(--ogui-accent), white 16%)),
       color-mix(in srgb, var(--ogui-accent), transparent 6%)
     );
   box-shadow:
@@ -386,8 +388,14 @@
     0 10px 28px -8px color-mix(in srgb, var(--ogui-accent), transparent 42%);
 }
 
+/* Hover lifts the glass with a deeper accent shadow, next to the shared glint,
+   instead of brightening the whole fill under the accent ink. */
 :where([data-ogui-design="liquid"]) .ogui-button--primary:hover:not(:disabled) {
-  filter: brightness(1.05) saturate(1.05);
+  box-shadow:
+    inset calc(sin(var(--ogui-glass-light-angle, 340deg)) * -10px)
+    calc(cos(var(--ogui-glass-light-angle, 340deg)) * 10px) 14px -10px rgb(255 255 255 / 0.5),
+    0 2px 4px rgb(0 0 0 / 0.18),
+    0 14px 34px -8px color-mix(in srgb, var(--ogui-accent), transparent 30%);
 }
 
 :where([data-ogui-design="liquid"]) .ogui-button--quiet {
@@ -1345,6 +1353,11 @@
     color: HighlightText;
     background: Highlight;
     forced-color-adjust: none;
+  }
+
+  /* The primary opts out of forced colours, so its hover lift is removed here. */
+  :where([data-ogui-design="liquid"]) .ogui-button--primary:hover:not(:disabled) {
+    box-shadow: none;
   }
 
   /* The thumb carries the selection, so the item text above it must switch
