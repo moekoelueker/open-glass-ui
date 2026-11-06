@@ -19,7 +19,7 @@ function screenshotPath(
 }
 
 test.describe("visual evidence capture", () => {
-  test.use({ colorScheme: "dark", reducedMotion: "reduce" });
+  test.use({ colorScheme: "dark", contextOptions: { reducedMotion: "reduce" } });
   test.setTimeout(120_000);
 
   test("desktop home and experiment specimens", async ({ page }, testInfo) => {
