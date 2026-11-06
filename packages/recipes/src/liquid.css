@@ -172,7 +172,30 @@
 /* highlight is a conic sweep aimed at --ogui-glass-light-angle.             */
 /* ------------------------------------------------------------------------ */
 
-:where([data-ogui-design="liquid"]) :where(.ogui-toolbar, .ogui-dock, .ogui-badge, .ogui-alert, .ogui-accordion, .ogui-toast):not(:where([data-ogui-design="classic"] *):not(:where([data-ogui-design="classic"] [data-ogui-design="liquid"] *):not(:where([data-ogui-design="classic"] [data-ogui-design="liquid"] [data-ogui-design="classic"] *):not(:where([data-ogui-design="classic"] [data-ogui-design="liquid"] [data-ogui-design="classic"] [data-ogui-design="liquid"] *))))),
+/* Every element that draws the ring below must be its own containing block:
+   the ring is absolutely positioned with inset 0, so on a static element it
+   would stretch over the nearest positioned ancestor (a dialog close button
+   would draw an ellipse across the whole dialog). Zero specificity, so a
+   recipe that positions an element itself (indicators, portals) still wins. */
+:where([data-ogui-design="liquid"]) :where(
+    .ogui-button,
+    .ogui-overlay-trigger > button,
+    .ogui-toast__restore,
+    .ogui-toggle-button,
+    .ogui-toolbar,
+    .ogui-dock,
+    .ogui-card,
+    .ogui-toast,
+    .ogui-accordion,
+    .ogui-overlay__surface,
+    .ogui-overlay__header > button,
+    .ogui-tooltip__bubble,
+    .ogui-badge,
+    .ogui-avatar,
+    .ogui-alert,
+    .ogui-banner,
+    .ogui-pagination button[aria-current="page"]
+  ):not(:where([data-ogui-design="classic"] *):not(:where([data-ogui-design="classic"] [data-ogui-design="liquid"] *):not(:where([data-ogui-design="classic"] [data-ogui-design="liquid"] [data-ogui-design="classic"] *):not(:where([data-ogui-design="classic"] [data-ogui-design="liquid"] [data-ogui-design="classic"] [data-ogui-design="liquid"] *))))),
 :where([data-ogui-glass][data-ogui-design="liquid"]) {
   position: relative;
 }
