@@ -25,8 +25,10 @@ import {
   hasReachableLayerWithin,
   isTopLayer,
   isTopModal,
+  lastFocusOutside,
   openLayer,
   TOAST_HOST_Z_INDEX,
+  trackFocus,
   useIsomorphicLayoutEffect,
 } from "./layers";
 
@@ -625,6 +627,7 @@ function Overlay({
     host.setAttribute("data-ogui-portal", "");
     document.body.append(host);
     setPortalHost(host);
+    trackFocus();
     return () => {
       host.remove();
     };
@@ -659,7 +662,16 @@ function Overlay({
       // the opener by definition, and pointer clicks do not even move focus in
       // WebKit, so the active element would be unrelated.
       const active = document.activeElement;
-      openerRef.current = active instanceof HTMLElement && active !== document.body ? active : null;
+      // A child with `autoFocus` has already taken focus by now (React runs it
+      // before this effect), so focus inside the overlay is not the opener:
+      // use the last element focused outside it.
+      const host = portalHost;
+      openerRef.current =
+        active instanceof HTMLElement && active !== document.body && !host?.contains(active)
+          ? active
+          : host
+            ? lastFocusOutside(host)
+            : null;
     }
     if (wasOpen && !open) {
       const focusFrame = requestAnimationFrame(() => {

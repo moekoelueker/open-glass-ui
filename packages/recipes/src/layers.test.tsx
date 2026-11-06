@@ -261,6 +261,62 @@ describe("layer stack", () => {
     },
   );
 
+  it("returns focus to the opener when a field in the dialog autofocuses", async () => {
+    const user = userEvent.setup();
+
+    function Fixture() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Rename
+          </button>
+          <Dialog title="Rename layer" open={open} onOpenChange={setOpen}>
+            <TextField label="New name" autoFocus />
+          </Dialog>
+        </>
+      );
+    }
+
+    render(<Fixture />);
+    const rename = screen.getByRole("button", { name: "Rename" });
+    await user.click(rename);
+    const field = await screen.findByRole("textbox", { name: "New name" });
+    await waitFor(() =>
+      expect(screen.getByRole("dialog").contains(document.activeElement)).toBe(true),
+    );
+    expect(field.isConnected).toBe(true);
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "Rename layer" })).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(rename));
+  });
+
+  it("lets a popover own a dialog whose field autofocuses as it opens", async () => {
+    const user = userEvent.setup();
+
+    function Fixture() {
+      const [open, setOpen] = useState(false);
+      return (
+        <Popover label="Inspector" trigger={<Button>Inspect</Button>}>
+          <button type="button" onClick={() => setOpen(true)}>
+            Rename
+          </button>
+          <Dialog title="Rename layer" open={open} onOpenChange={setOpen}>
+            <TextField label="New name" autoFocus />
+          </Dialog>
+        </Popover>
+      );
+    }
+
+    render(<Fixture />);
+    await user.click(screen.getByRole("button", { name: "Inspector" }));
+    await user.click(await screen.findByRole("button", { name: "Rename" }));
+    await screen.findByRole("dialog", { name: "Rename layer" });
+    const [popoverLayer, dialogLayer] = getOpenLayers();
+    expect(dialogLayer).toMatchObject({ kind: "modal", owner: popoverLayer?.id });
+  });
+
   it("returns focus to the control that mounted an already-open dialog", async () => {
     const user = userEvent.setup();
 

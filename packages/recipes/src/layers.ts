@@ -246,6 +246,55 @@ export function hasReachableLayerWithin(element: Element) {
   });
 }
 
+/**
+ * Recently focused elements, newest last. An overlay reads it to find the
+ * element it opened from when focus already moved inside it before its own
+ * effects ran (a field with `autoFocus` in a dialog that just opened). One
+ * capture listener serves every overlay; it is installed by the first one.
+ */
+const focusHistory: HTMLElement[] = [];
+let focusTracking = false;
+
+export function trackFocus() {
+  if (focusTracking || typeof document === "undefined") {
+    return;
+  }
+  focusTracking = true;
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && active !== document.body) {
+    focusHistory.push(active);
+  }
+  document.addEventListener(
+    "focusin",
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+      const index = focusHistory.indexOf(target);
+      if (index >= 0) {
+        focusHistory.splice(index, 1);
+      }
+      focusHistory.push(target);
+      if (focusHistory.length > 8) {
+        focusHistory.shift();
+      }
+    },
+    true,
+  );
+}
+
+/** The most recently focused element that is still connected and outside `container`. */
+export function lastFocusOutside(container: Element) {
+  for (let index = focusHistory.length - 1; index >= 0; index -= 1) {
+    const element = focusHistory[index];
+    if (element?.isConnected && element !== document.body && !container.contains(element)) {
+      return element;
+    }
+  }
+  return null;
+}
+
 /** Whether the layer is the most recently opened modal: only it traps Tab. */
 export function isTopModal(id: string) {
   return stack[topModalIndex()]?.id === id;
