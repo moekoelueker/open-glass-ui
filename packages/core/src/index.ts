@@ -38,6 +38,7 @@ export type {
   GlassThemePalette,
   GlassThemePreset,
   GlassThemeTokens,
+  ReadableForegroundOptions,
 } from "./theme";
 export {
   contrastRatio,
