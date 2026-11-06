@@ -67,9 +67,17 @@ use `ToastProvider` directly only when composing providers yourself.
 
 - Components forward appropriate native HTML props unless their public type
   explicitly replaces a conflicting prop.
-- Stateful recipes generally support `value`/`defaultValue` and
-  `onValueChange`, `open`/`defaultOpen` and `onOpenChange`, or equivalent
-  checked/pressed forms.
+- Callback names are not uniform; match each recipe (see the table below).
+  `SegmentedControl`, `Tabs`, `RadioGroup`, `SearchField`, and `NumberField` use
+  `value`/`defaultValue` with `onValueChange`. `Slider`, `TextField`, `Textarea`,
+  `Select`, and `Checkbox` wrap a native input and use the native `onChange`
+  event; they have no `onValueChange`. `Switch` takes `onCheckedChange` and
+  native `onChange`. `ToggleButton` uses `pressed`/`onPressedChange`, and
+  `Menu`, `Popover`, `Dialog`, `Drawer`, and `Toast` use
+  `open`/`defaultOpen`/`onOpenChange`.
+- Required shapes: `Tabs` takes `items` of `{ value, label, content }`, `Menu`
+  and `Popover` take a `trigger` element, and `Select` takes `options` of
+  `{ value, label }`.
 - Icon-only actions require an accessible name. `IconButton` makes
   `aria-label` mandatory.
 - Fields accept a visible `label`; hints, descriptions, and errors are wired to
@@ -78,6 +86,24 @@ use `ToastProvider` directly only when composing providers yourself.
   accidentally.
 - `className` extends the recipe; application code should not replace native
   roles or remove required labels.
+
+## Callback reference
+
+| Recipe                                                  | Value props                              | Change callback                                       |
+| ------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------- |
+| `SegmentedControl`, `Tabs`, `RadioGroup`                | `value`, `defaultValue` (`T extends string`) | `onValueChange(value: T)`                          |
+| `SearchField`                                           | `value`, `defaultValue` (string)         | `onValueChange(value: string)`                        |
+| `NumberField`                                           | `value`, `defaultValue` (number)         | `onValueChange(value: number)` and native `onChange`  |
+| `Slider`                                                | native `value`, `defaultValue`           | native `onChange` and `onInput`                       |
+| `TextField`, `Textarea`, `Select`                       | native `value`, `defaultValue`           | native `onChange`                                     |
+| `Checkbox`                                              | native `checked`, `defaultChecked`       | native `onChange`                                     |
+| `Switch`                                                | `checked`, `defaultChecked`              | `onCheckedChange(checked: boolean)` and native `onChange` |
+| `ToggleButton`                                          | `pressed`, `defaultPressed`              | `onPressedChange(pressed: boolean)`                   |
+| `Menu`, `Popover`, `Dialog`, `Drawer`, `Toast`          | `open`, `defaultOpen`                    | `onOpenChange(open: boolean)`                         |
+| `Pagination`, `Stepper`                                 | `page`/`count`, `current`                | `onPageChange(page)`, `onStepChange(index)`           |
+
+The complete per-component reference, with every required prop, is in
+[llms-full.txt](../llms-full.txt) (it also ships in the npm package).
 
 ## Selection example
 
@@ -218,6 +244,28 @@ Avoid nesting multiple visually heavy glass layers. Do not turn content-dense
 articles, tables, or every card into translucent material. The visual effect
 must never be required to find, understand, or operate a control.
 
+`Toolbar`, `Dock`, `Menu`, and `Popover` render a `Glass` themselves, `Dialog`,
+`Drawer`, and `Toast` paint a glass overlay surface, and `Card` paints its own
+translucent surface. Do not wrap them in `<Glass>`: that double-wraps the
+material. Reach for `Glass` for custom regions (a hero panel, a floating bar)
+and put plain recipes inside it.
+
+To place glass over photos or video, force the tone of the surface:
+`<Glass tone="dark">`. Since 0.5.0 its text and nested recipes follow that
+tone; in 0.4 only the material changes. Details are in
+[Theming](./THEMING.md#glass-over-imagery-forcing-a-tone).
+
+`Glass` also accepts `optics`, but only its `frost` field changes the material on
+every renderer path; refraction inputs live in `useSdfFilter({ material })` and
+`WebGLLens.material` (see [Renderers](./RENDERERS.md)).
+
+## Typography
+
+Recipes inherit the surrounding font (`font: inherit`) and the library ships no
+font family. Set a font on your application, for example
+`body { font-family: system-ui, sans-serif; }`; a bare page renders in the
+browser default serif.
+
 ## Styling contract
 
 - Public runtime prefix: `ogui`.
@@ -228,5 +276,7 @@ must never be required to find, understand, or operate a control.
   `aria-pressed`, `aria-selected`, `aria-expanded`, and `data-*` attributes.
 
 Prefer semantic tokens and public props over selectors that depend on internal
-element nesting. See [Theming](./THEMING.md) and
-[Accessibility](./ACCESSIBILITY.md).
+element nesting. The theme provider writes its tokens inline, so override them
+through its `theme` prop, its `style`, or a descendant class, not on `:root`. With
+Tailwind CSS v4, import the stylesheet into a cascade layer; both are covered in
+[Theming](./THEMING.md). See also [Accessibility](./ACCESSIBILITY.md).

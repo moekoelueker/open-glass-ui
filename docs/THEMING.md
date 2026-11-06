@@ -91,8 +91,10 @@ an error early instead of silently producing an unreadable palette.
 ```
 
 `createGlassTheme()` derives a readable accent foreground and exposes the
-computed contrast ratio. Always validate the result in its real UI context;
-automatic derivation is not a substitute for contrast testing.
+computed contrast ratio. The derived ink reaches 4.5:1 against the accent fills
+the liquid design renders (see `--ogui-color-accent-highlight-mix` below); the
+classic design only receives the corrected ink. Always validate the result in its real UI context; automatic derivation is not a
+substitute for contrast testing.
 
 ## Design: liquid and classic
 
@@ -152,7 +154,9 @@ text, so give it only to the dark appearance: `tint: { dark: "#0b0d10" }`.
 ```
 
 The same variables can be set from plain CSS on any theme boundary or `Glass`
-element, e.g. `.hero-panel { --ogui-glass-light-angle: 20deg; }`. The rim is
+element, e.g. `.hero-panel { --ogui-glass-light-angle: 20deg; }`, as long as
+that element does not write them itself: a provider with `theme.glass` and a
+`Glass` with `look` set them inline, which a class cannot beat. The rim is
 drawn as one ring exactly on the outer edge, which is why liquid `Glass`
 collapses its painted border; pass `style={{ borderWidth }}` to keep one, or
 `data-ogui-rim="off"` to remove the ring from a single element.
@@ -161,9 +165,75 @@ CSS draws the lit edge, the bloom, and the frost; it cannot bend the pixels
 behind the glass. For real refraction on suitable surfaces, combine a look with
 `renderer="sdf-svg"` (see RENDERERS.md).
 
-Liquid adds its own private `--ogui-lg-*` variables on the design scope. They
-are implementation details and may change; theme through the `--ogui-color-*`
-and `--ogui-radius-*` tokens instead.
+### Liquid control tokens
+
+In the liquid design, raised controls and recessed fields do not read
+`--ogui-color-control*` or `--ogui-color-border`. They read these public tokens
+instead.
+
+Raised controls are secondary buttons (the default `Button` variant),
+`ToggleButton`, the built-in `Dialog` and `Drawer` trigger and the toast restore
+button. Quiet buttons, `IconButton` included, take the fill only on hover;
+primary buttons are filled with the accent and danger buttons with a tint of the
+danger colour.
+
+| Token                   | Effect                                                             |
+| ----------------------- | ------------------------------------------------------------------ |
+| `--ogui-lg-fill`        | Fill at rest.                                                      |
+| `--ogui-lg-fill-hover`  | Fill on hover.                                                     |
+| `--ogui-lg-fill-active` | Fill while pressed.                                                |
+| `--ogui-radius-capsule` | Corner radius. Segmented controls, tabs and pagination use it too. |
+
+Recessed fields are `TextField`, `Textarea`, `Select`, `NumberField` and
+`SearchField`. They are wells cut into the glass, not raised fills.
+
+| Token                   | Effect                                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `--ogui-lg-well`        | Fill at rest. Checkboxes, radios, the switch, slider, progress and meter tracks, the segmented and tab tracks and `FileDropzone` use it too. |
+| `--ogui-lg-well-shadow` | Inset shading of the well.                                                                                     |
+| `--ogui-lg-fill`        | Fill while the field has focus.                                                                                |
+| `--ogui-radius-control` | Corner radius of `TextField`, `Textarea`, `Select` and `NumberField`, as in classic. `SearchField` is a capsule and uses `--ogui-radius-capsule`. |
+
+Both kinds share these:
+
+| Token                   | Effect                                                                                                                             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `--ogui-lg-hairline`    | The thin lines liquid keeps: dividers between accordion sections, above a card footer and between a `NumberField` input and its steppers, `Stepper` connectors and the switch track's edge. Controls and fields draw no border at rest. |
+| `--ogui-radius-surface` | Corner radius of cards, overlays and panels (shared with classic).                                                                 |
+
+So in liquid, setting `--ogui-radius-control` does not change a button (use
+`--ogui-radius-capsule`), though it still rounds text fields, selects and number
+fields. Setting `--ogui-color-control` or `--ogui-color-border` recolours
+neither controls nor fields: use `--ogui-lg-fill*` for raised controls,
+`--ogui-lg-well` and `--ogui-lg-well-shadow` for fields, and
+`--ogui-lg-hairline` for the dividers. The `--ogui-glass-*` multipliers above
+scale the raised fills, so reach for them first and for the fill tokens when you
+need an exact value. The classic design still reads `--ogui-color-control*`,
+`--ogui-color-border` and `--ogui-radius-control` everywhere.
+`--ogui-color-text`, `--ogui-color-muted`, `--ogui-color-accent`,
+`--ogui-color-accent-ink`, `--ogui-color-focus`, `--ogui-color-danger` and
+`--ogui-color-success` apply in both designs.
+
+These `--ogui-lg-*` tokens are declared by the stylesheet, not written inline:
+liquid re-resolves them at zero specificity on every liquid scope root and on
+every `Glass` element, so each of those elements overrides the value it
+inherits, and any class rule on the same element overrides it in turn. Set the
+tokens on the element closest to the controls: on the provider (through its
+`className` or `style`) for controls that are not inside a `Glass`, and on the
+`Glass` itself (through its `className`) for controls inside it. A rule on a
+plain wrapper element does not reach controls inside a `Glass`. A selector that
+names both covers a whole region:
+
+```css
+.hero,
+.hero [data-ogui-glass] {
+  --ogui-lg-fill: rgb(255 255 255 / 0.18);
+  --ogui-lg-fill-hover: rgb(255 255 255 / 0.26);
+}
+```
+
+The remaining `--ogui-lg-*` variables (ring, bloom, lift, blur, thumb, easing
+and others) are implementation details and may change.
 
 ## Semantic tokens
 
@@ -176,10 +246,29 @@ The provider writes these public tokens on its `.ogui-theme` wrapper:
 | Content          | `--ogui-color-text`, `--ogui-color-muted`                                                                              |
 | Borders          | `--ogui-color-border`, `--ogui-color-border-strong`                                                                    |
 | Controls         | `--ogui-color-control`, `--ogui-color-control-hover`, `--ogui-color-control-active`                                    |
-| Accent           | `--ogui-color-accent`, `--ogui-color-accent-ink`, `--ogui-color-accent-soft`                                           |
+| Accent           | `--ogui-color-accent`, `--ogui-color-accent-ink`, `--ogui-color-accent-soft`, `--ogui-color-accent-highlight-mix`      |
 | Supporting color | `--ogui-color-secondary`, `--ogui-color-tertiary`                                                                      |
 | Status and focus | `--ogui-color-focus`, `--ogui-color-danger`, `--ogui-color-danger-ink`, `--ogui-color-success`, `--ogui-color-success-ink`, `--ogui-color-warning`, `--ogui-color-warning-ink` |
-| Shape            | `--ogui-radius-control`, `--ogui-radius-surface`                                                                       |
+| Shape            | `--ogui-radius-control`, `--ogui-radius-surface`, `--ogui-radius-capsule`                                              |
+
+`--ogui-color-accent-highlight-mix` is a percentage (default `16%`): how much
+white the liquid primary button mixes into its top highlight. The theme lowers
+it automatically when needed so the accent ink keeps 4.5:1 contrast. The accent
+ink is chosen so text on liquid accent fills keeps at least 4.5:1 against the
+rendered fill (the base accent, the highlight and the translucency). That
+guarantee applies to the default liquid design; classic keeps its 0.3 rendering
+and only receives the corrected ink.
+
+Not every token is read by a recipe. `--ogui-color-background`,
+`--ogui-color-surface`, `--ogui-color-surface-strong`,
+`--ogui-color-border-strong`, `--ogui-color-secondary`, `--ogui-color-tertiary`
+and `--ogui-color-accent-soft` are for your own CSS and no recipe consumes them.
+`--ogui-radius-capsule` sets the corners of capsule controls (999px, or 0.5rem
+with `radius: "sharp"`). In the liquid design, controls and fields take their
+fills and hairlines from the tokens in "Liquid control tokens" rather than from
+`--ogui-color-control*` and `--ogui-color-border`, and buttons take their
+corners from `--ogui-radius-capsule`; text fields, selects and number fields
+keep `--ogui-radius-control`.
 
 Use semantic tokens in application CSS:
 
@@ -196,19 +285,99 @@ Use semantic tokens in application CSS:
 }
 ```
 
-For a localized override, set tokens on a descendant scope:
+## Where to override tokens
+
+The provider writes the semantic tokens above inline on its `.ogui-theme`
+element, together with the `--ogui-glass-*` look tokens when `theme.glass` is
+set. An inline declaration on that element beats any stylesheet rule on an
+ancestor, so overrides on `:root`, `html` or `body` have no effect:
 
 ```css
-.billing-zone {
+/* Does nothing: the provider's inline value is closer to the components. */
+:root {
   --ogui-color-accent: #22705c;
-  --ogui-color-accent-ink: #ffffff;
-  --ogui-color-focus: #22705c;
 }
 ```
 
-Prefer the typed `theme` input for whole-theme changes. If an application must
-override generated tokens directly on the provider, pass them through its
-`style` prop after verifying the foreground, focus, and status contrast.
+Use one of these instead.
+
+1. The typed theme input, for whole-theme changes:
+
+   ```tsx
+   <GlassSystemProvider theme={{ theme: { preset: "teal", accent: "#22705c" } }}>
+   ```
+
+2. The provider's `style`, whose values replace the generated tokens of the
+   same name. Pass only the tokens you want to change; the rest keep their
+   generated values:
+
+   ```tsx
+   import type { CSSProperties } from "react";
+
+   <GlassSystemProvider
+     theme={{ style: { "--ogui-color-accent": "#22705c" } as CSSProperties }}
+   >
+   ```
+
+   The `as CSSProperties` cast is needed because TypeScript's style type does
+   not list custom properties.
+
+   A class on the provider does not work for these tokens: it is a stylesheet
+   rule on the same element, and the inline token wins. The liquid
+   `--ogui-lg-*` tokens are a different case. The provider does not write them;
+   the stylesheet declares them at zero specificity, so a provider class does
+   override them (see "Liquid control tokens").
+
+3. A descendant class, which scopes the override to one region:
+
+   ```css
+   .billing-zone {
+     --ogui-color-accent: #22705c;
+     --ogui-color-accent-ink: #ffffff;
+     --ogui-color-focus: #22705c;
+     /* Light ink on a mid-tone accent: lower the highlight, for example 0%
+        to 8%, so the label keeps its contrast. */
+     --ogui-color-accent-highlight-mix: 8%;
+   }
+   ```
+
+When you override `--ogui-color-accent` locally, also set
+`--ogui-color-accent-ink` and the focus colour. For a light ink on a mid-tone
+accent, also lower `--ogui-color-accent-highlight-mix`. Then verify the contrast
+of the result.
+
+## Typography
+
+Recipes use `font: inherit` and the library ships no font family. A page without
+a font renders in the browser default serif. Set a font on the application, for
+example `body { font-family: system-ui, sans-serif; }`. The theme wrapper does
+not set one.
+
+## Using with Tailwind CSS v4 (cascade layers)
+
+The library stylesheet is unlayered, and unlayered CSS beats layered CSS
+regardless of specificity. Tailwind v4 puts its utilities in `@layer utilities`,
+so a utility such as `rounded-lg` or `bg-red-500` on an OpenGlass component loses
+to the recipe styles. Import the stylesheet into its own layer, ordered between
+Tailwind's `base` and `components`, at the top of your main CSS file:
+
+```css
+@layer theme, base, ogui, components, utilities;
+@import "open-glass-ui/styles.css" layer(ogui);
+@import "tailwindcss";
+```
+
+Do not also import `open-glass-ui/styles.css` from JavaScript, or the unlayered
+copy comes back. With this order, utilities override recipe styles, recipe styles
+override Tailwind's preflight, and your own unlayered CSS overrides both. The
+same layering works with any other layered CSS setup. Custom properties are not
+layer-sensitive, so the token scoping rules above apply unchanged.
+
+`Glass` (and the recipes drawn through it: Toolbar, Dock, Menu and Popover
+surfaces) writes its material inline, so utilities still restyle its shape and
+spacing but not its background, border color, shadow or backdrop filter. Change
+the material with the `look` prop, the `--ogui-glass-*` tokens, or the `style`
+prop.
 
 ## Material tokens
 
@@ -229,6 +398,16 @@ These adapt to the selected `clear`, `regular`, or `frosted` material and become
 opaque/system-colored when reduced transparency or forced colors requires it.
 Treat them as an advanced styling surface; theme tokens should satisfy most
 application customization.
+
+## Glass over imagery: forcing a tone
+
+A surface can force its own tone, whatever the app appearance is:
+`<Glass tone="dark">` or `<Glass tone="light">`. This is the way to place glass
+over a photo or video. Since 0.5.0 the surface's text, muted text, borders and
+control tokens switch to that tone as well, and nested recipes and nested
+`Glass` follow it. In 0.4 only the material changes and the text inside
+inherits the app theme. Keep a legible backdrop and check contrast over the real
+image. `Toolbar`, `Dock`, `Menu` and `Popover` accept the same `tone` prop.
 
 ## Utilities
 

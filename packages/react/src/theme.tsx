@@ -30,6 +30,12 @@ export interface GlassThemeRuntime {
   hydrated: boolean;
   /** Visual language every descendant recipe and `<Glass>` renders in. */
   design: GlassDesign;
+  /**
+   * The theme input the palette was built from, with the design's defaults
+   * applied (liquid's `soft` radius). A tone scope rebuilds the opposite
+   * appearance from it, so accent, contrast and radius carry over.
+   */
+  input: GlassThemeInput;
 }
 
 export interface GlassThemeProviderProps
@@ -45,17 +51,101 @@ export interface GlassThemeProviderProps
   design?: GlassDesign;
 }
 
-const DEFAULT_PALETTE = createGlassTheme("dark");
+const DEFAULT_INPUT: GlassThemeInput = {};
+const DEFAULT_PALETTE = /* @__PURE__ */ createGlassTheme("dark", DEFAULT_INPUT);
 const DEFAULT_THEME: GlassThemeRuntime = {
   appearance: "dark",
   preference: "system",
   palette: DEFAULT_PALETTE,
-  tokens: createGlassThemeTokens(DEFAULT_PALETTE),
+  tokens: /* @__PURE__ */ createGlassThemeTokens(DEFAULT_PALETTE),
   hydrated: false,
   design: "liquid",
+  input: DEFAULT_INPUT,
 };
 
-const GlassThemeContext = /* @__PURE__ */ createContext<GlassThemeRuntime>(DEFAULT_THEME);
+/** @internal Shared with `<Glass>`, which opens a nested scope for its tone. */
+export const GlassThemeContext = /* @__PURE__ */ createContext<GlassThemeRuntime>(DEFAULT_THEME);
+
+/** The color tokens of a palette: the part of a theme that depends on appearance. */
+export type GlassToneTokens = Pick<
+  GlassThemeTokens,
+  Extract<keyof GlassThemeTokens, `--ogui-color-${string}`>
+>;
+
+interface ToneScope {
+  runtime: GlassThemeRuntime;
+  colorTokens: GlassToneTokens;
+}
+
+// Keyed by the parent runtime object, which providers memoize, so a tone scope
+// is built once per theme change and keeps a stable identity across renders.
+const toneScopes = /* @__PURE__ */ new WeakMap<
+  GlassThemeRuntime,
+  Partial<Record<GlassAppearance, ToneScope>>
+>();
+
+function colorTokensOf(tokens: GlassThemeTokens): GlassToneTokens {
+  return Object.fromEntries(
+    Object.entries(tokens).filter(([name]) => name.startsWith("--ogui-color-")),
+  ) as unknown as GlassToneTokens;
+}
+
+/**
+ * @internal The scope `<Glass>` opens when its tone differs from the
+ * surrounding appearance, or `null` when the tone already matches.
+ */
+export function resolveToneScope(
+  theme: GlassThemeRuntime,
+  tone: GlassAppearance | "auto" | undefined,
+): ToneScope | null {
+  const appearance = tone === undefined || tone === "auto" ? theme.appearance : tone;
+  if (appearance === theme.appearance) {
+    return null;
+  }
+
+  let scopes = toneScopes.get(theme);
+  if (!scopes) {
+    scopes = {};
+    toneScopes.set(theme, scopes);
+  }
+  const cached = scopes[appearance];
+  if (cached) {
+    return cached;
+  }
+
+  const palette = createGlassTheme(appearance, theme.input);
+  const colorTokens = colorTokensOf(createGlassThemeTokens(palette));
+  const scope: ToneScope = {
+    colorTokens,
+    runtime: {
+      ...theme,
+      appearance,
+      preference: appearance,
+      palette,
+      // Radius and `--ogui-glass-*` look tokens do not depend on appearance,
+      // so they carry over from the parent, overrides included.
+      tokens: { ...theme.tokens, ...colorTokens },
+    },
+  };
+  scopes[appearance] = scope;
+  return scope;
+}
+
+/**
+ * The theme a surface of the given tone resolves to: the same runtime when the
+ * tone matches the theme's appearance (or is `auto`), otherwise the opposite
+ * appearance built from the same theme input, with the same design and look.
+ *
+ * `<Glass tone>` uses this for its own subtree. Portaled surfaces can use it to
+ * write the matching `tokens`, `data-ogui-appearance` and `color-scheme` on
+ * their own element.
+ */
+export function resolveToneTheme(
+  theme: GlassThemeRuntime,
+  tone: GlassAppearance | "auto" | undefined,
+): GlassThemeRuntime {
+  return resolveToneScope(theme, tone)?.runtime ?? theme;
+}
 
 function readSystemAppearance(): GlassAppearance {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
@@ -97,14 +187,14 @@ export function GlassThemeProvider({
   // Liquid reads best with larger, concentric corners, so it defaults to the
   // `soft` scale. An explicit `theme.radius` always wins, and `classic` keeps
   // the 0.3 default of `balanced`.
-  const palette = useMemo(
+  const input = useMemo<GlassThemeInput>(
     () =>
-      createGlassTheme(
-        appearance,
-        design === "liquid" && theme?.radius === undefined ? { ...theme, radius: "soft" } : theme,
-      ),
-    [appearance, theme, design],
+      design === "liquid" && theme?.radius === undefined
+        ? { ...theme, radius: "soft" }
+        : (theme ?? DEFAULT_INPUT),
+    [theme, design],
   );
+  const palette = useMemo(() => createGlassTheme(appearance, input), [appearance, input]);
   const glass = theme?.glass;
   const lookKey = typeof glass === "string" ? glass : JSON.stringify(glass ?? null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: lookKey is a stable serialization of glass, so inline look objects do not re-create tokens every render.
@@ -126,8 +216,8 @@ export function GlassThemeProvider({
     ) as unknown as GlassThemeTokens & GlassLookTokens;
   }, [style, tokens]);
   const runtime = useMemo<GlassThemeRuntime>(
-    () => ({ appearance, preference, palette, tokens: effectiveTokens, hydrated, design }),
-    [appearance, preference, palette, effectiveTokens, hydrated, design],
+    () => ({ appearance, preference, palette, tokens: effectiveTokens, hydrated, design, input }),
+    [appearance, preference, palette, effectiveTokens, hydrated, design, input],
   );
   const mergedStyle = {
     ...effectiveTokens,

@@ -1,58 +1,71 @@
 # OpenGlass UI
 
-> The open-source Liquid Glass UI system for React and the web.
+> The open-source Liquid Glass UI system for React and the web. Forty accessible native-DOM components, neutral adaptive themes, CSS-first glass, opt-in SVG/SDF refraction and opt-in WebGL2 for media you own.
 
-Status: published on npm as `open-glass-ui` (MIT, zero runtime dependencies).
-Source: https://github.com/moekoelueker/open-glass-ui. Live demo and docs:
-https://moelueker.com/liquid-glass. Verify the exact installed version before
-relying on version-specific behavior.
+Published on npm as `open-glass-ui` (MIT, zero runtime dependencies, React 18 or newer as a peer). Source: https://github.com/moekoelueker/open-glass-ui. Live demo: https://moelueker.com/liquid-glass.
 
-Canonical consumer surface:
+Read the full reference first. It lists every component with its required props and exact callback names, and it ships in the package at `node_modules/open-glass-ui/llms-full.txt`:
 
-- `open-glass-ui`: combined `GlassSystemProvider` with a global toast queue,
-  lower-level React primitives, forty native-DOM recipes, theme/material
-  utilities, hooks, and public types.
-- `open-glass-ui/styles.css`: recipe styles; import once.
-- `open-glass-ui/core`: server-safe, framework-independent theme, geometry,
-  material, quality, and cache utilities.
-- `open-glass-ui/webgl`: explicit opt-in controlled-media WebGL2 surface.
-- Do not use internal `@open-glass-ui/*` workspace packages in consumer code.
+- [Full consumer reference (llms-full.txt)](https://github.com/moekoelueker/open-glass-ui/blob/main/llms-full.txt)
 
-Core rules:
+## Minimal setup
 
-- `renderer="auto"` is CSS-first.
-- SVG/SDF refraction is explicit.
-- WebGL is opt-in and only for an owned image, canvas, or video.
-- Keep text, controls, semantics, and fallbacks in the DOM.
-- Use neutral adaptive themes and `--ogui-*` tokens.
-- `design="liquid"` is the default look since 0.4; `design="classic"` on
-  `GlassSystemProvider` restores the 0.3 look. Scopes nest; nearest wins.
-- Art-direct liquid glass with `theme.glass` or `<Glass look>`: presets
-  `frosted`, `clear`, `smoked`, `lensed`, or multipliers such as
-  `{ blur, opacity, rim, lightAngle, lensing }`.
-- Preserve reduced-motion, reduced-transparency, forced-colors, and SSR behavior.
-- In Next.js App Router, put providers and hook-using UI behind `"use client"`.
+```tsx
+import "open-glass-ui/styles.css";
+import { Button, GlassSystemProvider, Tabs } from "open-glass-ui";
 
-Documentation:
+export function App() {
+  return (
+    <GlassSystemProvider>
+      <Tabs
+        label="Sections"
+        items={[
+          { value: "one", label: "One", content: <Button variant="primary">Continue</Button> },
+          { value: "two", label: "Two", content: <p>Second panel</p> },
+        ]}
+      />
+    </GlassSystemProvider>
+  );
+}
+```
 
-- [Maintainer and workspace handover](./docs/handoff/HANDOVER.md)
-- [Agent context-pack index](./context/README.md)
-- [Copy-paste handover prompt](./docs/handoff/HANDOVER-PROMPT.md)
-- [Self-contained agent reference](./llms-full.txt)
-- [Components](./docs/COMPONENTS.md)
-- [Theming](./docs/THEMING.md)
-- [Renderers](./docs/RENDERERS.md)
-- [Accessibility](./docs/ACCESSIBILITY.md)
-- [AI-agent usage](./docs/AI-USAGE.md)
-- [Architecture](./docs/ARCHITECTURE.md)
-- [Browser support](./docs/BROWSER-SUPPORT.md)
-- [Performance](./docs/PERFORMANCE.md)
-- [Known limitations](./docs/LIMITATIONS.md)
-- [Migration](./docs/MIGRATION.md)
-- [Changelog](./CHANGELOG.md)
-- [Release checklist](./docs/RELEASE-CHECKLIST.md)
-- [Naming research](./docs/NAMING-RESEARCH.md)
-- [License](./LICENSE)
+## Entry points
 
-License: MIT. OpenGlass UI is independent and is not affiliated with, endorsed
-by, or sponsored by Apple Inc.
+- `open-glass-ui`: `GlassSystemProvider` (runtime, theme and toast queue in one), `Glass`, hooks, forty recipes, theme and material utilities, public types.
+- `open-glass-ui/styles.css`: import once. With Tailwind CSS v4, import it into a cascade layer (see the reference).
+- `open-glass-ui/core`: server-safe geometry, material and theme helpers; no React.
+- `open-glass-ui/webgl`: opt-in WebGL2 surface for an owned image, canvas or video.
+- Never import `@open-glass-ui/*`; those workspace packages are private and not on npm.
+
+## Rules that prevent most errors
+
+- Callback names differ per component. Slider, TextField, Textarea, Select and Checkbox use native `onChange`; Switch uses `onCheckedChange`; SegmentedControl, Tabs, RadioGroup, SearchField and NumberField use `onValueChange`. The table is in the reference.
+- Required shapes: `Tabs` takes `items=[{ value, label, content }]`, `Menu` and `Popover` take `trigger`, `Select` takes `options=[{ value, label }]`.
+- `useToast()` returns `{ toast, dismiss }` and works below `GlassSystemProvider`.
+- Card, Toolbar, Dock, Dialog, Drawer, Menu and Popover already paint glass; do not wrap them in `Glass`.
+- The provider writes `--ogui-*` tokens inline, so override them through its `theme` prop, its `style`, or a descendant class, not on `:root`.
+- Recipes inherit the app font; set one on `body`.
+- `renderer="auto"` is CSS-first. SDF refraction goes on a decorative aria-hidden layer, never on a `Glass` that holds text. WebGL is only for owned media.
+- `design="liquid"` is the default look; `design="classic"` restores the 0.3 look. Scopes nest and the nearest wins.
+- Keep text, controls and semantics in the DOM. Reduced motion, reduced transparency and forced colors are designed states.
+- In Next.js App Router, put providers and hook-using components behind `"use client"`.
+
+## Documentation
+
+- [Components](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/COMPONENTS.md)
+- [Theming and tokens](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/THEMING.md)
+- [Renderers](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/RENDERERS.md)
+- [Accessibility](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/ACCESSIBILITY.md)
+- [AI-agent usage](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/AI-USAGE.md)
+- [Browser support](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/BROWSER-SUPPORT.md)
+- [Performance](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/PERFORMANCE.md)
+- [Known limitations](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/LIMITATIONS.md)
+- [Migration](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/MIGRATION.md)
+- [Changelog](https://github.com/moekoelueker/open-glass-ui/blob/main/CHANGELOG.md)
+- [License](https://github.com/moekoelueker/open-glass-ui/blob/main/LICENSE)
+
+## Maintainers
+
+Working on the repository itself: start with [docs/handoff/CURRENT.md](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/handoff/CURRENT.md), then [HANDOVER.md](https://github.com/moekoelueker/open-glass-ui/blob/main/docs/handoff/HANDOVER.md) and the [context pack](https://github.com/moekoelueker/open-glass-ui/blob/main/context/README.md).
+
+OpenGlass UI is independent and is not affiliated with, endorsed by, or sponsored by Apple Inc.

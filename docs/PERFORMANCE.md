@@ -71,6 +71,13 @@ interleaved A/B of the liquid and classic designs under forced software
 rendering (SwiftShader) measured the same frame times for both, so the
 difference is host load rather than the liquid design.
 
+0.5.0 keeps the 0.4.0 reference reading above. On release day the host was
+again shared with other headless browsers (load average 8 to 10), and one
+local gate run measured an 82.5 ms frame p95 straight after the full browser
+suite. Four interleaved rounds against the 0.4.0 commit then measured a frame
+p95 of 34 to 50 ms for 0.5.0, every round within budget, and 33 to 67 ms for
+0.4.0, one round over. The reading is host load, not a regression.
+
 The two WebGL-window budgets (frame interval and active-window longest task)
 are enforced on the reference host only. The release workflow's shared
 two-core Linux runner rasterizes the WebGL refraction page in software at

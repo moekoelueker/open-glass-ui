@@ -1,7 +1,15 @@
-import { Component, lazy, type ReactNode, Suspense, useEffect, useState } from "react";
+import {
+  Component,
+  lazy,
+  type ReactNode,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
 import type { AtlasVariant } from "./component-atlas";
 import { LandingPage } from "./landing-page";
-import { AppLink } from "./navigation";
+import { AppLink, routeCommitted, routeLeft, scrollAfterRouteCommits } from "./navigation";
 
 const loadAtlas = () => import("./component-atlas");
 const loadPages = () => import("./pages");
@@ -138,8 +146,31 @@ function Route({ path }: { path: string }) {
   return <NotFound />;
 }
 
+/**
+ * Rendered inside the route's Suspense boundary, after the route, so its
+ * effect runs only once the route's content has committed, however long its
+ * lazy chunk took. The boundary is keyed by path, so every route gets one.
+ */
+function RouteReady({ path }: { path: string }) {
+  useEffect(() => {
+    routeCommitted(path);
+    return () => routeLeft(path);
+  }, [path]);
+  return null;
+}
+
 export function App() {
   const [path, setPath] = useState(normalizedPath);
+
+  // A deep link such as /components#atlas-A loads a lazy route, so the browser's
+  // own fragment scroll finds nothing. Look for the target once the route has
+  // rendered. A layout effect, so the request is in place before RouteReady's
+  // effect runs when the route renders in this same commit.
+  useLayoutEffect(() => {
+    if (window.location.hash) {
+      scrollAfterRouteCommits(normalizedPath(), window.location.hash);
+    }
+  }, []);
 
   useEffect(() => {
     const handlePathChange = () => setPath(normalizedPath());
@@ -151,6 +182,7 @@ export function App() {
     <RouteErrorBoundary key={path}>
       <Suspense fallback={<RoutePending />}>
         <Route path={path} />
+        <RouteReady path={path} />
       </Suspense>
     </RouteErrorBoundary>
   );

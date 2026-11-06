@@ -5,6 +5,29 @@ workspace-package imports to the published `open-glass-ui` package. Install it
 from npm rather than referencing any `@open-glass-ui/*` path: those packages are
 private build-time boundaries and do not exist on the registry.
 
+## Upgrading from 0.4 to 0.5
+
+0.5 keeps every 0.4 API. A `^0.4.0` range never resolves to 0.5, so nothing
+changes until you upgrade. What to check when you do:
+
+- **Text on forced-tone glass.** A `Glass`, `Menu` or `Popover` whose `tone`
+  differs from the app appearance now switches its text, muted text, borders
+  and control tokens to that tone, and nested recipes follow it. Remove any
+  colour you set by hand to keep text readable there. If you want the app's
+  ink on purpose, set `color` on the content.
+- **Accent fills.** The liquid primary fill is opaque, and its ink is chosen
+  to reach 4.5:1 across the whole fill. Some light presets switch that ink
+  from `#f9f8f3` to `#ffffff` and use a smaller white highlight. Hover lifts
+  the shadow instead of brightening the fill.
+- **Overlay stacking.** Dialog, drawer, menu and popover portal hosts now get
+  `position: relative` and a z-index from 80 upwards in the order they open.
+  The toast host sits at 1000. If your own fixed elements must cover these
+  overlays, or stay beneath them, set their z-index against those values.
+- **NumberField.** It no longer clamps on every keystroke. `onValueChange`
+  receives in-range values as you type, and an out-of-range value is clamped
+  on blur or Enter. Typed values are not rounded to `step`; the steppers move
+  along the step grid.
+
 ## Upgrading from 0.3 to 0.4 (liquid design)
 
 0.4 changes how components look, not how you use them. A `^0.3.0` range

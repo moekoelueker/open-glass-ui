@@ -189,3 +189,28 @@ test("the WebGL finalist reaches a stable renderer state", async ({ page, browse
     expect(["ready", "unavailable"]).toContain(status);
   }
 });
+
+test("liquid accent fills keep their gradient background in every engine", async ({ page }) => {
+  // A value the engine rejects drops the whole `background` declaration and
+  // leaves an accent control without its fill, so check what actually paints.
+  await page.goto("/components?appearance=light&preset=coral&radius=balanced");
+  const primaries = page.locator('[data-ogui-design="liquid"] .ogui-button--primary');
+  await expect(primaries.first()).toBeVisible();
+  const backgrounds = await primaries.evaluateAll((buttons) =>
+    buttons.map((button) => getComputedStyle(button).backgroundImage),
+  );
+  expect(backgrounds.length).toBeGreaterThan(0);
+  for (const background of backgrounds) {
+    expect(background).toContain("linear-gradient");
+    expect(background).toContain("radial-gradient");
+  }
+
+  const pressed = page.locator(
+    '[data-ogui-design="liquid"] .ogui-toggle-button[aria-pressed="true"]',
+  );
+  if ((await pressed.count()) > 0) {
+    expect(
+      await pressed.first().evaluate((toggle) => getComputedStyle(toggle).backgroundImage),
+    ).toContain("radial-gradient");
+  }
+});

@@ -40,14 +40,46 @@ export function Surface({ children }: { children: React.ReactNode }) {
 uses blur, tint, border, shadow, and contrast tokens; it does not claim to
 refract page pixels.
 
+To place a surface over photos or video, force its tone with
+`<Glass tone="dark">` (or `"light"`) so the material matches the image whatever
+the app appearance is. Since 0.5.0 the surface's text and nested recipes
+follow that tone too; in 0.4 only the material changes. `Toolbar`,
+`Dock`, `Menu`, and `Popover` already render glass themselves, so they take
+`tone` and `material` directly and should not be wrapped in another `Glass`.
+
+## What `Glass.optics` does
+
+`Glass` accepts `optics`, a partial material (`thickness`, `ior`, `dispersion`,
+`edgeStrength`, `bevel`, `frost`). On every renderer path only `frost` changes
+the glass material. The other fields do not change what `Glass` paints, and
+switching `renderer` does not make them apply. Refraction is driven by two other
+inputs, each of which takes its own material object:
+
+- `useSdfFilter({ material })` for the SDF/SVG filter, and
+- `material` on each `WebGLLens` for the WebGL2 surface.
+
+To keep the two consistent, build one material object and pass it to both (see
+the examples below).
+
 ## Explicit SDF/SVG refraction
 
 `useSdfFilter` creates deterministic displacement data for a stable geometry.
 The browser canvas encoding happens after mount, so the initial server and
 hydration output remains the CSS baseline.
 
+`filterId` applies an SVG `filter: url(#id)` to the `Glass` element, and a filter
+displaces everything the element paints, including its children. Do not put text
+or controls inside a filtered `Glass`: they would be distorted and hard to read
+or select. Filter a decorative, `aria-hidden` layer and keep the semantic
+content in an unfiltered sibling above it:
+
 ```tsx
-import { Glass, SdfFilterDefinition, useSdfFilter } from "open-glass-ui";
+import {
+  Glass,
+  getMaterialPreset,
+  SdfFilterDefinition,
+  useSdfFilter,
+} from "open-glass-ui";
 
 const geometry = {
   kind: "rounded-rect",
@@ -56,34 +88,38 @@ const geometry = {
   cornerRadius: 28,
 } as const;
 
+// The same object can be passed to a WebGL lens (see below).
+const material = { ...getMaterialPreset("regular"), thickness: 0.8 };
+
 export function RefractedPanel({ children }: { children: React.ReactNode }) {
   const filter = useSdfFilter({
     id: "account-panel",
     width: 320,
     height: 160,
     geometry,
+    material,
     quality: "medium",
   });
 
   return (
-    <>
+    <div style={{ position: "relative", width: 320, height: 160 }}>
       <SdfFilterDefinition filter={filter} />
       <Glass
+        aria-hidden="true"
         renderer="sdf-svg"
         filterId={filter.filterId}
         geometry={geometry}
-        material="regular"
-      >
-        {children}
-      </Glass>
-    </>
+        style={{ position: "absolute", inset: 0 }}
+      />
+      <div style={{ position: "relative" }}>{children}</div>
+    </div>
   );
 }
 ```
 
 The supported SDF shapes are `circle`, `capsule`, `rounded-rect`, and
 `superellipse`. Regenerate a map when size, geometry, material, or quality
-changes—not when a lens merely moves.
+changes, not when a lens merely moves. Pass `quality` explicitly.
 
 For an expressive effect, define an organic filter and request it explicitly:
 
@@ -102,7 +138,8 @@ export function OrganicLabel() {
 }
 ```
 
-Keep animated turbulence decorative and disable it when motion is reduced.
+Keep animated turbulence decorative, keep it away from text and controls that
+must stay readable, and disable it when motion is reduced.
 
 ## Opt-in WebGL2
 
@@ -116,6 +153,7 @@ import { useRef } from "react";
 import { GlassProvider } from "open-glass-ui";
 import { WebGLGlassSurface } from "open-glass-ui/webgl";
 
+// One material object can drive the SDF filter above and this lens.
 const regularMaterial = {
   thickness: 0.62,
   ior: 1.46,
@@ -153,6 +191,11 @@ export function RefractedVideo() {
   );
 }
 ```
+
+The example uses `GlassProvider` rather than `GlassSystemProvider` because the
+surface only needs the runtime policy (capabilities and quality), and a canvas
+over media has no themed DOM. Use `GlassSystemProvider` when the same tree also
+renders recipes or `Glass`.
 
 The WebGL renderer:
 

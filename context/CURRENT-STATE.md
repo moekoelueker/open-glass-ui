@@ -77,13 +77,18 @@ It is still not:
 
 ## Validation summary
 
-Current documentation records:
+Measured 2026-11-06 on the review-fix branch (`fix/2026-11-05-review-fixes`):
 
-- 97 files passing Biome.
+- 130 files passing Biome.
 - TypeScript passing across all packages, showcase, and Next fixture.
-- 93 tests across 16 unit/property/SSR/lifecycle/recipe files.
-- 155 validated browser checks across Chromium, Firefox, and WebKit.
+- 380 tests across 29 unit/property/SSR/lifecycle/recipe/docs files.
+- 182 browser checks passing across Chromium, Firefox, and WebKit.
 - Seven intentional capability/scope skips.
+- `llms.txt` and `llms-full.txt` ship in the package and are tested against the exports.
+- Gzip sizes: `styles.css` 16.8 KB, root `index.js` 23.6 KB.
+
+Older records below predate that branch:
+
 - 33/33 focused product-landing checks.
 - Thirty-three current release-candidate screenshots.
 - React 18 packed-consumer compatibility.

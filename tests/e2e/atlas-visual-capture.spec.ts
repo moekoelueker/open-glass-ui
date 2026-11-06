@@ -12,7 +12,7 @@ function screenshotPath(project: string, viewport: "desktop" | "mobile", name: s
 }
 
 test.describe("component atlas visual evidence", () => {
-  test.use({ reducedMotion: "reduce" });
+  test.use({ contextOptions: { reducedMotion: "reduce" } });
   test.setTimeout(120_000);
 
   test("desktop ranking, finalists, and component specimens", async ({ page }, testInfo) => {

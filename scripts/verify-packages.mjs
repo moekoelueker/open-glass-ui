@@ -146,7 +146,14 @@ try {
       }),
     )[0];
     const npmDryRunFiles = new Set(npmDryRun.files.map(({ path }) => path));
-    for (const requiredFile of ["LICENSE", "README.md", "dist/index.js", "dist/index.d.ts"]) {
+    for (const requiredFile of [
+      "LICENSE",
+      "README.md",
+      "llms.txt",
+      "llms-full.txt",
+      "dist/index.js",
+      "dist/index.d.ts",
+    ]) {
       assert.ok(
         npmDryRunFiles.has(requiredFile),
         `${packageName} npm pack dry run is missing ${requiredFile}.`,
@@ -243,6 +250,22 @@ try {
     facadeArchiveFiles.includes("package/README.md"),
     "The facade archive is missing its package README.",
   );
+  // The agent references must ship with the package and match the repository
+  // copies byte for byte, so an installed version carries its own docs.
+  for (const reference of ["llms.txt", "llms-full.txt"]) {
+    assert.ok(
+      facadeArchiveFiles.includes(`package/${reference}`),
+      `The facade archive is missing ${reference}.`,
+    );
+    assert.equal(
+      readFileSync(
+        join(extractionDirectory, packageSlug(facadePackageName), "package", reference),
+        "utf8",
+      ),
+      readFileSync(join(root, reference), "utf8"),
+      `${reference} in the archive must match the repository copy.`,
+    );
+  }
 
   const packedSource = (packageName, file) =>
     readFileSync(

@@ -1,12 +1,13 @@
 "use client";
 
-import { Glass, type GlassProps, useGlassTheme } from "@open-glass-ui/react";
+import { Glass, type GlassProps, resolveToneTheme, useGlassTheme } from "@open-glass-ui/react";
 import {
   type ButtonHTMLAttributes,
   type CSSProperties,
   cloneElement,
   createContext,
   type FieldsetHTMLAttributes,
+  forwardRef,
   type HTMLAttributes,
   type InputHTMLAttributes,
   type LabelHTMLAttributes,
@@ -21,6 +22,14 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { joinIds, normalizeToStep, type StepRule } from "./atlas";
+import {
+  isInDescendantLayer,
+  isReachableLayer,
+  isTopLayer,
+  openLayer,
+  useIsomorphicLayoutEffect,
+} from "./layers";
 import "./styles.css";
 import "./liquid.css";
 
@@ -94,8 +103,6 @@ function classes(...values: Array<string | false | null | undefined>) {
 function idPart(value: string) {
   return encodeURIComponent(value).replaceAll("%", "_");
 }
-
-const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 /**
  * Publishes the selected item's box as CSS variables on its container so the
@@ -175,20 +182,24 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   trailingIcon?: ReactNode;
 }
 
-export function Button({
-  variant = "secondary",
-  size = "medium",
-  leadingIcon,
-  trailingIcon,
-  className,
-  children,
-  type = "button",
-  onPointerMove,
-  ...props
-}: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  {
+    variant = "secondary",
+    size = "medium",
+    leadingIcon,
+    trailingIcon,
+    className,
+    children,
+    type = "button",
+    onPointerMove,
+    ...props
+  },
+  ref,
+) {
   return (
     <button
       {...props}
+      ref={ref}
       type={type}
       onPointerMove={(event) => {
         // Drives the pointer-following specular highlight in the liquid design
@@ -219,23 +230,21 @@ export function Button({
       {trailingIcon ? <span className="ogui-button__icon">{trailingIcon}</span> : null}
     </button>
   );
-}
+});
 
 export interface IconButtonProps extends Omit<ButtonProps, "children" | "aria-label"> {
   "aria-label": string;
   children: ReactNode;
 }
 
-export function IconButton({
-  size = "medium",
-  variant = "quiet",
-  className,
-  children,
-  ...props
-}: IconButtonProps) {
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
+  { size = "medium", variant = "quiet", className, children, ...props },
+  ref,
+) {
   return (
     <Button
       {...props}
+      ref={ref}
       size={size}
       variant={variant}
       className={classes("ogui-icon-button", className)}
@@ -243,7 +252,7 @@ export function IconButton({
       {children}
     </Button>
   );
-}
+});
 
 export interface SegmentItem<T extends string> {
   value: T;
@@ -305,18 +314,22 @@ export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
   onCheckedChange?: (checked: boolean) => void;
 }
 
-export function Switch({
-  label,
-  description,
-  className,
-  labelProps,
-  checked: controlledChecked,
-  defaultChecked = false,
-  onChange,
-  onCheckedChange,
-  id: suppliedId,
-  ...props
-}: SwitchProps) {
+export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
+  {
+    label,
+    description,
+    className,
+    labelProps,
+    checked: controlledChecked,
+    defaultChecked = false,
+    onChange,
+    onCheckedChange,
+    id: suppliedId,
+    "aria-describedby": describedBy,
+    ...props
+  },
+  ref,
+) {
   const generatedId = useId();
   const id = suppliedId ?? generatedId;
   const descriptionId = description ? `${id}-description` : undefined;
@@ -334,6 +347,7 @@ export function Switch({
     >
       <input
         {...props}
+        ref={ref}
         id={id}
         name={props.name ?? id}
         type="checkbox"
@@ -341,7 +355,7 @@ export function Switch({
         checked={checked}
         aria-checked={checked}
         aria-labelledby={`${id}-label`}
-        aria-describedby={descriptionId}
+        aria-describedby={joinIds(describedBy, descriptionId)}
         onChange={(event) => {
           setChecked(event.currentTarget.checked);
           onChange?.(event);
@@ -362,7 +376,7 @@ export function Switch({
       </span>
     </label>
   );
-}
+});
 
 export interface SliderProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
   label: ReactNode;
@@ -370,25 +384,137 @@ export interface SliderProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
   unit?: string;
 }
 
-export function Slider({
-  label,
-  valueText,
-  unit = "",
-  className,
-  id: suppliedId,
-  value,
-  defaultValue,
-  min = 0,
-  max = 100,
-  ...props
-}: SliderProps) {
+function firstNumber(value: unknown) {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  if (candidate === undefined || candidate === null || candidate === "") {
+    return undefined;
+  }
+  const parsed = Number(candidate);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+/**
+ * The value text, the filled track and the native thumb all show one value:
+ * clamped to the bounds and aligned to the step from `min` (nearest, ties to
+ * the larger, never past `max`), as the browser itself sanitizes a range
+ * input. `step="any"` only clamps. Without a value the slider starts at `min`.
+ */
+export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
+  {
+    label,
+    valueText,
+    unit = "",
+    className,
+    id: suppliedId,
+    value,
+    defaultValue,
+    min = 0,
+    max = 100,
+    step,
+    onInput,
+    ...props
+  },
+  ref,
+) {
   const generatedId = useId();
   const id = suppliedId ?? generatedId;
   const labelId = `${id}-label`;
-  const [liveValue, setLiveValue] = useState(defaultValue ?? min);
-  const shownValue = value ?? liveValue;
-  const numericValue = Array.isArray(shownValue) ? shownValue[0] : shownValue;
-  const progress = rangeProgress(numericValue, min, max);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const minValue = firstNumber(min) ?? 0;
+  const maxValue = firstNumber(max) ?? 100;
+  const stepValue = firstNumber(step);
+  const stepSize = step === "any" ? null : stepValue !== undefined && stepValue > 0 ? stepValue : 1;
+  const rule: StepRule = { min: minValue, max: maxValue, base: minValue, step: stepSize };
+  const uncontrolled = value === undefined;
+  // The current default, normalized like the native input would. It reaches
+  // the native `defaultValue` on every render, so a form reset restores the
+  // latest default; React updates it without touching an edited value.
+  const defaultNumber = normalizeToStep(firstNumber(defaultValue) ?? minValue, rule);
+  const [liveValue, setLiveValue] = useState(defaultNumber);
+  const numericValue = normalizeToStep(
+    (value === undefined ? undefined : firstNumber(value)) ?? liveValue,
+    rule,
+  );
+  const progress = rangeProgress(numericValue, rule.min, rule.max);
+  // Keeps the internal ref and forwards to the caller's. A React 19 callback
+  // ref may return a cleanup function: pass it back, so React runs it (and
+  // does not call the ref with null) on unmount or when the ref changes.
+  const setRefs = useCallback(
+    (node: HTMLInputElement | null) => {
+      inputRef.current = node;
+      if (typeof ref === "function") {
+        const cleanup: unknown = ref(node);
+        if (typeof cleanup === "function") {
+          return () => {
+            inputRef.current = null;
+            cleanup();
+          };
+        }
+      } else if (ref) {
+        ref.current = node;
+      }
+      return undefined;
+    },
+    [ref],
+  );
+
+  // New bounds or a new step make the browser re-sanitize the native value
+  // without an input event, and widening the bounds again does not restore the
+  // old value. An uncontrolled slider reads the native value back so the text and
+  // the track keep showing what the form submits. The normalized value is
+  // written back only where the native one is not on the grid yet (WebKit
+  // skips re-aligning to a new step, jsdom does not sanitize at all); after a
+  // browser's own clamp nothing is written.
+  useIsomorphicLayoutEffect(() => {
+    const input = inputRef.current;
+    if (!uncontrolled || !input) {
+      return;
+    }
+    const native = normalizeToStep(firstNumber(input.value) ?? minValue, {
+      min: minValue,
+      max: maxValue,
+      base: minValue,
+      step: stepSize,
+    });
+    if (Number(input.value) !== native) {
+      input.value = String(native);
+    }
+    setLiveValue(native);
+    // `defaultNumber` too, so the text keeps matching the native value
+    // whatever the browser does with a new default.
+  }, [minValue, maxValue, stepSize, uncontrolled, defaultNumber]);
+
+  // A form reset restores the native default after the reset event, so read
+  // the restored value back once it has happened. Listening on the document
+  // and comparing with the input's current form keeps working when the input
+  // moves to another form (a changed `form` attribute) without remounting.
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) {
+      return;
+    }
+    const doc = input.ownerDocument;
+    let timeout = 0;
+    const handleReset = (event: Event) => {
+      const current = inputRef.current;
+      if (!current || event.target !== current.form) {
+        return;
+      }
+      window.clearTimeout(timeout);
+      timeout = window.setTimeout(() => {
+        const restored = inputRef.current;
+        if (restored) {
+          setLiveValue(Number(restored.value));
+        }
+      }, 0);
+    };
+    // Capture phase, so a handler that stops the event on the form cannot hide it.
+    doc.addEventListener("reset", handleReset, true);
+    return () => {
+      window.clearTimeout(timeout);
+      doc.removeEventListener("reset", handleReset, true);
+    };
+  }, []);
 
   return (
     <label
@@ -402,22 +528,24 @@ export function Slider({
       </span>
       <input
         {...props}
+        ref={setRefs}
         id={id}
         name={props.name ?? id}
         type="range"
         aria-labelledby={labelId}
         min={min}
         max={max}
-        value={value}
-        defaultValue={defaultValue}
+        step={step}
+        value={value === undefined ? undefined : numericValue}
+        defaultValue={value === undefined ? defaultNumber : undefined}
         onInput={(event) => {
-          setLiveValue(event.currentTarget.value);
-          props.onInput?.(event);
+          setLiveValue(Number(event.currentTarget.value));
+          onInput?.(event);
         }}
       />
     </label>
   );
-}
+});
 
 export interface ToolbarProps extends HTMLAttributes<HTMLDivElement> {
   label: string;
@@ -639,10 +767,20 @@ function DisclosureSurface({
     left: -10_000,
   });
   const [open, setOpen] = useControllableValue(controlledOpen, defaultOpen, onOpenChange);
-  const { appearance, tokens } = useGlassTheme();
+  // The surface is portaled out of the theme element, so it carries the theme
+  // tokens itself. A forced `tone` gets that tone's palette, not the
+  // surrounding one, so its text and nested recipes stay readable.
+  const { appearance, tokens } = resolveToneTheme(useGlassTheme(), tone);
   const focusTrigger = useCallback(() => {
     wrapperRef.current?.querySelector<HTMLButtonElement>("button[aria-controls]")?.focus();
   }, []);
+  // `setOpen` changes identity with `onOpenChange`; reading it from a ref keeps
+  // the layer effect tied to the open state, so a parent render never moves
+  // this surface to the top of the stack.
+  const setOpenRef = useRef(setOpen);
+  useIsomorphicLayoutEffect(() => {
+    setOpenRef.current = setOpen;
+  });
 
   useEffect(() => {
     const host = document.createElement("div");
@@ -652,33 +790,43 @@ function DisclosureSurface({
     return () => host.remove();
   }, []);
 
-  useEffect(() => {
-    if (!open) {
+  useIsomorphicLayoutEffect(() => {
+    if (!open || !portalHost) {
       return;
     }
 
+    // The layer holding the trigger owns this surface: a menu opened in a
+    // dialog belongs to the dialog and stays usable while it is modal.
+    const closeLayer = openLayer(id, "disclosure", portalHost, wrapperRef.current);
     const handlePointerDown = (event: PointerEvent) => {
+      if (!isReachableLayer(id)) {
+        return;
+      }
       if (
         event.target instanceof Node &&
         !wrapperRef.current?.contains(event.target) &&
-        !surfaceRef.current?.contains(event.target)
+        !surfaceRef.current?.contains(event.target) &&
+        !isInDescendantLayer(id, event.target)
       ) {
-        setOpen(false);
+        setOpenRef.current(false);
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-        focusTrigger();
+      if (event.key !== "Escape" || event.defaultPrevented || !isTopLayer(id)) {
+        return;
       }
+      event.preventDefault();
+      setOpenRef.current(false);
+      focusTrigger();
     };
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+      closeLayer();
     };
-  }, [focusTrigger, open, setOpen]);
+  }, [focusTrigger, id, open, portalHost]);
 
   useEffect(() => {
     if (!open || !portalHost || requestedFocusRef.current === "none") {
@@ -857,6 +1005,16 @@ function MenuItems({ label, children }: { label: string; children: ReactNode }) 
       aria-label={label}
       className="ogui-menu__items"
       onKeyDown={(event) => {
+        // React bubbles keys from portals through the component tree: a dialog
+        // or nested menu opened from an item would otherwise lose Tab, Home,
+        // End and the arrows to this menu. Only keys pressed in the menu count.
+        if (
+          event.defaultPrevented ||
+          !(event.target instanceof Node) ||
+          !event.currentTarget.contains(event.target)
+        ) {
+          return;
+        }
         const current = event.target instanceof HTMLElement ? event.target : undefined;
         if (event.key === "ArrowDown") {
           event.preventDefault();
@@ -981,23 +1139,59 @@ export interface TooltipProps {
   placement?: "top" | "bottom";
 }
 
+/**
+ * The bubble shows on hover or focus (stylesheet), stays up while the pointer
+ * moves onto it, and Escape hides it while it is visible, also when it is
+ * only hovered and focus is elsewhere (WCAG 1.4.13). A visible tooltip is the
+ * top layer, so Escape dismisses it before the dialog or menu beneath.
+ */
 export function Tooltip({ label, children, placement = "top" }: TooltipProps) {
   const id = useId();
+  const wrapperRef = useRef<HTMLSpanElement>(null);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const visible = (hovered || focused) && !dismissed;
   const describedBy = [children.props["aria-describedby"], id].filter(Boolean).join(" ");
 
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!visible || !wrapper) {
+      return;
+    }
+    const closeLayer = openLayer(id, "tooltip", wrapper, wrapper);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented || !isTopLayer(id)) {
+        return;
+      }
+      event.preventDefault();
+      setDismissed(true);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      closeLayer();
+    };
+  }, [id, visible]);
+
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: the handlers only observe events bubbling from the interactive child to dismiss the tooltip (WCAG 1.4.13); the wrapper itself is never operable.
+    // biome-ignore lint/a11y/noStaticElementInteractions: the handlers only observe hover and focus bubbling from the interactive child to track when the tooltip is visible (WCAG 1.4.13); the wrapper itself is never operable.
     <span
+      ref={wrapperRef}
       className="ogui-tooltip"
       data-placement={placement}
       data-dismissed={dismissed ? "true" : "false"}
-      onKeyDown={(event) => {
-        if (event.key === "Escape") {
-          setDismissed(true);
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+        setHovered(false);
+        setDismissed(false);
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setFocused(false);
         }
       }}
-      onMouseLeave={() => setDismissed(false)}
       onBlurCapture={() => setDismissed(false)}
     >
       {cloneElement(children, { "aria-describedby": describedBy })}

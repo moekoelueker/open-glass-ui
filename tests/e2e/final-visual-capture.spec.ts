@@ -20,7 +20,7 @@ async function settleVisual(page: Page) {
 }
 
 test.describe("OpenGlass UI final visual evidence", () => {
-  test.use({ reducedMotion: "reduce" });
+  test.use({ contextOptions: { reducedMotion: "reduce" } });
   test.setTimeout(120_000);
 
   test("captures the ranked engines and explicit neutral theme variants", async ({
