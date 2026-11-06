@@ -417,12 +417,9 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
   const minValue = firstNumber(min) ?? 0;
   const maxValue = firstNumber(max) ?? 100;
   const stepValue = firstNumber(step);
-  const rule: StepRule = {
-    min: minValue,
-    max: maxValue,
-    base: minValue,
-    step: step === "any" ? null : stepValue !== undefined && stepValue > 0 ? stepValue : 1,
-  };
+  const stepSize = step === "any" ? null : stepValue !== undefined && stepValue > 0 ? stepValue : 1;
+  const rule: StepRule = { min: minValue, max: maxValue, base: minValue, step: stepSize };
+  const uncontrolled = value === undefined;
   const [initialValue] = useState(() =>
     normalizeToStep(firstNumber(defaultValue) ?? minValue, rule),
   );
@@ -443,6 +440,30 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
     },
     [ref],
   );
+
+  // New bounds or a new step make the browser re-sanitize the native value
+  // without an input event, and widening them again does not restore the old
+  // value. An uncontrolled slider reads the native value back so the text and
+  // the track keep showing what the form submits. The normalized value is
+  // written back only where the native one is not on the grid yet (WebKit
+  // skips re-aligning to a new step, jsdom does not sanitize at all); after a
+  // browser's own clamp nothing is written.
+  useIsomorphicLayoutEffect(() => {
+    const input = inputRef.current;
+    if (!uncontrolled || !input) {
+      return;
+    }
+    const native = normalizeToStep(firstNumber(input.value) ?? minValue, {
+      min: minValue,
+      max: maxValue,
+      base: minValue,
+      step: stepSize,
+    });
+    if (Number(input.value) !== native) {
+      input.value = String(native);
+    }
+    setLiveValue(native);
+  }, [minValue, maxValue, stepSize, uncontrolled]);
 
   // A form reset restores the native default after the reset event, so read
   // the restored value back once it has happened.

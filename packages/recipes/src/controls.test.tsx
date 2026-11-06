@@ -271,6 +271,61 @@ describe("Slider value normalization", () => {
     expect(slider.value).toBe("30");
   });
 
+  it("follows the native value when the bounds change under an uncontrolled slider", () => {
+    const tree = (max: number) => (
+      <form>
+        <Slider label="Grain" name="grain" max={max} defaultValue={30} />
+      </form>
+    );
+    const { container, rerender } = render(tree(100));
+    const slider = screen.getByRole("slider") as HTMLInputElement;
+    const form = container.querySelector("form") as HTMLFormElement;
+    // Browsers clamp a range input as soon as its max shrinks, without an input
+    // event; jsdom does not, so this node does it the way Chromium does.
+    const nativeValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+    const setAttribute = slider.setAttribute.bind(slider);
+    slider.setAttribute = (name: string, value: string) => {
+      setAttribute(name, value);
+      if (name === "max" && Number(slider.value) > Number(value)) {
+        nativeValue?.set?.call(slider, value);
+      }
+    };
+    fireEvent.input(slider, { target: { value: "80" } });
+    expect(output(container)).toBe("80");
+
+    rerender(tree(50));
+    expect(slider.value).toBe("50");
+    expect(output(container)).toBe("50");
+    expect(progress(container)).toBe("1.0000");
+
+    // Widening the range again does not bring 80 back, natively or in the text.
+    rerender(tree(100));
+    expect(slider.value).toBe("50");
+    expect(output(container)).toBe("50");
+    expect(progress(container)).toBe("0.5000");
+    expect(new FormData(form).get("grain")).toBe("50");
+  });
+
+  it("aligns the native value itself where a new step leaves it off the grid", () => {
+    // WebKit keeps a dirty value that a new step no longer allows (and jsdom
+    // never re-sanitizes), so the slider writes the aligned value back.
+    const tree = (step: number) => (
+      <form>
+        <Slider label="Grain" name="grain" step={step} defaultValue={30} />
+      </form>
+    );
+    const { container, rerender } = render(tree(1));
+    const slider = screen.getByRole("slider") as HTMLInputElement;
+    fireEvent.input(slider, { target: { value: "50" } });
+
+    rerender(tree(7));
+    expect(slider.value).toBe("49");
+    expect(output(container)).toBe("49");
+    expect(new FormData(container.querySelector("form") as HTMLFormElement).get("grain")).toBe(
+      "49",
+    );
+  });
+
   it("normalizes with a precise step grid", () => {
     const rule = { min: 0, max: 1, base: 0, step: 0.1 };
     expect(normalizeToStep(0.15, rule)).toBe(0.2);
