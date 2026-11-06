@@ -399,6 +399,11 @@ Native: `onChange`, `min`, `max`, `step`, `disabled`
 Props: `label: ReactNode`, `value?: number`, `defaultValue?: number` (default
 0), `onValueChange(value: number)`, `decrementLabel?: string`,
 `incrementLabel?: string`. Renders a native number input with stepper buttons.
+The field can be cleared and accepts partial input while typing; an
+out-of-range value is clamped on blur or Enter. Typed values are not snapped
+to `step` (use `step="any"` for free decimals). The steppers move along the
+step grid from `min`, or from the current value when there is no `min`. A
+read-only or disabled field never changes its value.
 
 ### Stepper
 Interface: inline

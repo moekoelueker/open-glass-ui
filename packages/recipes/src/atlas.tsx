@@ -1408,9 +1408,11 @@ function numberText(value: number) {
  * the step: with the default `step={1}` a typed 2.5 stays 2.5.
  *
  * The stepper buttons move along the step grid like the native `stepUp()` and
- * `stepDown()`: the grid counts from the minimum (or zero without one), an
- * off-grid value moves to the next grid value in that direction (2.5 + 1
- * gives 3, 2.5 - 1 gives 2), and a step never leaves the bounds.
+ * `stepDown()`: the grid counts from `min` (without one, from the current
+ * value, as the native input does), an off-grid value moves to the next grid
+ * value in that direction (with `min={0}`, 2.5 + 1 gives 3 and 2.5 - 1 gives
+ * 2), and a step never leaves the bounds. A disabled or read-only field never
+ * changes its value.
  */
 export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(function NumberField(
   {
@@ -1420,8 +1422,8 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
     onValueChange,
     decrementLabel,
     incrementLabel,
-    min = Number.MIN_SAFE_INTEGER,
-    max = Number.MAX_SAFE_INTEGER,
+    min,
+    max,
     step = 1,
     className,
     id: suppliedId,
@@ -1437,25 +1439,30 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
 ) {
   const generatedId = useId();
   const id = suppliedId ?? generatedId;
+  const locked = Boolean(disabled || readOnly);
   const [internalValue, setInternalValue] = useState(defaultValue);
   // `null` while the input is not being edited: it then shows the committed
   // value, so a controlled `value` change always shows through.
   const [draft, setDraft] = useState<string | null>(null);
   const committed = value ?? internalValue;
-  const rawMin = Number(min);
-  const rawMax = Number(max);
-  const minValue = Number.isFinite(rawMin) ? rawMin : Number.MIN_SAFE_INTEGER;
+  const rawMin = min === undefined ? Number.NaN : Number(min);
+  const rawMax = max === undefined ? Number.NaN : Number(max);
+  const hasMin = Number.isFinite(rawMin);
+  const minValue = hasMin ? rawMin : Number.MIN_SAFE_INTEGER;
   const maxValue = Number.isFinite(rawMax) ? rawMax : Number.MAX_SAFE_INTEGER;
   const rawStep = Number(step);
   const stepValue = Number.isFinite(rawStep) && rawStep !== 0 ? Math.abs(rawStep) : 1;
-  const rule: StepRule = {
+  // The native step base is the `min` attribute, or without one the value
+  // attribute, which React keeps equal to the current value. So without a
+  // caller minimum a step moves by exactly one step from the current value,
+  // and the input never reports a step mismatch the stepper itself caused.
+  const ruleFrom = (current: number): StepRule => ({
     min: minValue,
     max: maxValue,
-    // Without a caller minimum the grid counts from zero, not from the
-    // safe-integer floor where fractional steps lose precision.
-    base: minValue === Number.MIN_SAFE_INTEGER ? 0 : minValue,
+    base: hasMin ? minValue : current,
     step: step === "any" ? null : stepValue,
-  };
+  });
+  const rule = ruleFrom(committed);
   const labelText =
     typeof label === "string" || typeof label === "number" ? String(label) : "value";
   const canStep = (direction: 1 | -1) => {
@@ -1483,6 +1490,11 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
     onValueChange?.(next);
   };
   const commitText = (text: string) => {
+    // A disabled or read-only field never changes its value, not even by
+    // clamping a committed value that is out of range.
+    if (locked) {
+      return committed;
+    }
     const next = parse(text);
     if (next === null) {
       return committed;
@@ -1491,8 +1503,11 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
     return next;
   };
   const stepBy = (direction: 1 | -1) => {
+    if (locked) {
+      return;
+    }
     const current = draft === null ? committed : (parse(draft) ?? committed);
-    const next = stepFrom(current, direction, rule, stepValue);
+    const next = stepFrom(current, direction, ruleFrom(current), stepValue);
     commit(next);
     if (draft !== null) {
       setDraft(numberText(next));
@@ -1537,6 +1552,9 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
               // Autofill and scripted changes arrive without focus, so there
               // is no blur to wait for.
               commitText(input.value);
+              return;
+            }
+            if (locked) {
               return;
             }
             setDraft(input.value);

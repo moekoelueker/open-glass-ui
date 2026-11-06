@@ -136,7 +136,9 @@ describe("NumberField editing", () => {
   it("keeps a typed off-step value, commits on Enter and steps from it on the grid", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
-    render(<NumberField label="Gap" max={10} defaultValue={0} onValueChange={onValueChange} />);
+    render(
+      <NumberField label="Gap" min={0} max={10} defaultValue={0} onValueChange={onValueChange} />,
+    );
     const input = spinbutton("Gap");
 
     // With the default step of 1 a typed 2.5 is accepted as is.
@@ -170,10 +172,78 @@ describe("NumberField editing", () => {
     expect(onValueChange).toHaveBeenLastCalledWith(2);
   });
 
+  it("steps from the current value without a min, so the input stays step-valid", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      <form>
+        <NumberField label="Rows" defaultValue={1} step={2} onValueChange={onValueChange} />
+      </form>,
+    );
+    const input = screen.getByRole("spinbutton", { name: "Rows" }) as HTMLInputElement;
+    // No caller minimum: no min attribute, so the native step base is the value.
+    expect(input.hasAttribute("min")).toBe(false);
+    expect(input.hasAttribute("max")).toBe(false);
+    await user.click(screen.getByRole("button", { name: "Increase Rows" }));
+    expect(onValueChange).toHaveBeenLastCalledWith(3);
+    expect(input.value).toBe("3");
+    expect(input.validity.stepMismatch).toBe(false);
+    await user.click(screen.getByRole("button", { name: "Decrease Rows" }));
+    await user.click(screen.getByRole("button", { name: "Decrease Rows" }));
+    expect(onValueChange).toHaveBeenLastCalledWith(-1);
+    expect(input.validity.stepMismatch).toBe(false);
+  });
+
+  it.each([
+    ["read-only", { readOnly: true }],
+    ["disabled", { disabled: true }],
+  ] as const)("never changes a %s value, even an out-of-range one", async (_, lock) => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      <NumberField
+        label="Seats"
+        min={10}
+        defaultValue={5}
+        onValueChange={onValueChange}
+        {...lock}
+      />,
+    );
+    const input = screen.getByRole("spinbutton", { name: "Seats" }) as HTMLInputElement;
+    fireEvent.focus(input);
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.blur(input);
+    await user.tab();
+    expect(onValueChange).not.toHaveBeenCalled();
+    expect(input.value).toBe("5");
+  });
+
+  it("discards a draft when the field becomes read-only while it is edited", () => {
+    const onValueChange = vi.fn();
+    const tree = (readOnly: boolean) => (
+      <NumberField
+        label="Seats"
+        min={10}
+        defaultValue={12}
+        readOnly={readOnly}
+        onValueChange={onValueChange}
+      />
+    );
+    const { rerender } = render(tree(false));
+    const input = screen.getByRole("spinbutton", { name: "Seats" }) as HTMLInputElement;
+    input.focus();
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "3" } });
+    rerender(tree(true));
+    fireEvent.blur(input);
+    expect(onValueChange).not.toHaveBeenCalled();
+    expect(input.value).toBe("12");
+  });
+
   it("steps down from an off-grid value to the grid below", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
-    render(<NumberField label="Ratio" value={2.5} onValueChange={onValueChange} />);
+    render(<NumberField label="Ratio" min={0} value={2.5} onValueChange={onValueChange} />);
     await user.click(screen.getByRole("button", { name: "Decrease Ratio" }));
     expect(onValueChange).toHaveBeenLastCalledWith(2);
   });
