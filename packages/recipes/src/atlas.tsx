@@ -656,6 +656,33 @@ function Overlay({
     }
   }, [open]);
 
+  // An open overlay that is unmounted instead of closed (a conditionally
+  // rendered dialog whose parent drops it) never renders closed, so the close
+  // path above does not return focus. Do it here, after the layer cleanup has
+  // released the page, and only if focus fell to the document: another modal
+  // that took focus keeps it. The mounted flag skips StrictMode's simulated
+  // unmount, after which the dialog is still on screen.
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (!wasOpenRef.current) {
+        return;
+      }
+      const opener = openerRef.current;
+      requestAnimationFrame(() => {
+        if (mountedRef.current) {
+          return;
+        }
+        const active = document.activeElement;
+        if (opener?.isConnected && (active === null || active === document.body)) {
+          opener.focus();
+        }
+      });
+    };
+  }, []);
+
   // Runs once per closed-to-open transition (`setVisibility` is stable).
   useIsomorphicLayoutEffect(() => {
     if (!open || !portalHost) {

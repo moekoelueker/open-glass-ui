@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   Button,
   Dialog,
+  Drawer,
   Menu,
   MenuItem,
   Popover,
@@ -219,7 +220,46 @@ describe("layer stack", () => {
     expect(screen.queryByRole("dialog", { name: "Confirm publish" })).toBeNull();
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
     expect(hostOf(publish).inert).not.toBe(true);
+    // The parent removed the dialog instead of rendering it closed; focus
+    // still goes back to the control that opened it.
+    await waitFor(() => expect(document.activeElement).toBe(publish));
   });
+
+  it.each([
+    ["Dialog", Dialog],
+    ["Drawer", Drawer],
+  ] as const)(
+    "returns focus when an open %s is unmounted instead of closed",
+    async (_, Overlay) => {
+      const user = userEvent.setup();
+
+      function Fixture() {
+        const [mounted, setMounted] = useState(false);
+        return (
+          <>
+            <button type="button" onClick={() => setMounted(true)}>
+              Archive
+            </button>
+            {mounted ? (
+              <Overlay title="Archive project" open onOpenChange={setMounted}>
+                Body
+              </Overlay>
+            ) : null}
+          </>
+        );
+      }
+
+      render(<Fixture />);
+      const archive = screen.getByRole("button", { name: "Archive" });
+      await user.click(archive);
+      const dialog = await screen.findByRole("dialog", { name: "Archive project" });
+      await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(screen.queryByRole("dialog", { name: "Archive project" })).toBeNull();
+      await waitFor(() => expect(document.activeElement).toBe(archive));
+    },
+  );
 
   it("returns focus to the control that mounted an already-open dialog", async () => {
     const user = userEvent.setup();
