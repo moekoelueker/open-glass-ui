@@ -460,17 +460,59 @@
   top: calc(100% + 0.5rem);
 }
 
+/* Transparent bridges across the gap between trigger and bubble keep the
+   tooltip hovered while the pointer travels onto it (WCAG 1.4.13 hoverable):
+   one as wide as the trigger, one as wide as the bubble. They paint nothing
+   and only take the pointer while the bubble is shown. */
+.ogui-tooltip::before,
+.ogui-tooltip__bubble::before {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 0.5rem;
+  content: "";
+  pointer-events: none;
+}
+
+.ogui-tooltip[data-placement="top"]::before {
+  bottom: 100%;
+}
+
+.ogui-tooltip[data-placement="bottom"]::before {
+  top: 100%;
+}
+
+.ogui-tooltip[data-placement="top"] .ogui-tooltip__bubble::before {
+  top: 100%;
+}
+
+.ogui-tooltip[data-placement="bottom"] .ogui-tooltip__bubble::before {
+  bottom: 100%;
+}
+
 .ogui-tooltip:hover .ogui-tooltip__bubble,
 .ogui-tooltip:focus-within .ogui-tooltip__bubble {
   opacity: 1;
+  pointer-events: auto;
   transform: translate(-50%, 0);
+}
+
+.ogui-tooltip:is(:hover, :focus-within)::before,
+.ogui-tooltip:is(:hover, :focus-within) .ogui-tooltip__bubble::before {
+  pointer-events: auto;
 }
 
 /* Escape hides the bubble until the pointer leaves or focus moves on
    (WCAG 1.4.13 dismissable). Placed after the show rules so it wins. */
 .ogui-tooltip[data-dismissed="true"] .ogui-tooltip__bubble {
   opacity: 0;
+  pointer-events: none;
   transform: translate(-50%, 0.25rem);
+}
+
+.ogui-tooltip[data-dismissed="true"]::before,
+.ogui-tooltip[data-dismissed="true"] .ogui-tooltip__bubble::before {
+  pointer-events: none;
 }
 
 .ogui-media {
@@ -1178,6 +1220,20 @@
   line-height: 1.55;
 }
 
+/* The description sits between header and body on the body's inset and type
+   scale, so its text lines up with the content below it. */
+.ogui-overlay__description {
+  margin: 0;
+  padding: 0.85rem 1.1rem 0;
+  color: var(--ogui-color-muted, #c9cbc7);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.ogui-overlay__description + .ogui-overlay__body {
+  padding-top: 0.6rem;
+}
+
 .ogui-toast {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
@@ -1475,6 +1531,11 @@
   color: var(--ogui-muted);
   background: var(--ogui-control-hover);
   cursor: pointer;
+}
+
+.ogui-search button:disabled {
+  opacity: 0.46;
+  cursor: not-allowed;
 }
 
 .ogui-number__control {
