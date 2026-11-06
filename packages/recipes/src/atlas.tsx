@@ -5,6 +5,7 @@ import {
   type CSSProperties,
   createContext,
   type DragEvent,
+  forwardRef,
   type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
@@ -19,6 +20,14 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import {
+  descendantHosts,
+  isTopLayer,
+  isTopModal,
+  openLayer,
+  TOAST_HOST_Z_INDEX,
+  useIsomorphicLayoutEffect,
+} from "./layers";
 
 function cx(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
@@ -26,6 +35,65 @@ function cx(...values: Array<string | false | null | undefined>) {
 
 function idPart(value: string) {
   return encodeURIComponent(value).replaceAll("%", "_");
+}
+
+/**
+ * Joins id references for `aria-describedby`, keeping the caller's ids first
+ * and dropping empty ones. Returns undefined when nothing is left.
+ */
+export function joinIds(...ids: Array<string | undefined>) {
+  const joined = ids.filter(Boolean).join(" ");
+  return joined === "" ? undefined : joined;
+}
+
+function decimalPlaces(value: number) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  const [mantissa = "", exponent = "0"] = String(value).toLowerCase().split("e");
+  const fraction = mantissa.split(".")[1]?.length ?? 0;
+  return Math.min(Math.max(fraction - Number(exponent), 0), 100);
+}
+
+/** Bounds and step grid of a numeric control. `step: null` is `step="any"`. */
+export interface StepRule {
+  min: number;
+  max: number;
+  /** The value the step grid counts from (the minimum, like native inputs). */
+  base: number;
+  step: number | null;
+}
+
+/**
+ * Clamps a value into the rule's bounds and aligns it to the nearest step,
+ * ties going to the larger value as native range inputs do. An aligned value
+ * past the maximum steps down once, so the result never exceeds it.
+ * `step: null` only clamps.
+ */
+export function normalizeToStep(value: number, rule: StepRule) {
+  const high = Math.max(rule.max, rule.min);
+  const clamped = Math.min(Math.max(value, rule.min), high);
+  if (rule.step === null || !Number.isFinite(clamped)) {
+    return clamped;
+  }
+  const precision = Math.max(decimalPlaces(rule.step), decimalPlaces(rule.base));
+  const index = Math.floor((clamped - rule.base) / rule.step + 0.5 + 1e-9);
+  let aligned = Number((rule.base + index * rule.step).toFixed(precision));
+  if (aligned > high) {
+    aligned = Number((aligned - rule.step).toFixed(precision));
+  }
+  return Math.min(Math.max(aligned, rule.min), high);
+}
+
+/** The next value on the step grid in one direction, normalized. */
+function stepFrom(value: number, direction: 1 | -1, rule: StepRule, fallbackStep: number) {
+  if (rule.step === null) {
+    return normalizeToStep(value + direction * fallbackStep, rule);
+  }
+  const precision = Math.max(decimalPlaces(rule.step), decimalPlaces(rule.base));
+  const offset = (value - rule.base) / rule.step;
+  const index = direction > 0 ? Math.floor(offset + 1e-9) + 1 : Math.ceil(offset - 1e-9) - 1;
+  return normalizeToStep(Number((rule.base + index * rule.step).toFixed(precision)), rule);
 }
 
 export type SemanticTone = "neutral" | "accent" | "positive" | "warning" | "danger";
@@ -506,71 +574,8 @@ export interface OverlayProps {
   closeOnBackdrop?: boolean;
 }
 
-let activeOverlayLocks = 0;
-let bodyOverflowBeforeLock = "";
-let bodyPaddingBeforeLock = "";
-const inertLedger = new Map<HTMLElement, { count: number; previous: boolean }>();
-const activeOverlayStack: string[] = [];
-const activeOverlayHosts: HTMLElement[] = [];
-
-function lockDocumentForOverlay(portalHost: HTMLElement) {
-  const body = document.body;
-  if (activeOverlayLocks === 0) {
-    bodyOverflowBeforeLock = body.style.overflow;
-    bodyPaddingBeforeLock = body.style.paddingRight;
-    const scrollbarWidth = Math.max(window.innerWidth - document.documentElement.clientWidth, 0);
-    body.style.overflow = "hidden";
-    if (scrollbarWidth > 0) {
-      body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-  }
-  activeOverlayLocks += 1;
-
-  const inerted = [
-    ...new Set([
-      ...[...body.children].filter(
-        (element): element is HTMLElement =>
-          element instanceof HTMLElement &&
-          element !== portalHost &&
-          !element.hasAttribute("data-ogui-portal"),
-      ),
-      ...activeOverlayHosts,
-    ]),
-  ];
-  activeOverlayHosts.push(portalHost);
-  for (const element of inerted) {
-    const existing = inertLedger.get(element);
-    inertLedger.set(element, {
-      count: (existing?.count ?? 0) + 1,
-      previous: existing?.previous ?? element.inert,
-    });
-    element.inert = true;
-  }
-
-  return () => {
-    const hostIndex = activeOverlayHosts.lastIndexOf(portalHost);
-    if (hostIndex >= 0) {
-      activeOverlayHosts.splice(hostIndex, 1);
-    }
-    for (const element of inerted) {
-      const entry = inertLedger.get(element);
-      if (!entry) {
-        continue;
-      }
-      if (entry.count > 1) {
-        inertLedger.set(element, { ...entry, count: entry.count - 1 });
-      } else {
-        element.inert = entry.previous;
-        inertLedger.delete(element);
-      }
-    }
-    activeOverlayLocks = Math.max(activeOverlayLocks - 1, 0);
-    if (activeOverlayLocks === 0) {
-      body.style.overflow = bodyOverflowBeforeLock;
-      body.style.paddingRight = bodyPaddingBeforeLock;
-    }
-  };
-}
+const FOCUSABLE_SELECTOR =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 function Overlay({
   title,
@@ -606,17 +611,26 @@ function Overlay({
     };
   }, []);
 
-  const setVisibility = useCallback(
-    (next: boolean) => {
-      if (controlledOpen === undefined) {
-        setInternalOpen(next);
-      }
-      onOpenChange?.(next);
-    },
-    [controlledOpen, onOpenChange],
-  );
+  // The latest callback lives in a ref so the layer effect below depends only
+  // on the open state: an inline `onOpenChange` must not relock the document
+  // or pull focus back to the close button on every parent render.
+  const latestRef = useRef<{
+    controlled: boolean;
+    onOpenChange: ((open: boolean) => void) | undefined;
+  }>({ controlled: controlledOpen !== undefined, onOpenChange });
+  useIsomorphicLayoutEffect(() => {
+    latestRef.current = { controlled: controlledOpen !== undefined, onOpenChange };
+  });
+  const setVisibility = useCallback((next: boolean) => {
+    if (!latestRef.current.controlled) {
+      setInternalOpen(next);
+    }
+    latestRef.current.onOpenChange?.(next);
+  }, []);
 
-  useEffect(() => {
+  // A layout effect, ordered before the layer effect: opening makes the page
+  // inert, and the opener must be read before the browser blurs it.
+  useIsomorphicLayoutEffect(() => {
     const wasOpen = wasOpenRef.current;
     wasOpenRef.current = open;
     if (!wasOpen && open) {
@@ -638,26 +652,42 @@ function Overlay({
     }
   }, [open]);
 
-  useEffect(() => {
+  // Runs once per closed-to-open transition (`setVisibility` is stable).
+  useIsomorphicLayoutEffect(() => {
     if (!open || !portalHost) {
       return;
     }
-    activeOverlayStack.push(titleId);
-    const unlockDocument = lockDocumentForOverlay(portalHost);
+    // The trigger, or the control that opened a trigger-less dialog, decides
+    // which layer owns this one.
+    const closeLayer = openLayer(
+      titleId,
+      "modal",
+      portalHost,
+      triggerRef.current ?? openerRef.current,
+    );
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (activeOverlayStack.at(-1) !== titleId) {
+      if (event.defaultPrevented) {
         return;
       }
       if (event.key === "Escape") {
+        // Only the top reachable layer answers Escape: a menu or a visible
+        // tooltip inside this dialog closes first.
+        if (!isTopLayer(titleId)) {
+          return;
+        }
         event.preventDefault();
         setVisibility(false);
+        return;
       }
-      if (event.key === "Tab") {
-        const focusable = [
-          ...(surfaceRef.current?.querySelectorAll<HTMLElement>(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-          ) ?? []),
-        ].filter((element) => !element.hasAttribute("disabled"));
+      if (event.key === "Tab" && isTopModal(titleId)) {
+        // Menus and popovers opened from this dialog are part of its focus
+        // scope, so the trap wraps around them instead of skipping them.
+        const focusable = [surfaceRef.current, ...descendantHosts(titleId)]
+          .flatMap((scope) => [...(scope?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ?? [])])
+          .filter(
+            (element) =>
+              !element.hasAttribute("disabled") && element.getAttribute("tabindex") !== "-1",
+          );
         const first = focusable[0];
         const last = focusable.at(-1);
         if (event.shiftKey && document.activeElement === first) {
@@ -674,11 +704,7 @@ function Overlay({
     return () => {
       cancelAnimationFrame(focusFrame);
       document.removeEventListener("keydown", handleKeyDown);
-      unlockDocument();
-      const stackIndex = activeOverlayStack.lastIndexOf(titleId);
-      if (stackIndex >= 0) {
-        activeOverlayStack.splice(stackIndex, 1);
-      }
+      closeLayer();
     };
   }, [open, portalHost, setVisibility, titleId]);
 
@@ -783,8 +809,12 @@ export function Toast({
   ...props
 }: ToastProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
-  const [paused, setPaused] = useState(false);
+  // Pointer and focus pause independently: leaving with the mouse must not
+  // resume the countdown while a control inside still has focus.
+  const [hovered, setHovered] = useState(false);
+  const [focusWithin, setFocusWithin] = useState(false);
   const open = controlledOpen ?? internalOpen;
+  const paused = hovered || focusWithin;
   const remainingDuration = useRef(duration);
   const previousDuration = useRef(duration);
   const previouslyOpen = useRef(open);
@@ -805,6 +835,15 @@ export function Toast({
     previousDuration.current = duration;
     previouslyOpen.current = open;
   }, [duration, open]);
+
+  // A closed toast unmounts its surface, so no leave or blur event will ever
+  // clear the flags; reset them so a reopened toast starts unpaused.
+  useEffect(() => {
+    if (!open) {
+      setHovered(false);
+      setFocusWithin(false);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open || paused || duration <= 0) {
@@ -839,20 +878,20 @@ export function Toast({
       className={cx("ogui-toast", className)}
       role="status"
       onMouseEnter={(event) => {
-        setPaused(true);
+        setHovered(true);
         onMouseEnter?.(event);
       }}
       onMouseLeave={(event) => {
-        setPaused(false);
+        setHovered(false);
         onMouseLeave?.(event);
       }}
       onFocusCapture={(event) => {
-        setPaused(true);
+        setFocusWithin(true);
         onFocusCapture?.(event);
       }}
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
-          setPaused(false);
+          setFocusWithin(false);
         }
         onBlurCapture?.(event);
       }}
@@ -929,7 +968,18 @@ export function ToastProvider({
   const runtime = useGlassRuntime();
 
   useEffect(() => {
-    setPortalHost(document.body);
+    // Its own host, marked so an open modal never makes it inert (the live
+    // region keeps announcing, its actions stay reachable) and stacked above
+    // every layer host.
+    const host = document.createElement("div");
+    host.setAttribute("data-ogui-portal", "toast");
+    host.style.position = "relative";
+    host.style.zIndex = String(TOAST_HOST_Z_INDEX);
+    document.body.append(host);
+    setPortalHost(host);
+    return () => {
+      host.remove();
+    };
   }, []);
 
   const dismiss = useCallback((id: string) => {
@@ -1000,13 +1050,10 @@ export interface CheckboxProps
   description?: ReactNode;
 }
 
-export function Checkbox({
-  label,
-  description,
-  className,
-  id: suppliedId,
-  ...props
-}: CheckboxProps) {
+export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
+  { label, description, className, id: suppliedId, "aria-describedby": describedBy, ...props },
+  ref,
+) {
   const generatedId = useId();
   const id = suppliedId ?? generatedId;
   const labelId = `${id}-label`;
@@ -1015,11 +1062,12 @@ export function Checkbox({
     <label className={cx("ogui-check", className)} htmlFor={id}>
       <input
         {...props}
+        ref={ref}
         id={id}
         name={props.name ?? id}
         type="checkbox"
         aria-labelledby={labelId}
-        aria-describedby={descriptionId}
+        aria-describedby={joinIds(describedBy, descriptionId)}
       />
       <i aria-hidden="true">✓</i>
       <span>
@@ -1028,7 +1076,7 @@ export function Checkbox({
       </span>
     </label>
   );
-}
+});
 
 export interface RadioItem<T extends string> {
   value: T;
@@ -1115,7 +1163,10 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   options: readonly SelectOption[];
 }
 
-export function Select({ label, options, className, id: suppliedId, ...props }: SelectProps) {
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
+  { label, options, className, id: suppliedId, ...props },
+  ref,
+) {
   const generatedId = useId();
   const id = suppliedId ?? generatedId;
   const labelId = `${id}-label`;
@@ -1126,6 +1177,7 @@ export function Select({ label, options, className, id: suppliedId, ...props }: 
       <span className="ogui-select__control">
         <select
           {...props}
+          ref={ref}
           id={id}
           name={props.name ?? id}
           aria-labelledby={labelId}
@@ -1142,7 +1194,7 @@ export function Select({ label, options, className, id: suppliedId, ...props }: 
       </span>
     </label>
   );
-}
+});
 
 export interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: ReactNode;
@@ -1150,14 +1202,19 @@ export interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: ReactNode;
 }
 
-export function TextField({
-  label,
-  hint,
-  error,
-  className,
-  id: suppliedId,
-  ...props
-}: TextFieldProps) {
+export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
+  {
+    label,
+    hint,
+    error,
+    className,
+    id: suppliedId,
+    "aria-describedby": describedBy,
+    "aria-invalid": invalid,
+    ...props
+  },
+  ref,
+) {
   const generatedId = useId();
   const id = suppliedId ?? generatedId;
   const labelId = `${id}-label`;
@@ -1167,12 +1224,13 @@ export function TextField({
       <span id={labelId}>{label}</span>
       <input
         {...props}
+        ref={ref}
         id={id}
         name={props.name ?? id}
         autoComplete={props.autoComplete ?? "off"}
-        aria-invalid={error ? true : undefined}
+        aria-invalid={error ? true : invalid}
         aria-labelledby={labelId}
-        aria-describedby={messageId}
+        aria-describedby={joinIds(describedBy, messageId)}
       />
       {hint || error ? (
         <small id={messageId} role={error ? "alert" : undefined}>
@@ -1181,7 +1239,7 @@ export function TextField({
       ) : null}
     </label>
   );
-}
+});
 
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: ReactNode;
@@ -1189,14 +1247,19 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
   error?: ReactNode;
 }
 
-export function Textarea({
-  label,
-  hint,
-  error,
-  className,
-  id: suppliedId,
-  ...props
-}: TextareaProps) {
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
+  {
+    label,
+    hint,
+    error,
+    className,
+    id: suppliedId,
+    "aria-describedby": describedBy,
+    "aria-invalid": invalid,
+    ...props
+  },
+  ref,
+) {
   const generatedId = useId();
   const id = suppliedId ?? generatedId;
   const labelId = `${id}-label`;
@@ -1206,12 +1269,13 @@ export function Textarea({
       <span id={labelId}>{label}</span>
       <textarea
         {...props}
+        ref={ref}
         id={id}
         name={props.name ?? id}
         autoComplete={props.autoComplete ?? "off"}
-        aria-invalid={error ? true : undefined}
+        aria-invalid={error ? true : invalid}
         aria-labelledby={labelId}
-        aria-describedby={messageId}
+        aria-describedby={joinIds(describedBy, messageId)}
       />
       {hint || error ? (
         <small id={messageId} role={error ? "alert" : undefined}>
@@ -1220,7 +1284,7 @@ export function Textarea({
       ) : null}
     </label>
   );
-}
+});
 
 export interface SearchFieldProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
@@ -1230,20 +1294,30 @@ export interface SearchFieldProps
   onValueChange?: (value: string) => void;
 }
 
-export function SearchField({
-  label,
-  value,
-  defaultValue = "",
-  onValueChange,
-  className,
-  id: suppliedId,
-  ...props
-}: SearchFieldProps) {
+export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(function SearchField(
+  {
+    label,
+    value,
+    defaultValue = "",
+    onValueChange,
+    className,
+    id: suppliedId,
+    disabled,
+    readOnly,
+    ...props
+  },
+  ref,
+) {
   const generatedId = useId();
   const id = suppliedId ?? generatedId;
   const [internalValue, setInternalValue] = useState(defaultValue);
   const shownValue = value ?? internalValue;
+  // A disabled or read-only field must not change through its clear button.
+  const locked = Boolean(disabled || readOnly);
   const update = (next: string) => {
+    if (locked) {
+      return;
+    }
     if (value === undefined) {
       setInternalValue(next);
     }
@@ -1255,9 +1329,12 @@ export function SearchField({
       <i aria-hidden="true">⌕</i>
       <input
         {...props}
+        ref={ref}
         id={id}
         name={props.name ?? id}
         type="search"
+        disabled={disabled}
+        readOnly={readOnly}
         value={shownValue}
         aria-label={label}
         autoComplete={props.autoComplete ?? "off"}
@@ -1265,13 +1342,18 @@ export function SearchField({
         onChange={(event: ChangeEvent<HTMLInputElement>) => update(event.currentTarget.value)}
       />
       {shownValue ? (
-        <button type="button" aria-label={`Clear ${label}`} onClick={() => update("")}>
+        <button
+          type="button"
+          aria-label={`Clear ${label}`}
+          disabled={locked}
+          onClick={() => update("")}
+        >
           ×
         </button>
       ) : null}
     </label>
   );
-}
+});
 
 export interface NumberFieldProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "value" | "defaultValue"> {
@@ -1283,45 +1365,100 @@ export interface NumberFieldProps
   incrementLabel?: string;
 }
 
-export function NumberField({
-  label,
-  value,
-  defaultValue = 0,
-  onValueChange,
-  decrementLabel,
-  incrementLabel,
-  min = Number.MIN_SAFE_INTEGER,
-  max = Number.MAX_SAFE_INTEGER,
-  step = 1,
-  className,
-  id: suppliedId,
-  onChange,
-  disabled,
-  readOnly,
-  ...props
-}: NumberFieldProps) {
+function numberText(value: number) {
+  return Number.isFinite(value) ? String(value) : "";
+}
+
+/**
+ * Typing edits a string draft, so empty and partial input ("", "-", "1.")
+ * survives until it is committed. A complete in-range value on the step grid
+ * commits as it is typed; anything else commits on blur or Enter, clamped and
+ * aligned to the step, and an empty or unreadable draft reverts. The stepper
+ * buttons step on the same grid and never leave the bounds.
+ */
+export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(function NumberField(
+  {
+    label,
+    value,
+    defaultValue = 0,
+    onValueChange,
+    decrementLabel,
+    incrementLabel,
+    min = Number.MIN_SAFE_INTEGER,
+    max = Number.MAX_SAFE_INTEGER,
+    step = 1,
+    className,
+    id: suppliedId,
+    onChange,
+    onFocus,
+    onBlur,
+    onKeyDown,
+    disabled,
+    readOnly,
+    ...props
+  },
+  ref,
+) {
   const generatedId = useId();
   const id = suppliedId ?? generatedId;
   const [internalValue, setInternalValue] = useState(defaultValue);
-  const shownValue = value ?? internalValue;
+  // `null` while the input is not being edited: it then shows the committed
+  // value, so a controlled `value` change always shows through.
+  const [draft, setDraft] = useState<string | null>(null);
+  const committed = value ?? internalValue;
   const rawMin = Number(min);
   const rawMax = Number(max);
   const minValue = Number.isFinite(rawMin) ? rawMin : Number.MIN_SAFE_INTEGER;
   const maxValue = Number.isFinite(rawMax) ? rawMax : Number.MAX_SAFE_INTEGER;
   const rawStep = Number(step);
   const stepValue = Number.isFinite(rawStep) && rawStep !== 0 ? Math.abs(rawStep) : 1;
+  const rule: StepRule = {
+    min: minValue,
+    max: maxValue,
+    // Without a caller minimum the grid counts from zero, not from the
+    // safe-integer floor where fractional steps lose precision.
+    base: minValue === Number.MIN_SAFE_INTEGER ? 0 : minValue,
+    step: step === "any" ? null : stepValue,
+  };
   const labelText =
     typeof label === "string" || typeof label === "number" ? String(label) : "value";
-  const decrementDisabled =
-    disabled || readOnly || !Number.isFinite(shownValue) || shownValue <= minValue;
-  const incrementDisabled =
-    disabled || readOnly || !Number.isFinite(shownValue) || shownValue >= maxValue;
-  const update = (next: number) => {
-    const bounded = Math.min(Math.max(next, minValue), maxValue);
-    if (value === undefined) {
-      setInternalValue(bounded);
+  const canStep = (direction: 1 | -1) => {
+    if (!Number.isFinite(committed)) {
+      return false;
     }
-    onValueChange?.(bounded);
+    const next = stepFrom(committed, direction, rule, stepValue);
+    return direction > 0 ? next > committed : next < committed;
+  };
+  const decrementDisabled = disabled || readOnly || !canStep(-1);
+  const incrementDisabled = disabled || readOnly || !canStep(1);
+  const parse = (text: string) => {
+    const parsed = text.trim() === "" ? Number.NaN : Number(text);
+    return Number.isFinite(parsed) ? normalizeToStep(parsed, rule) : null;
+  };
+  const commit = (next: number) => {
+    if (next === committed) {
+      return;
+    }
+    if (value === undefined) {
+      setInternalValue(next);
+    }
+    onValueChange?.(next);
+  };
+  const commitText = (text: string) => {
+    const next = parse(text);
+    if (next === null) {
+      return committed;
+    }
+    commit(next);
+    return next;
+  };
+  const stepBy = (direction: 1 | -1) => {
+    const current = draft === null ? committed : (parse(draft) ?? committed);
+    const next = stepFrom(current, direction, rule, stepValue);
+    commit(next);
+    if (draft !== null) {
+      setDraft(numberText(next));
+    }
   };
   return (
     <div className={cx("ogui-field", "ogui-number", className)}>
@@ -1331,12 +1468,13 @@ export function NumberField({
           type="button"
           aria-label={decrementLabel ?? `Decrease ${labelText}`}
           disabled={decrementDisabled}
-          onClick={() => update(shownValue - stepValue)}
+          onClick={() => stepBy(-1)}
         >
           −
         </button>
         <input
           {...props}
+          ref={ref}
           id={id}
           name={props.name ?? id}
           type="number"
@@ -1346,11 +1484,38 @@ export function NumberField({
           min={min}
           max={max}
           step={step}
-          value={shownValue}
+          value={draft ?? numberText(committed)}
+          onFocus={(event) => {
+            onFocus?.(event);
+            setDraft((current) => current ?? numberText(committed));
+          }}
           onChange={(event) => {
             onChange?.(event);
-            if (!event.defaultPrevented && Number.isFinite(event.currentTarget.valueAsNumber)) {
-              update(event.currentTarget.valueAsNumber);
+            if (event.defaultPrevented) {
+              return;
+            }
+            const input = event.currentTarget;
+            if (input.ownerDocument.activeElement !== input) {
+              // Autofill and scripted changes arrive without focus, so there
+              // is no blur to wait for.
+              commitText(input.value);
+              return;
+            }
+            setDraft(input.value);
+            const typed = input.value.trim() === "" ? Number.NaN : Number(input.value);
+            if (Number.isFinite(typed) && normalizeToStep(typed, rule) === typed) {
+              commit(typed);
+            }
+          }}
+          onBlur={(event) => {
+            onBlur?.(event);
+            commitText(draft ?? event.currentTarget.value);
+            setDraft(null);
+          }}
+          onKeyDown={(event) => {
+            onKeyDown?.(event);
+            if (!event.defaultPrevented && event.key === "Enter") {
+              setDraft(numberText(commitText(draft ?? event.currentTarget.value)));
             }
           }}
         />
@@ -1358,14 +1523,14 @@ export function NumberField({
           type="button"
           aria-label={incrementLabel ?? `Increase ${labelText}`}
           disabled={incrementDisabled}
-          onClick={() => update(shownValue + stepValue)}
+          onClick={() => stepBy(1)}
         >
           +
         </button>
       </span>
     </div>
   );
-}
+});
 
 export interface StepItem {
   id?: string;
@@ -1418,20 +1583,16 @@ export interface ToggleButtonProps
   onPressedChange?: (pressed: boolean) => void;
 }
 
-export function ToggleButton({
-  pressed,
-  defaultPressed = false,
-  onPressedChange,
-  className,
-  children,
-  onClick,
-  ...props
-}: ToggleButtonProps) {
+export const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(function ToggleButton(
+  { pressed, defaultPressed = false, onPressedChange, className, children, onClick, ...props },
+  ref,
+) {
   const [internalPressed, setInternalPressed] = useState(defaultPressed);
   const shownPressed = pressed ?? internalPressed;
   return (
     <button
       {...props}
+      ref={ref}
       type="button"
       className={cx("ogui-toggle-button", className)}
       aria-pressed={shownPressed}
@@ -1449,7 +1610,7 @@ export function ToggleButton({
       {children}
     </button>
   );
-}
+});
 
 export interface FileDropzoneProps extends HTMLAttributes<HTMLFieldSetElement> {
   label: string;

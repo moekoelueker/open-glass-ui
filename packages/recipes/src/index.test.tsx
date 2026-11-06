@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -169,6 +169,9 @@ describe("Tooltip", () => {
     const wrapper = target.closest(".ogui-tooltip");
     expect(wrapper?.getAttribute("data-dismissed")).toBe("false");
 
+    // Escape only hides a visible tooltip: the trigger has to be focused or
+    // hovered first.
+    act(() => target.focus());
     fireEvent.keyDown(target, { key: "Escape" });
     expect(wrapper?.getAttribute("data-dismissed")).toBe("true");
 
