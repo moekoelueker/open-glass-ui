@@ -34,3 +34,8 @@ Fixed
 - Liquid styles no longer leak into a classic scope nested inside liquid inside classic, and descendant rules respect the nearest scope.
 - The Dialog and Drawer description is padded like the title and body.
 - A pressed liquid `ToggleButton` keeps its accent fill on hover.
+- Flipping the app appearance no longer remounts the children of a `Glass` with a fixed `tone`, so their state, input values and focus survive.
+- A trigger-less `Dialog` or `Drawer` that mounts already open (for example from a button inside a `Popover`) now belongs to the layer it was opened from: pressing inside it no longer closes that popover, and closing it returns focus to the opener.
+- An uncontrolled `Slider` follows the native value when `min`, `max` or `step` change, so its text and track match what the form submits.
+- `WebGLGlassSurface` keeps drawing when a stable `sourceRef` moves to another video in the same render as a lens change; it no longer waits on the previous, paused video.
+- The theming guide and `llms-full.txt` no longer offer the provider `className` for overriding generated tokens, and document the liquid field tokens (`--ogui-lg-well`, `--ogui-lg-well-shadow`) and corner radius correctly.
