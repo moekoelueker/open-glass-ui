@@ -7,6 +7,7 @@ import {
   type MaterialPresetName,
 } from "@open-glass-ui/core";
 import {
+  createCssMaterialStyle,
   createCssMaterialTokens,
   type MaterialTone,
   type RendererPreference,
@@ -150,6 +151,7 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     // tokens verbatim.
     ...(optics?.frost === undefined ? {} : { frost: optics.frost }),
   });
+  const materialStyle = createCssMaterialStyle(tokens);
   // In liquid the stylesheet draws one ring exactly on the outer edge. A
   // painted border would sit beside it as a second, offset contour, so the
   // border is collapsed. Forced colors keeps it: there the system draws edges.
@@ -158,11 +160,8 @@ export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
     theme.design === "liquid" && !runtime.capabilities.forcedColors ? { borderWidth: 0 } : {};
   const mergedStyle = {
     ...(toneScope ? { ...toneScope.colorTokens, colorScheme: resolvedTone } : {}),
-    // Only the --ogui-material-* tokens are inline. The stylesheet's
-    // zero-specificity `:where([data-ogui-glass])` rule paints them as
-    // background, border-color, box-shadow, color and backdrop-filter, so a
-    // class or utility can restyle a surface without fighting inline styles.
     ...tokens,
+    ...materialStyle,
     ...edge,
     "--ogui-pointer-x": "0",
     "--ogui-pointer-y": "0",
