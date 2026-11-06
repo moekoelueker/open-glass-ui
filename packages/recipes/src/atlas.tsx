@@ -1371,10 +1371,15 @@ function numberText(value: number) {
 
 /**
  * Typing edits a string draft, so empty and partial input ("", "-", "1.")
- * survives until it is committed. A complete in-range value on the step grid
- * commits as it is typed; anything else commits on blur or Enter, clamped and
- * aligned to the step, and an empty or unreadable draft reverts. The stepper
- * buttons step on the same grid and never leave the bounds.
+ * survives until it is committed. A complete in-range value commits as it is
+ * typed; an out-of-range one commits on blur or Enter, clamped to the bounds,
+ * and an empty or unreadable draft reverts. Typed values are never aligned to
+ * the step: with the default `step={1}` a typed 2.5 stays 2.5.
+ *
+ * The stepper buttons move along the step grid like the native `stepUp()` and
+ * `stepDown()`: the grid counts from the minimum (or zero without one), an
+ * off-grid value moves to the next grid value in that direction (2.5 + 1
+ * gives 3, 2.5 - 1 gives 2), and a step never leaves the bounds.
  */
 export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(function NumberField(
   {
@@ -1431,9 +1436,11 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
   };
   const decrementDisabled = disabled || readOnly || !canStep(-1);
   const incrementDisabled = disabled || readOnly || !canStep(1);
+  // Typed input is only clamped, never snapped to the step grid.
+  const clampRule: StepRule = { ...rule, step: null };
   const parse = (text: string) => {
     const parsed = text.trim() === "" ? Number.NaN : Number(text);
-    return Number.isFinite(parsed) ? normalizeToStep(parsed, rule) : null;
+    return Number.isFinite(parsed) ? normalizeToStep(parsed, clampRule) : null;
   };
   const commit = (next: number) => {
     if (next === committed) {
@@ -1503,7 +1510,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
             }
             setDraft(input.value);
             const typed = input.value.trim() === "" ? Number.NaN : Number(input.value);
-            if (Number.isFinite(typed) && normalizeToStep(typed, rule) === typed) {
+            if (Number.isFinite(typed) && normalizeToStep(typed, clampRule) === typed) {
               commit(typed);
             }
           }}

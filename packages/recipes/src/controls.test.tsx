@@ -133,28 +133,49 @@ describe("NumberField editing", () => {
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
-  it("commits an off-step draft on Enter and keeps focus", async () => {
+  it("keeps a typed off-step value, commits on Enter and steps from it on the grid", async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
-    render(
-      <NumberField
-        label="Gap"
-        min={0}
-        max={40}
-        step={5}
-        defaultValue={0}
-        onValueChange={onValueChange}
-      />,
-    );
+    render(<NumberField label="Gap" max={10} defaultValue={0} onValueChange={onValueChange} />);
     const input = spinbutton("Gap");
 
+    // With the default step of 1 a typed 2.5 is accepted as is.
     await user.clear(input);
-    await user.type(input, "12");
-    expect(onValueChange).not.toHaveBeenCalled();
+    await user.type(input, "2.5");
+    await user.keyboard("{Enter}");
+    expect(onValueChange).toHaveBeenLastCalledWith(2.5);
+    expect(input.value).toBe("2.5");
+    expect(document.activeElement).toBe(input);
+
+    // An out-of-range draft waits for Enter and is clamped, not aligned.
+    onValueChange.mockClear();
+    await user.clear(input);
+    await user.type(input, "50");
+    expect(onValueChange).not.toHaveBeenCalledWith(50);
     await user.keyboard("{Enter}");
     expect(onValueChange).toHaveBeenLastCalledWith(10);
     expect(input.value).toBe("10");
-    expect(document.activeElement).toBe(input);
+
+    await user.clear(input);
+    await user.type(input, "2.5");
+    await user.tab();
+    expect(input.value).toBe("2.5");
+
+    // The steppers follow native stepUp/stepDown: an off-grid value moves to
+    // the next grid value in that direction.
+    await user.click(screen.getByRole("button", { name: "Increase Gap" }));
+    expect(onValueChange).toHaveBeenLastCalledWith(3);
+    expect(input.value).toBe("3");
+    await user.click(screen.getByRole("button", { name: "Decrease Gap" }));
+    expect(onValueChange).toHaveBeenLastCalledWith(2);
+  });
+
+  it("steps down from an off-grid value to the grid below", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(<NumberField label="Ratio" value={2.5} onValueChange={onValueChange} />);
+    await user.click(screen.getByRole("button", { name: "Decrease Ratio" }));
+    expect(onValueChange).toHaveBeenLastCalledWith(2);
   });
 
   it("steps on the grid and never past the bounds", async () => {
