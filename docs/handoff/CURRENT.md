@@ -12,6 +12,7 @@ release.
 - One published package with zero runtime dependencies and the `core`, `styles.css` and `webgl`
   subpaths; the `@open-glass-ui/*` packages stay private and are inlined at build time.
 - `main` holds the merged branches (pull requests 3 and 4, merge commits) and their release commits.
+- moelueker.com/liquid-glass runs 0.5.1 since 2026-11-07 (website pull request 130).
 
 ## What 0.5.1 changed
 
