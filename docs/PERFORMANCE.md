@@ -131,7 +131,7 @@ and compare output bytes.
 | ------------------------ | -----------: | ----------: | ----: |
 | 0.4.0 (published)        |     17,820 B |    63,445 B | 28.1% |
 | 0.5.0 (published)        |     28,691 B |    72,022 B | 39.8% |
-| After D-026 (2026-11-07) |      1,974 B |    72,038 B |  2.7% |
+| 0.5.1 (D-026)            |      1,974 B |    72,038 B |  2.7% |
 
 `dist/index.js` is one module that holds every recipe, so a bundler can drop an
 unused component only when its declaration is provably free of side effects.
