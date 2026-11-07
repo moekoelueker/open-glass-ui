@@ -231,7 +231,9 @@ the WebGL-window perf budgets are only meaningful on the reference host.
 ## Review-fix branch follow-ups (added 2026-11-06)
 
 1. Done 2026-11-06: merged into `main` (pull request 3) and released as 0.5.0 from the
-   `v0.5.0` tag.
+   `v0.5.0` tag. Done 2026-11-07: per-component tree shaking (D-026) merged (pull request 4)
+   and released as 0.5.1 from the `v0.5.1` tag. The moelueker.com/liquid-glass upgrade from
+   0.4.0 is a separate pull request in the website repository, not merged on 2026-11-07.
 2. Real Safari and iPhone pass on dialogs over popovers (positioned layer hosts with
    `backdrop-filter`), liquid accent fills, and forced tone over imagery.
 3. One more independent pass over the overlay layer model (`packages/recipes/src/layers.ts`);

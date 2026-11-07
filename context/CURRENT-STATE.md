@@ -1,14 +1,16 @@
 # Current State
 
-Status date: 2026-11-06  
-Product feature baseline: the 0.5.0 release commit  
+Status date: 2026-11-07  
+Product feature baseline: the 0.5.1 release commit  
 Branch: `main`
 
 ## Release posture
 
-OpenGlass UI is `0.5.0` (the review fixes: D-023 to D-025), published on npm on
-2026-11-06 from the `v0.5.0` tag through trusted publishing with signed
-provenance. The owner authorized the 0.5.0 release on 2026-11-06. 0.4.0 (the
+OpenGlass UI is `0.5.1` (per-component tree shaking: D-026), published on npm on
+2026-11-07 from the `v0.5.1` tag through trusted publishing with signed
+provenance. The owner authorized the 0.5.1 release on 2026-11-07. 0.5.0 (the
+review fixes: D-023 to D-025) was published on 2026-11-06; the owner
+authorized it that day. 0.4.0 (the
 liquid design, D-022) was published on 2026-09-29; the owner authorized the
 0.4.0 release, the README media refresh, and the moelueker.com/liquid-glass
 update on 2026-09-29. Publication was first authorized on 2026-07-26:
@@ -79,9 +81,9 @@ It is still not:
 
 ## Validation summary
 
-Branch `perf/2026-11-07-per-component-size` (D-026, not yet merged or released),
-measured 2026-11-07 with Biome, typecheck, unit tests, build and
-`verify:packages` (no browser run; no visual change):
+Measured 2026-11-07 on the 0.5.1 release commit (D-026, pull request 4) with
+the full `release:check`; 182 browser checks and seven skips as for 0.5.0, and
+only the host-sensitive Chromium frame bench failed on a loaded host:
 
 - 383 tests across 30 unit files; `tests/unit/tree-shaking.test.ts` is new.
 - A Button-only import is 1,974 B minified with React external (0.5.0: 28,691 B),

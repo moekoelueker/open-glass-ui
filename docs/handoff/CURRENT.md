@@ -1,25 +1,25 @@
 # OpenGlass UI: current state
 
-Rewritten in place at each session close (80 lines max). Written 2026-11-06 after the 0.5.0
-release; the branch section added 2026-11-07.
+Rewritten in place at each session close (80 lines max). Written 2026-11-07 after the 0.5.1
+release.
 
 ## Released
 
-- `open-glass-ui` 0.5.0 (the review fixes, D-023 to D-025) is on npm since 2026-11-06, published
-  by `release.yml` from the `v0.5.0` tag through npm trusted publishing with signed provenance.
-  0.4.0 (the liquid design, D-022) was published on 2026-09-29.
+- `open-glass-ui` 0.5.1 (per-component tree shaking, D-026) is on npm since 2026-11-07, published
+  by `release.yml` from the `v0.5.1` tag through npm trusted publishing with signed provenance.
+  0.5.0 (the review fixes, D-023 to D-025) was published on 2026-11-06, 0.4.0 (the liquid design,
+  D-022) on 2026-09-29.
 - One published package with zero runtime dependencies and the `core`, `styles.css` and `webgl`
   subpaths; the `@open-glass-ui/*` packages stay private and are inlined at build time.
-- `main` holds the merged review-fix branch (pull request 3, merge commit) and the release commit.
+- `main` holds the merged branches (pull requests 3 and 4, merge commits) and their release commits.
 
-## Unmerged branch: `perf/2026-11-07-per-component-size` (D-026)
+## What 0.5.1 changed
 
 0.5.0's `forwardRef` on eleven recipes had no `@__PURE__` annotation, so a Button-only import
 kept every `forwardRef` component (28.7 KB, 40% of the barrel; 0.4.0: 17.8 KB). All fifteen
-top-level `forwardRef` calls are annotated, liquid muted ink is built on call (tokens identical
-across 1,080 option combinations); Button alone is now 1,974 B (2.7%). New guard
-`tests/unit/tree-shaking.test.ts`; `verify-packages` bound tightened. Changeset: patch.
-README says 3%. Not run: browser tests (no runtime or visual change). Not merged or released.
+top-level `forwardRef` calls are annotated and the liquid muted ink is built on call (tokens
+identical across 1,080 option combinations). Button alone is 1,969 B packed (2.7%). Guards:
+`tests/unit/tree-shaking.test.ts` and the `verify-packages` bound (under 3,000 B and 5%).
 
 ## What 0.5.0 changed
 
@@ -41,17 +41,15 @@ found readability, layering, form and documentation defects. Fixed:
 Rejected after measurement: painting the Glass material from the stylesheet (D-024).
 Upgrade notes for consumers: `docs/MIGRATION.md`, "Upgrading from 0.4 to 0.5".
 
-## Validation (2026-11-06, release commit)
+## Validation
 
-Local `release:check`: generated CSS and package README in sync, Biome clean, typecheck 7/7, 380
-unit tests in 29 files, `verify:packages` (llms files in the tarball, React 18 consumer, Next.js 16
+Local `release:check` on 2026-11-07 (0.5.1): generated CSS and package README in sync, Biome
+clean, typecheck, 383 unit tests in 30 files, `verify:packages` (React 18 consumer, Next.js 16
 fixture), Playwright 182 passed and 7 intentional skips across Chromium, Firefox and WebKit, optics
-bench. The Chromium frame-budget bench is host-sensitive (see `docs/PERFORMANCE.md`); the release
-workflow's gate on a clean runner passed in full. Size: `dist/styles.css` 16.8 KB gzip,
-`dist/index.js` 23.6 KB gzip.
-
-Visual-capture specs now really emulate reduced motion (`contextOptions`); before 15-15 the option
-was ignored. `open-glass-ui-final` was re-captured for 0.5.0; historical passes are unchanged.
+bench. The Chromium frame-budget bench is host-sensitive (see `docs/PERFORMANCE.md`): it failed on
+a loaded host for 0.5.1 and for the published 0.5.0 alike; the release workflow's clean-runner
+gate decides. The browser suite rewrites historical captures and the benches rewrite
+`artifacts/performance`; restore both before a release commit. 0.5.0 details: `2026-11-06.md`.
 
 ## Release path
 
@@ -73,5 +71,6 @@ locally with `--no-ff` to keep task commits.
 
 ## Where to look
 
+- `docs/handoff/2026-11-07.md`: the tree-shaking fix and the 0.5.1 release.
 - `docs/handoff/2026-11-06.md`: the review, the fixes, the release and what failed.
-- `docs/handoff/HANDOVER.md`: the full handover. `docs/DECISIONS.md`: D-023 to D-025.
+- `docs/handoff/HANDOVER.md`: the full handover. `docs/DECISIONS.md`: D-023 to D-026.
