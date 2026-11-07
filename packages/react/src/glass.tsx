@@ -86,7 +86,7 @@ export interface GlassProps extends Omit<HTMLAttributes<HTMLElement>, "color"> {
   look?: GlassLookInput;
 }
 
-export const Glass = forwardRef<HTMLElement, GlassProps>(function Glass(
+export const Glass = /* @__PURE__ */ forwardRef<HTMLElement, GlassProps>(function Glass(
   {
     as = "div",
     children,

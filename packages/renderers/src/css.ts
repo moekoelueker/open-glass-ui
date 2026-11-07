@@ -162,9 +162,16 @@ const LIGHT_ANGLE = "var(--ogui-glass-light-angle, 340deg)";
  * Secondary text on liquid glass is "vibrant": the theme's muted colour pulled
  * part of the way towards the primary ink, so it stays visibly secondary but
  * keeps its contrast over bright or busy backdrops.
+ *
+ * Built on call rather than in a module-level template literal: bundlers keep
+ * a top-level template with substitutions in every bundle, because they cannot
+ * prove it free of side effects.
  */
-const LIQUID_DARK_MUTED = `color-mix(in srgb, ${DARK_MUTED} 55%, ${DARK_TEXT})`;
-const LIQUID_LIGHT_MUTED = `color-mix(in srgb, ${LIGHT_MUTED} 55%, ${LIGHT_TEXT})`;
+function liquidMuted(dark: boolean) {
+  return dark
+    ? `color-mix(in srgb, ${DARK_MUTED} 55%, ${DARK_TEXT})`
+    : `color-mix(in srgb, ${LIGHT_MUTED} 55%, ${LIGHT_TEXT})`;
+}
 
 function liquidTokens(
   material: MaterialPresetName,
@@ -203,7 +210,7 @@ function liquidTokens(
       `0 ${optics.spread}px ${optics.spread * 3}px -8px rgb(${ink} / ${shadow(far)})`,
     ].join(", "),
     "--ogui-material-text": dark ? DARK_TEXT : LIGHT_TEXT,
-    "--ogui-material-muted": dark ? LIQUID_DARK_MUTED : LIQUID_LIGHT_MUTED,
+    "--ogui-material-muted": liquidMuted(dark),
     "--ogui-material-filter": `blur(calc(${blur.toFixed(2)}px * var(--ogui-glass-blur, 1))) saturate(calc(${optics.saturation} * var(--ogui-glass-saturation, 1))) brightness(calc(${optics.brightness[tone]} * var(--ogui-glass-brightness, 1)))`,
     "--ogui-material-dim": dark ? "rgb(0 0 0 / 0.22)" : "rgb(255 255 255 / 0.28)",
   };

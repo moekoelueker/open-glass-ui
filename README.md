@@ -135,7 +135,7 @@ or run `pnpm dev` and open `/compare` to see both designs live.
 |  |  |
 | --- | --- |
 | **Zero runtime dependencies** | The published package depends on nothing. React and React DOM are peers, so your app owns its versions. |
-| **One import, not forty** | Importing a single component costs 28% of the full barrel. The other thirty-nine are shaken out. |
+| **One import, not forty** | Importing a single component costs 3% of the full barrel. The other thirty-nine are shaken out. |
 | **CSS-first, no surprises** | `renderer="auto"` resolves to plain CSS and never silently escalates. SVG refraction and WebGL are opt-in. |
 | **Accessible by construction** | Reduced motion, reduced transparency, and forced colors are designed states, not afterthoughts. |
 | **SSR and RSC safe** | A server-safe `open-glass-ui/core` entry never imports React. Verified against Next.js 16. |

@@ -119,3 +119,29 @@ Machine-readable evidence:
 - `artifacts/packages/package-report.json`
 
 These are reference-host baselines, not broad device claims.
+
+## Per-component cost
+
+Method: bundle `export { Button } from "open-glass-ui";` and
+`export * from "open-glass-ui";` against the packed package with
+`esbuild --bundle --minify --format=esm --external:react --external:react-dom --external:react/jsx-runtime`
+and compare output bytes.
+
+| Package                  | Button alone | Full barrel | Share |
+| ------------------------ | -----------: | ----------: | ----: |
+| 0.4.0 (published)        |     17,820 B |    63,445 B | 28.1% |
+| 0.5.0 (published)        |     28,691 B |    72,022 B | 39.8% |
+| After D-026 (2026-11-07) |      1,974 B |    72,038 B |  2.7% |
+
+`dist/index.js` is one module that holds every recipe, so a bundler can drop an
+unused component only when its declaration is provably free of side effects.
+Before D-026 the top-level `forwardRef(...)` calls had no `@__PURE__`
+annotation, so every `forwardRef` component stayed in every bundle: Glass,
+GlassGroup and GlassSource in 0.4.0, plus eleven recipes in 0.5.0. Through
+Glass they also kept the theme context, the tone scoping, the contrast helpers
+in `core/theme.ts` and the CSS material tokens.
+
+About 1.2 KB of the remaining 1,974 B are `import ... from "react"` statements
+that stay only because React is external in this measurement. The guards are
+`tests/unit/tree-shaking.test.ts` (from source, Button and Badge) and the
+single-component bound in `scripts/verify-packages.mjs` (packed tarball).

@@ -634,8 +634,11 @@ console.log(Button);
 console.log(everything);
 `,
   );
+  // 0.5.0 passed the old "under half the barrel" bound at 40% (28.7 KB) because
+  // eleven top-level forwardRef calls had no @__PURE__ annotation. A bare
+  // Button is about 2 KB; tests/unit/tree-shaking.test.ts names the cause.
   assert.ok(
-    singleComponentProbe.bytes < fullBarrelProbe.bytes * 0.5,
+    singleComponentProbe.bytes < 3_000 && singleComponentProbe.bytes < fullBarrelProbe.bytes * 0.05,
     `Importing one component pulled in ${singleComponentProbe.bytes} B of the ` +
       `${fullBarrelProbe.bytes} B barrel; per-component tree-shaking has regressed.`,
   );
