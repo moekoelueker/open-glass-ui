@@ -1118,33 +1118,35 @@ export interface CheckboxProps
   description?: ReactNode;
 }
 
-export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
-  { label, description, className, id: suppliedId, "aria-describedby": describedBy, ...props },
-  ref,
-) {
-  const generatedId = useId();
-  const id = suppliedId ?? generatedId;
-  const labelId = `${id}-label`;
-  const descriptionId = description ? `${id}-description` : undefined;
-  return (
-    <label className={cx("ogui-check", className)} htmlFor={id}>
-      <input
-        {...props}
-        ref={ref}
-        id={id}
-        name={props.name ?? id}
-        type="checkbox"
-        aria-labelledby={labelId}
-        aria-describedby={joinIds(describedBy, descriptionId)}
-      />
-      <i aria-hidden="true">✓</i>
-      <span>
-        <strong id={labelId}>{label}</strong>
-        {description ? <small id={descriptionId}>{description}</small> : null}
-      </span>
-    </label>
-  );
-});
+export const Checkbox = /* @__PURE__ */ forwardRef<HTMLInputElement, CheckboxProps>(
+  function Checkbox(
+    { label, description, className, id: suppliedId, "aria-describedby": describedBy, ...props },
+    ref,
+  ) {
+    const generatedId = useId();
+    const id = suppliedId ?? generatedId;
+    const labelId = `${id}-label`;
+    const descriptionId = description ? `${id}-description` : undefined;
+    return (
+      <label className={cx("ogui-check", className)} htmlFor={id}>
+        <input
+          {...props}
+          ref={ref}
+          id={id}
+          name={props.name ?? id}
+          type="checkbox"
+          aria-labelledby={labelId}
+          aria-describedby={joinIds(describedBy, descriptionId)}
+        />
+        <i aria-hidden="true">✓</i>
+        <span>
+          <strong id={labelId}>{label}</strong>
+          {description ? <small id={descriptionId}>{description}</small> : null}
+        </span>
+      </label>
+    );
+  },
+);
 
 export interface RadioItem<T extends string> {
   value: T;
@@ -1231,7 +1233,7 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   options: readonly SelectOption[];
 }
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
+export const Select = /* @__PURE__ */ forwardRef<HTMLSelectElement, SelectProps>(function Select(
   { label, options, className, id: suppliedId, ...props },
   ref,
 ) {
@@ -1270,44 +1272,46 @@ export interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: ReactNode;
 }
 
-export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
-  {
-    label,
-    hint,
-    error,
-    className,
-    id: suppliedId,
-    "aria-describedby": describedBy,
-    "aria-invalid": invalid,
-    ...props
+export const TextField = /* @__PURE__ */ forwardRef<HTMLInputElement, TextFieldProps>(
+  function TextField(
+    {
+      label,
+      hint,
+      error,
+      className,
+      id: suppliedId,
+      "aria-describedby": describedBy,
+      "aria-invalid": invalid,
+      ...props
+    },
+    ref,
+  ) {
+    const generatedId = useId();
+    const id = suppliedId ?? generatedId;
+    const labelId = `${id}-label`;
+    const messageId = hint || error ? `${id}-message` : undefined;
+    return (
+      <label className={cx("ogui-field", Boolean(error) && "has-error", className)} htmlFor={id}>
+        <span id={labelId}>{label}</span>
+        <input
+          {...props}
+          ref={ref}
+          id={id}
+          name={props.name ?? id}
+          autoComplete={props.autoComplete ?? "off"}
+          aria-invalid={error ? true : invalid}
+          aria-labelledby={labelId}
+          aria-describedby={joinIds(describedBy, messageId)}
+        />
+        {hint || error ? (
+          <small id={messageId} role={error ? "alert" : undefined}>
+            {error ?? hint}
+          </small>
+        ) : null}
+      </label>
+    );
   },
-  ref,
-) {
-  const generatedId = useId();
-  const id = suppliedId ?? generatedId;
-  const labelId = `${id}-label`;
-  const messageId = hint || error ? `${id}-message` : undefined;
-  return (
-    <label className={cx("ogui-field", Boolean(error) && "has-error", className)} htmlFor={id}>
-      <span id={labelId}>{label}</span>
-      <input
-        {...props}
-        ref={ref}
-        id={id}
-        name={props.name ?? id}
-        autoComplete={props.autoComplete ?? "off"}
-        aria-invalid={error ? true : invalid}
-        aria-labelledby={labelId}
-        aria-describedby={joinIds(describedBy, messageId)}
-      />
-      {hint || error ? (
-        <small id={messageId} role={error ? "alert" : undefined}>
-          {error ?? hint}
-        </small>
-      ) : null}
-    </label>
-  );
-});
+);
 
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: ReactNode;
@@ -1315,44 +1319,46 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
   error?: ReactNode;
 }
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
-  {
-    label,
-    hint,
-    error,
-    className,
-    id: suppliedId,
-    "aria-describedby": describedBy,
-    "aria-invalid": invalid,
-    ...props
+export const Textarea = /* @__PURE__ */ forwardRef<HTMLTextAreaElement, TextareaProps>(
+  function Textarea(
+    {
+      label,
+      hint,
+      error,
+      className,
+      id: suppliedId,
+      "aria-describedby": describedBy,
+      "aria-invalid": invalid,
+      ...props
+    },
+    ref,
+  ) {
+    const generatedId = useId();
+    const id = suppliedId ?? generatedId;
+    const labelId = `${id}-label`;
+    const messageId = hint || error ? `${id}-message` : undefined;
+    return (
+      <label className={cx("ogui-field", Boolean(error) && "has-error", className)} htmlFor={id}>
+        <span id={labelId}>{label}</span>
+        <textarea
+          {...props}
+          ref={ref}
+          id={id}
+          name={props.name ?? id}
+          autoComplete={props.autoComplete ?? "off"}
+          aria-invalid={error ? true : invalid}
+          aria-labelledby={labelId}
+          aria-describedby={joinIds(describedBy, messageId)}
+        />
+        {hint || error ? (
+          <small id={messageId} role={error ? "alert" : undefined}>
+            {error ?? hint}
+          </small>
+        ) : null}
+      </label>
+    );
   },
-  ref,
-) {
-  const generatedId = useId();
-  const id = suppliedId ?? generatedId;
-  const labelId = `${id}-label`;
-  const messageId = hint || error ? `${id}-message` : undefined;
-  return (
-    <label className={cx("ogui-field", Boolean(error) && "has-error", className)} htmlFor={id}>
-      <span id={labelId}>{label}</span>
-      <textarea
-        {...props}
-        ref={ref}
-        id={id}
-        name={props.name ?? id}
-        autoComplete={props.autoComplete ?? "off"}
-        aria-invalid={error ? true : invalid}
-        aria-labelledby={labelId}
-        aria-describedby={joinIds(describedBy, messageId)}
-      />
-      {hint || error ? (
-        <small id={messageId} role={error ? "alert" : undefined}>
-          {error ?? hint}
-        </small>
-      ) : null}
-    </label>
-  );
-});
+);
 
 export interface SearchFieldProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
@@ -1362,66 +1368,68 @@ export interface SearchFieldProps
   onValueChange?: (value: string) => void;
 }
 
-export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(function SearchField(
-  {
-    label,
-    value,
-    defaultValue = "",
-    onValueChange,
-    className,
-    id: suppliedId,
-    disabled,
-    readOnly,
-    ...props
+export const SearchField = /* @__PURE__ */ forwardRef<HTMLInputElement, SearchFieldProps>(
+  function SearchField(
+    {
+      label,
+      value,
+      defaultValue = "",
+      onValueChange,
+      className,
+      id: suppliedId,
+      disabled,
+      readOnly,
+      ...props
+    },
+    ref,
+  ) {
+    const generatedId = useId();
+    const id = suppliedId ?? generatedId;
+    const [internalValue, setInternalValue] = useState(defaultValue);
+    const shownValue = value ?? internalValue;
+    // A disabled or read-only field must not change through its clear button.
+    const locked = Boolean(disabled || readOnly);
+    const update = (next: string) => {
+      if (locked) {
+        return;
+      }
+      if (value === undefined) {
+        setInternalValue(next);
+      }
+      onValueChange?.(next);
+    };
+    return (
+      <label className={cx("ogui-search", className)} htmlFor={id}>
+        <span className="ogui-sr-only">{label}</span>
+        <i aria-hidden="true">⌕</i>
+        <input
+          {...props}
+          ref={ref}
+          id={id}
+          name={props.name ?? id}
+          type="search"
+          disabled={disabled}
+          readOnly={readOnly}
+          value={shownValue}
+          aria-label={label}
+          autoComplete={props.autoComplete ?? "off"}
+          spellCheck={props.spellCheck ?? false}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => update(event.currentTarget.value)}
+        />
+        {shownValue ? (
+          <button
+            type="button"
+            aria-label={`Clear ${label}`}
+            disabled={locked}
+            onClick={() => update("")}
+          >
+            ×
+          </button>
+        ) : null}
+      </label>
+    );
   },
-  ref,
-) {
-  const generatedId = useId();
-  const id = suppliedId ?? generatedId;
-  const [internalValue, setInternalValue] = useState(defaultValue);
-  const shownValue = value ?? internalValue;
-  // A disabled or read-only field must not change through its clear button.
-  const locked = Boolean(disabled || readOnly);
-  const update = (next: string) => {
-    if (locked) {
-      return;
-    }
-    if (value === undefined) {
-      setInternalValue(next);
-    }
-    onValueChange?.(next);
-  };
-  return (
-    <label className={cx("ogui-search", className)} htmlFor={id}>
-      <span className="ogui-sr-only">{label}</span>
-      <i aria-hidden="true">⌕</i>
-      <input
-        {...props}
-        ref={ref}
-        id={id}
-        name={props.name ?? id}
-        type="search"
-        disabled={disabled}
-        readOnly={readOnly}
-        value={shownValue}
-        aria-label={label}
-        autoComplete={props.autoComplete ?? "off"}
-        spellCheck={props.spellCheck ?? false}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => update(event.currentTarget.value)}
-      />
-      {shownValue ? (
-        <button
-          type="button"
-          aria-label={`Clear ${label}`}
-          disabled={locked}
-          onClick={() => update("")}
-        >
-          ×
-        </button>
-      ) : null}
-    </label>
-  );
-});
+);
 
 export interface NumberFieldProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "value" | "defaultValue"> {
@@ -1451,179 +1459,181 @@ function numberText(value: number) {
  * 2), and a step never leaves the bounds. A disabled or read-only field never
  * changes its value.
  */
-export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(function NumberField(
-  {
-    label,
-    value,
-    defaultValue = 0,
-    onValueChange,
-    decrementLabel,
-    incrementLabel,
-    min,
-    max,
-    step = 1,
-    className,
-    id: suppliedId,
-    onChange,
-    onFocus,
-    onBlur,
-    onKeyDown,
-    disabled,
-    readOnly,
-    ...props
+export const NumberField = /* @__PURE__ */ forwardRef<HTMLInputElement, NumberFieldProps>(
+  function NumberField(
+    {
+      label,
+      value,
+      defaultValue = 0,
+      onValueChange,
+      decrementLabel,
+      incrementLabel,
+      min,
+      max,
+      step = 1,
+      className,
+      id: suppliedId,
+      onChange,
+      onFocus,
+      onBlur,
+      onKeyDown,
+      disabled,
+      readOnly,
+      ...props
+    },
+    ref,
+  ) {
+    const generatedId = useId();
+    const id = suppliedId ?? generatedId;
+    const locked = Boolean(disabled || readOnly);
+    const [internalValue, setInternalValue] = useState(defaultValue);
+    // `null` while the input is not being edited: it then shows the committed
+    // value, so a controlled `value` change always shows through.
+    const [draft, setDraft] = useState<string | null>(null);
+    const committed = value ?? internalValue;
+    const rawMin = min === undefined ? Number.NaN : Number(min);
+    const rawMax = max === undefined ? Number.NaN : Number(max);
+    const hasMin = Number.isFinite(rawMin);
+    const minValue = hasMin ? rawMin : Number.MIN_SAFE_INTEGER;
+    const maxValue = Number.isFinite(rawMax) ? rawMax : Number.MAX_SAFE_INTEGER;
+    const rawStep = Number(step);
+    const stepValue = Number.isFinite(rawStep) && rawStep !== 0 ? Math.abs(rawStep) : 1;
+    // The native step base is the `min` attribute, or without one the value
+    // attribute, which React keeps equal to the current value. So without a
+    // caller minimum a step moves by exactly one step from the current value,
+    // and the input never reports a step mismatch the stepper itself caused.
+    const ruleFrom = (current: number): StepRule => ({
+      min: minValue,
+      max: maxValue,
+      base: hasMin ? minValue : current,
+      step: step === "any" ? null : stepValue,
+    });
+    const rule = ruleFrom(committed);
+    const labelText =
+      typeof label === "string" || typeof label === "number" ? String(label) : "value";
+    const canStep = (direction: 1 | -1) => {
+      if (!Number.isFinite(committed)) {
+        return false;
+      }
+      const next = stepFrom(committed, direction, rule, stepValue);
+      return direction > 0 ? next > committed : next < committed;
+    };
+    const decrementDisabled = disabled || readOnly || !canStep(-1);
+    const incrementDisabled = disabled || readOnly || !canStep(1);
+    // Typed input is only clamped, never snapped to the step grid.
+    const clampRule: StepRule = { ...rule, step: null };
+    const parse = (text: string) => {
+      const parsed = text.trim() === "" ? Number.NaN : Number(text);
+      return Number.isFinite(parsed) ? normalizeToStep(parsed, clampRule) : null;
+    };
+    const commit = (next: number) => {
+      if (next === committed) {
+        return;
+      }
+      if (value === undefined) {
+        setInternalValue(next);
+      }
+      onValueChange?.(next);
+    };
+    const commitText = (text: string) => {
+      // A disabled or read-only field never changes its value, not even by
+      // clamping a committed value that is out of range.
+      if (locked) {
+        return committed;
+      }
+      const next = parse(text);
+      if (next === null) {
+        return committed;
+      }
+      commit(next);
+      return next;
+    };
+    const stepBy = (direction: 1 | -1) => {
+      if (locked) {
+        return;
+      }
+      const current = draft === null ? committed : (parse(draft) ?? committed);
+      const next = stepFrom(current, direction, ruleFrom(current), stepValue);
+      commit(next);
+      if (draft !== null) {
+        setDraft(numberText(next));
+      }
+    };
+    return (
+      <div className={cx("ogui-field", "ogui-number", className)}>
+        <label htmlFor={id}>{label}</label>
+        <span className="ogui-number__control">
+          <button
+            type="button"
+            aria-label={decrementLabel ?? `Decrease ${labelText}`}
+            disabled={decrementDisabled}
+            onClick={() => stepBy(-1)}
+          >
+            −
+          </button>
+          <input
+            {...props}
+            ref={ref}
+            id={id}
+            name={props.name ?? id}
+            type="number"
+            disabled={disabled}
+            readOnly={readOnly}
+            inputMode={props.inputMode ?? "decimal"}
+            min={min}
+            max={max}
+            step={step}
+            value={draft ?? numberText(committed)}
+            onFocus={(event) => {
+              onFocus?.(event);
+              setDraft((current) => current ?? numberText(committed));
+            }}
+            onChange={(event) => {
+              onChange?.(event);
+              if (event.defaultPrevented) {
+                return;
+              }
+              const input = event.currentTarget;
+              if (input.ownerDocument.activeElement !== input) {
+                // Autofill and scripted changes arrive without focus, so there
+                // is no blur to wait for.
+                commitText(input.value);
+                return;
+              }
+              if (locked) {
+                return;
+              }
+              setDraft(input.value);
+              const typed = input.value.trim() === "" ? Number.NaN : Number(input.value);
+              if (Number.isFinite(typed) && normalizeToStep(typed, clampRule) === typed) {
+                commit(typed);
+              }
+            }}
+            onBlur={(event) => {
+              onBlur?.(event);
+              commitText(draft ?? event.currentTarget.value);
+              setDraft(null);
+            }}
+            onKeyDown={(event) => {
+              onKeyDown?.(event);
+              if (!event.defaultPrevented && event.key === "Enter") {
+                setDraft(numberText(commitText(draft ?? event.currentTarget.value)));
+              }
+            }}
+          />
+          <button
+            type="button"
+            aria-label={incrementLabel ?? `Increase ${labelText}`}
+            disabled={incrementDisabled}
+            onClick={() => stepBy(1)}
+          >
+            +
+          </button>
+        </span>
+      </div>
+    );
   },
-  ref,
-) {
-  const generatedId = useId();
-  const id = suppliedId ?? generatedId;
-  const locked = Boolean(disabled || readOnly);
-  const [internalValue, setInternalValue] = useState(defaultValue);
-  // `null` while the input is not being edited: it then shows the committed
-  // value, so a controlled `value` change always shows through.
-  const [draft, setDraft] = useState<string | null>(null);
-  const committed = value ?? internalValue;
-  const rawMin = min === undefined ? Number.NaN : Number(min);
-  const rawMax = max === undefined ? Number.NaN : Number(max);
-  const hasMin = Number.isFinite(rawMin);
-  const minValue = hasMin ? rawMin : Number.MIN_SAFE_INTEGER;
-  const maxValue = Number.isFinite(rawMax) ? rawMax : Number.MAX_SAFE_INTEGER;
-  const rawStep = Number(step);
-  const stepValue = Number.isFinite(rawStep) && rawStep !== 0 ? Math.abs(rawStep) : 1;
-  // The native step base is the `min` attribute, or without one the value
-  // attribute, which React keeps equal to the current value. So without a
-  // caller minimum a step moves by exactly one step from the current value,
-  // and the input never reports a step mismatch the stepper itself caused.
-  const ruleFrom = (current: number): StepRule => ({
-    min: minValue,
-    max: maxValue,
-    base: hasMin ? minValue : current,
-    step: step === "any" ? null : stepValue,
-  });
-  const rule = ruleFrom(committed);
-  const labelText =
-    typeof label === "string" || typeof label === "number" ? String(label) : "value";
-  const canStep = (direction: 1 | -1) => {
-    if (!Number.isFinite(committed)) {
-      return false;
-    }
-    const next = stepFrom(committed, direction, rule, stepValue);
-    return direction > 0 ? next > committed : next < committed;
-  };
-  const decrementDisabled = disabled || readOnly || !canStep(-1);
-  const incrementDisabled = disabled || readOnly || !canStep(1);
-  // Typed input is only clamped, never snapped to the step grid.
-  const clampRule: StepRule = { ...rule, step: null };
-  const parse = (text: string) => {
-    const parsed = text.trim() === "" ? Number.NaN : Number(text);
-    return Number.isFinite(parsed) ? normalizeToStep(parsed, clampRule) : null;
-  };
-  const commit = (next: number) => {
-    if (next === committed) {
-      return;
-    }
-    if (value === undefined) {
-      setInternalValue(next);
-    }
-    onValueChange?.(next);
-  };
-  const commitText = (text: string) => {
-    // A disabled or read-only field never changes its value, not even by
-    // clamping a committed value that is out of range.
-    if (locked) {
-      return committed;
-    }
-    const next = parse(text);
-    if (next === null) {
-      return committed;
-    }
-    commit(next);
-    return next;
-  };
-  const stepBy = (direction: 1 | -1) => {
-    if (locked) {
-      return;
-    }
-    const current = draft === null ? committed : (parse(draft) ?? committed);
-    const next = stepFrom(current, direction, ruleFrom(current), stepValue);
-    commit(next);
-    if (draft !== null) {
-      setDraft(numberText(next));
-    }
-  };
-  return (
-    <div className={cx("ogui-field", "ogui-number", className)}>
-      <label htmlFor={id}>{label}</label>
-      <span className="ogui-number__control">
-        <button
-          type="button"
-          aria-label={decrementLabel ?? `Decrease ${labelText}`}
-          disabled={decrementDisabled}
-          onClick={() => stepBy(-1)}
-        >
-          −
-        </button>
-        <input
-          {...props}
-          ref={ref}
-          id={id}
-          name={props.name ?? id}
-          type="number"
-          disabled={disabled}
-          readOnly={readOnly}
-          inputMode={props.inputMode ?? "decimal"}
-          min={min}
-          max={max}
-          step={step}
-          value={draft ?? numberText(committed)}
-          onFocus={(event) => {
-            onFocus?.(event);
-            setDraft((current) => current ?? numberText(committed));
-          }}
-          onChange={(event) => {
-            onChange?.(event);
-            if (event.defaultPrevented) {
-              return;
-            }
-            const input = event.currentTarget;
-            if (input.ownerDocument.activeElement !== input) {
-              // Autofill and scripted changes arrive without focus, so there
-              // is no blur to wait for.
-              commitText(input.value);
-              return;
-            }
-            if (locked) {
-              return;
-            }
-            setDraft(input.value);
-            const typed = input.value.trim() === "" ? Number.NaN : Number(input.value);
-            if (Number.isFinite(typed) && normalizeToStep(typed, clampRule) === typed) {
-              commit(typed);
-            }
-          }}
-          onBlur={(event) => {
-            onBlur?.(event);
-            commitText(draft ?? event.currentTarget.value);
-            setDraft(null);
-          }}
-          onKeyDown={(event) => {
-            onKeyDown?.(event);
-            if (!event.defaultPrevented && event.key === "Enter") {
-              setDraft(numberText(commitText(draft ?? event.currentTarget.value)));
-            }
-          }}
-        />
-        <button
-          type="button"
-          aria-label={incrementLabel ?? `Increase ${labelText}`}
-          disabled={incrementDisabled}
-          onClick={() => stepBy(1)}
-        >
-          +
-        </button>
-      </span>
-    </div>
-  );
-});
+);
 
 export interface StepItem {
   id?: string;
@@ -1676,34 +1686,36 @@ export interface ToggleButtonProps
   onPressedChange?: (pressed: boolean) => void;
 }
 
-export const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(function ToggleButton(
-  { pressed, defaultPressed = false, onPressedChange, className, children, onClick, ...props },
-  ref,
-) {
-  const [internalPressed, setInternalPressed] = useState(defaultPressed);
-  const shownPressed = pressed ?? internalPressed;
-  return (
-    <button
-      {...props}
-      ref={ref}
-      type="button"
-      className={cx("ogui-toggle-button", className)}
-      aria-pressed={shownPressed}
-      onClick={(event) => {
-        onClick?.(event);
-        if (event.defaultPrevented) {
-          return;
-        }
-        if (pressed === undefined) {
-          setInternalPressed(!shownPressed);
-        }
-        onPressedChange?.(!shownPressed);
-      }}
-    >
-      {children}
-    </button>
-  );
-});
+export const ToggleButton = /* @__PURE__ */ forwardRef<HTMLButtonElement, ToggleButtonProps>(
+  function ToggleButton(
+    { pressed, defaultPressed = false, onPressedChange, className, children, onClick, ...props },
+    ref,
+  ) {
+    const [internalPressed, setInternalPressed] = useState(defaultPressed);
+    const shownPressed = pressed ?? internalPressed;
+    return (
+      <button
+        {...props}
+        ref={ref}
+        type="button"
+        className={cx("ogui-toggle-button", className)}
+        aria-pressed={shownPressed}
+        onClick={(event) => {
+          onClick?.(event);
+          if (event.defaultPrevented) {
+            return;
+          }
+          if (pressed === undefined) {
+            setInternalPressed(!shownPressed);
+          }
+          onPressedChange?.(!shownPressed);
+        }}
+      >
+        {children}
+      </button>
+    );
+  },
+);
 
 export interface FileDropzoneProps extends HTMLAttributes<HTMLFieldSetElement> {
   label: string;

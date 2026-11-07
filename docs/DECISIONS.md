@@ -314,3 +314,27 @@ popover interactive above it.
 **Consequence:** New layered recipes must register with the stack instead of
 choosing a `z-index`. Paint order and hit testing are verified in a real
 browser; jsdom covers the stack logic only.
+
+## D-026 — Module-level component factories are marked pure
+
+**Decision:** Every module-level call that creates a component or a context
+(`forwardRef`, `createContext`, and `memo` or `lazy` if they are introduced)
+carries `/* @__PURE__ */`. Other module-level values are literals, pure-marked
+calls or functions; a template literal with substitutions is built on call
+instead. `tests/unit/tree-shaking.test.ts` bundles the facade the way tsup does,
+then imports Button and Badge as a consumer would, and fails when either keeps
+another recipe or exceeds its budget. `scripts/verify-packages.mjs` repeats the
+Button bound on the packed tarball: under 3,000 B and under 5% of the barrel.
+
+**Why:** `dist/index.js` is one module that holds every recipe, so a consumer's
+bundler drops an unused component only when it can prove the declaration free
+of side effects. 0.5.0 added `forwardRef` to eleven recipes without the
+annotation, and a Button-only import grew from 17.8 KB to 28.7 KB (minified,
+React external). The old guard, "under half the barrel", still passed at 40%.
+0.4.0 already carried Glass, GlassGroup and GlassSource into every import for
+the same reason.
+
+**Consequence:** A Button-only import bundles to about 2 KB, of which about
+1.2 KB are `import ... from "react"` statements that disappear when the app
+bundles React itself. Adding an unannotated module-level factory fails the unit
+test, which names the recipe classes that leaked in.

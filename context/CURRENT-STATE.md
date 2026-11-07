@@ -79,6 +79,14 @@ It is still not:
 
 ## Validation summary
 
+Branch `perf/2026-11-07-per-component-size` (D-026, not yet merged or released),
+measured 2026-11-07 with Biome, typecheck, unit tests, build and
+`verify:packages` (no browser run; no visual change):
+
+- 383 tests across 30 unit files; `tests/unit/tree-shaking.test.ts` is new.
+- A Button-only import is 1,974 B minified with React external (0.5.0: 28,691 B),
+  2.7% of the barrel. `verify-packages` now requires under 3,000 B and 5%.
+
 Measured 2026-11-06 on the 0.5.0 release commit (the merged review-fix branch):
 
 - 130 files passing Biome.

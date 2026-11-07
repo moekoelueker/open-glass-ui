@@ -1,7 +1,7 @@
 # OpenGlass UI: current state
 
 Rewritten in place at each session close (80 lines max). Written 2026-11-06 after the 0.5.0
-release.
+release; the branch section added 2026-11-07.
 
 ## Released
 
@@ -11,6 +11,15 @@ release.
 - One published package with zero runtime dependencies and the `core`, `styles.css` and `webgl`
   subpaths; the `@open-glass-ui/*` packages stay private and are inlined at build time.
 - `main` holds the merged review-fix branch (pull request 3, merge commit) and the release commit.
+
+## Unmerged branch: `perf/2026-11-07-per-component-size` (D-026)
+
+0.5.0's `forwardRef` on eleven recipes had no `@__PURE__` annotation, so a Button-only import
+kept every `forwardRef` component (28.7 KB, 40% of the barrel; 0.4.0: 17.8 KB). All fifteen
+top-level `forwardRef` calls are annotated, liquid muted ink is built on call (tokens identical
+across 1,080 option combinations); Button alone is now 1,974 B (2.7%). New guard
+`tests/unit/tree-shaking.test.ts`; `verify-packages` bound tightened. Changeset: patch.
+README says 3%. Not run: browser tests (no runtime or visual change). Not merged or released.
 
 ## What 0.5.0 changed
 

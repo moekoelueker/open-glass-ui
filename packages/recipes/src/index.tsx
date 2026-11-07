@@ -182,7 +182,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   trailingIcon?: ReactNode;
 }
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+export const Button = /* @__PURE__ */ forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     variant = "secondary",
     size = "medium",
@@ -237,22 +237,21 @@ export interface IconButtonProps extends Omit<ButtonProps, "children" | "aria-la
   children: ReactNode;
 }
 
-export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
-  { size = "medium", variant = "quiet", className, children, ...props },
-  ref,
-) {
-  return (
-    <Button
-      {...props}
-      ref={ref}
-      size={size}
-      variant={variant}
-      className={classes("ogui-icon-button", className)}
-    >
-      {children}
-    </Button>
-  );
-});
+export const IconButton = /* @__PURE__ */ forwardRef<HTMLButtonElement, IconButtonProps>(
+  function IconButton({ size = "medium", variant = "quiet", className, children, ...props }, ref) {
+    return (
+      <Button
+        {...props}
+        ref={ref}
+        size={size}
+        variant={variant}
+        className={classes("ogui-icon-button", className)}
+      >
+        {children}
+      </Button>
+    );
+  },
+);
 
 export interface SegmentItem<T extends string> {
   value: T;
@@ -314,7 +313,7 @@ export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
   onCheckedChange?: (checked: boolean) => void;
 }
 
-export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
+export const Switch = /* @__PURE__ */ forwardRef<HTMLInputElement, SwitchProps>(function Switch(
   {
     label,
     description,
@@ -399,7 +398,7 @@ function firstNumber(value: unknown) {
  * the larger, never past `max`), as the browser itself sanitizes a range
  * input. `step="any"` only clamps. Without a value the slider starts at `min`.
  */
-export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
+export const Slider = /* @__PURE__ */ forwardRef<HTMLInputElement, SliderProps>(function Slider(
   {
     label,
     valueText,
