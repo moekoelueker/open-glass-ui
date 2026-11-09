@@ -69,6 +69,8 @@ locally with `--no-ff` to keep task commits.
    the last review fix (15-13, dialog opener after autofocus) was not re-inspected.
 4. Deferred from the review as low impact: a content backdrop behind the catalog specimens,
    curating the facade exports, splitting classic and liquid stylesheets.
+5. `README.md` and `docs/VALIDATION.md` still quote 0.4.0 test counts (137 unit, 179 browser);
+   0.5.1 has 383 unit tests and 182 browser checks with 7 skips. The npm README updates on release.
 
 ## Where to look
 
